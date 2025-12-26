@@ -19,7 +19,7 @@ But hold on. Before we all jump on the bandwagon, let's take a closer look. This
 
 On paper, the goal sounds almost saintly: **Protect the youth! Uphold societal values!** And look, I get it. The concerns are real. Porn sites are *alarmingly* high on the list of most visited websites here. In a culture where "the talk" is often no talk at all, the internet becomes the default, and deeply flawed, sex educator.
 
-There's a genuine problem. At its core, this should be a fight to protect our society's most vulnerable: our children and our women. Early exposure messes with kids' heads. It fuels unhealthy attitudes and, let's not skirt around it, with zina (fornication) prohibited in Islam and the social and financial pressures making marriage increasingly difficult, the sexual frustration contributes to the harassment women face daily.
+There's a genuine problem. At its core, this should be a fight to protect our society's most vulnerable: our children and our women. Early exposure messes with kids' heads. It fuels unhealthy attitudes and, let's not skirt around it, with _zina_ (fornication) prohibited in Islam and the social and financial pressures making marriage increasingly difficult, the sexual frustration contributes to the harassment women face daily.
 
 **But...** (You knew there was a '_but_' coming, right?)
 
