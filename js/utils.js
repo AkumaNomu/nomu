@@ -59,10 +59,11 @@ function parseFrontmatter(content) {
 // Format category for display
 function formatCategory(category) {
   const categoryMap = {
-    'game-dev': 'Game dev',
-    'video-editing': 'Video editing',
-    'life': 'Life',
-    'projects': 'Projects'
+    'Development': 'Development',
+    'Video Editing': 'Video editing',
+    'Life': 'Life',
+    'Projects': 'Projects',
+    'Politics': 'Politics',
   };
   return categoryMap[category] || category;
 }

@@ -33,15 +33,15 @@ They've published the proposal[^Source]. Here’s the TL;DR, with a dash of comm
 | Article | What It Says | What It *Could* Mean |
 | :--- | :--- | :--- |
 | **1** | Goals: Block porn sites to align with values. | Sounds simple enough. |
-| **2** | Defines illegal content as explicit material **or** "*material offensive to public decency.*" | "Public decency" is vaguer than a politician's promise. Who decides? |
+| **2** | Defines illegal content as explicit material **or** "*material offensive to public decency.*" | "_Public decency_" is vaguer than a politician's promise. Who decides? |
 | **3 & 11** | An unspecified "competent authority" gets to call the shots. | Unlimited power with zero checks, balances, or way to appeal? What could go wrong? |
 | **5** | ISPs must block sites instantly and keep systems "effective." | This is the technical hammer. |
 | **7** | Using/creating tools to bypass blocks gets you **1 year in prison.** | They're coming for your VPN. Yes, *that* VPN. |
 | **9 & 10** | Fines (and worse) for companies that don't comply. | Expect Alrighty, let's dive into the messy bits.
 
 
-# Do you see what I see?
-## Who gets to decide?
+# Do You See What I See?
+## Who Gets to Decide?
 
 The law points to a "competent authority" in **Article 3 & 11**. Sounds official, right? But it doesn't actually name who that is.
 
@@ -57,7 +57,7 @@ That phrase in **Article 2** "*material offensive to public decency*" is a legal
 *   **Classic art or literature** that includes nude figures?
 *   **Political commentary** discussing women's rights or social reforms?
 
-Without a crystal clear definition, this law isn't just about porn. It's about granting someone the power to decide what ideas are "decent" enough for you to see.
+Without a crystal clear definition, this law isn't just about porn. It's about granting someone the power to decide what ideas are "_decent_" enough for you to see.
 
 ## The VPN Trap
 
@@ -72,7 +72,7 @@ It's a move that would digitally isolate the country, harm the economy, and make
 
 ## The Technical Quagmire and Collateral Damage
 
-To comply with **Article 5**, ISPs will likely use blunt tools. If a platform like [Discord](https://discord.com/), [Reddit](https://reddit.com/), [Google Drive](https://drive.google.com/) hosts a single piece of "indecent" content, the easiest fix is to **block the entire site**. Poof. There goes your study group, your memes, your cloud storage.
+To comply with **Article 5**, ISPs will likely use blunt tools. If a platform like [Discord](https://discord.com/), [Reddit](https://reddit.com/), [Google Drive](https://drive.google.com/) hosts a single piece of "_indecent_" content, the easiest fix is to **block the entire site**. Poof. There goes your study group, your memes, your cloud storage.
 
 # Precision over Prohibition
 
