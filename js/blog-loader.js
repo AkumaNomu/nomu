@@ -4,8 +4,8 @@
 
 // Manifest of all blog posts
 const POST_MANIFEST = [
-  './posts/Markdowntest.md',
-  './posts/Nomu\'s_Site.md',
+  'Markdowntest.md',
+  'Nomu\'s_Site.md',
 ];
 
 
@@ -25,7 +25,7 @@ async function loadPosts() {
   for (const filename of POST_MANIFEST) {
     try {
       console.log(`Attempting to load: posts/${filename}`);
-      const response = await fetch(`posts/${filename}`);
+      const response = await fetch(`./posts/${filename}`);
       
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
