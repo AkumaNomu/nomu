@@ -6,6 +6,7 @@
 const POST_MANIFEST = [
   'Markdowntest.md',
   'Nomu\'s_Site.md',
+  'Pornban.md',
 ];
 
 

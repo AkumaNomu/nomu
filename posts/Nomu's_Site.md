@@ -1,39 +1,48 @@
 ---
-title: Nomu's
+title: Nomu's First Post
 date: 2025-12-24
 category: Development
 author: Nomu
-excerpt: First post, how and why I built this blog.
-cover: assets\images\none
+excerpt: My chaotic journey building a simple, no BS personal site; why I scrapped everything (again), went vanilla, and here we are.
+cover: assets\images\Nomu's_Site.png
 ---
 
 # How did it start?
-Well, for the past months, I've been working on a site for myself, experimenting with different things, but I always ended up scrapping the whole thing mid-project. I decided I'll just simplify what I'm gonna make, and stick to it 100%, no matter how it ends up. So here we are on the 24th of december[^1], 2025, writing the first blog post.
-
+For the past few months, I have been messing with sites for myself, trying different things and always scrapping them midway. You know that cycle. I finally said to myself: keep it simple and stick to it no matter what. So here we are on December 24th[^1], 2025, with the first post.
 
 # The making
 ## Setup
-I just fed perplexity my vision for the project, it generated a generic site so i can start working on it. I hate the design it has, very generic and lacks taste, but it saves me quite a bit of time to change it rather than doing it from the ground up.
+I fed Perplexity my idea: a minimal site with a blog and stuff. It gave back a basic template. The design is super generic with no taste, but it beats starting from zero. I tweaked it from there.
+
 ## New day
-Here's mainly what I did:
-- Added the contact section
-- Working on the markdown formatting and blog posts
-Well. something went wrong, and ive been trying to fix it for the past 2 hours but at this point i think starting from all over again is way easier. The posts are showing up on the blog list but aren't loading individually, it seems to be an issue with either html or css, but I couldn't seem to figure it out. 
+Here is mostly what I did:
+- Contact section with socials on the left and anon form on the right.
+- Markdown styling for posts: headings with borders, code gradients, that kind of thing.
+
+Well, something broke. Posts show on the list but not in single view. I spent two hours poking at HTML and CSS. Gave up and started over. Easier that way.
+
 ## Sonnet
-Claude. It's just peak. I avoid using it not to waste the free usage but right before it ended it made the website, perfect vision, no problems at all. I wonder if perplexity pro really has Sonnet 4.5 or is it just a hoax
+[**_Claude_**](https://claude.ai/) though, it is peak. I held off using it to save my free tier, but the last prompt fixed everything perfectly. I wonder if Perplexity Pro's Sonnet 4.5 is real or just hype.
+
+## Github
+When the site was almost functional, I hosted it on Github, though the posts weren't showing up so I had to add a .nojerkyll file and fix the paths in the blog-loader.js script.
+
 # Features
 ## Tech
-#### Vanilla HTML, CSS and javascript. 
-The genius behind it: do i really need more? 
-It's also Front-end only. In reality, I can't use any other frameworks, and I didn't want to go through the extra hassle of dealing with anything more complex than necessary.
-#### Formspree
-Just something quick and easy for anonymous messages. Won't get bothered with spam too.
-#### Markdownit
+- Vanilla HTML, CSS, and JavaScript. Genius, right? No need for more. Frontend only because I cannot deal with frameworks right now and do not want the hassle.
+- [Formspree](https://formspree.io/) for anonymous messages, quick and low spam.
+- [Markdown-it](https://github.com/markdown-it/markdown-it) to turn Markdown files into HTML right in the browser. Code blocks, lists, tables, and more all work.
+- Hosted on Github Pages
 ## Index
-Pretty simple, just showcases the latest posts and has my socials alongside an anonymous message form
+Simple: latest posts, my socials, anonymous form. Async communication vibe.
+
 ## Blog
-Search, Filters, and simple article metadata
+Search, filters by category, post info.
+
 ## Articles
-Shows a reading time Approximation 
+Reading time guess. Grabs a Markdown file and renders it. Supports all the Markdown goodies.
+
+# What's next?
+Don't know, I'm thinking about adding tutorials, I'm gonna work today (_26th_) on making the pictures clickable and maybe tweaking the styling a bit and fixing up the code. Probably also adding a proper comment section.
 
 [^1]: [News](https://fox4kc.com/news/national/watch-man-makes-dirt-angels-while-hiding-from-hillsborough-county-deputies/)

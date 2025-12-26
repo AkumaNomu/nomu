@@ -1,9 +1,9 @@
 ---
 title: Markdown Test Post
-date: 2025-02-14
-category: Life
+date: 1970-01-01
+category: Development
 excerpt: A comprehensive test of all markdown features supported on this site, from headings to footnotes.
-cover: assets/images/none
+cover: assets/images/Markdowntest.png
 ---
 
 This post demonstrates all the markdown features supported on nomu.dev. Use it as a reference for writing new posts.

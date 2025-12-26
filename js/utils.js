@@ -16,7 +16,7 @@ function formatDate(dateString) {
 
 // Calculate reading time in minutes based on word count
 function calculateReadingTime(text) {
-  const wordsPerMinute = 200;
+  const wordsPerMinute = 150; // Average reading speed
   const words = text.trim().split(/\s+/).length;
   const minutes = Math.ceil(words / wordsPerMinute);
   return minutes;
