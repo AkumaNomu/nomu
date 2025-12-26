@@ -4,7 +4,7 @@ date: 2025-12-24
 category: Development
 author: Nomu
 excerpt: First post, how and why I built this blog.
-cover: assets\images\Aymen1.png
+cover: assets\images\none
 ---
 
 # How did it start?
