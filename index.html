@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>nomu.dev</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <!-- Header -->
+  <header class="site-header">
+    <div class="container">
+      <div class="header-content">
+        <div class="logo">Welcome to Nomu's</div>
+        <nav class="main-nav">
+          <a href="index.html" class="nav-link active">Home</a>
+          <a href="blog.html" class="nav-link">Blog</a>
+        </nav>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="container">
+    <!-- Hero Section -->
+    <section class="hero">
+      <h1>Nomu</h1>
+      <p>I just post things I have in mind</p>
+      <a href="blog.html" class="btn-primary">View the rants</a>
+    </section>
+
+    <!-- Latest Posts Section -->
+    <section class="latest-posts">
+      <h2>Latest posts</h2>
+      <div id="latest-posts-container" class="posts-grid">
+        <!-- Posts will be loaded here by JS -->
+      </div>
+    </section>
+
+ <!-- Contact Section -->
+<section class="contact">
+  <h2>Contact</h2>
+  
+  <div class="contact-cards-wrapper">
+    <!-- Contact Links Card (Left) -->
+    <div class="contact-card">
+      <ul class="contact-links">
+        <li>
+          <span class="social-label">Discord</span>
+          <a href="https://discord.com/users/orewanomu" target="_blank" rel="noreferrer">
+            orewanomu
+          </a>
+        </li>
+        <li>
+          <span class="social-label">GitHub</span>
+          <a href="https://github.com/akumanomu" target="_blank" rel="noreferrer">
+            akumanomu
+          </a>
+        </li>
+        <li>
+          <span class="social-label">Instagram</span>
+          <a href="https://instagram.com/akumanomu" target="_blank" rel="noreferrer">
+            akumanomu
+          </a>
+        </li>
+        <li>
+          <span class="social-label">Email</span>
+          <a
+            href="mailto:akumanomu@proton.me?subject=Hi%20from%20your%20site"
+            target="_blank"
+            rel="noreferrer"
+          >
+            akumanomu@proton.me
+          </a>
+        </li>
+      </ul>
+    </div>
+
+    <!-- Anonymous Form Card (Right) -->
+    <article class="contact-card">
+      <h3>Anonymous thoughts</h3>
+      <form
+        id="anon-form"
+        action="https://formspree.io/f/xnjaezjn"
+        method="POST"
+      >
+        <label class="sr-only" for="anon-message">Anonymous message</label>
+        <div class="anon-field-wrap">
+          <textarea
+            id="anon-message"
+            name="message"
+            placeholder="Your message..."
+            required
+          ></textarea>
+
+          <div class="anon-actions">
+            <button type="submit" class="btn btn-compact">Send</button>
+          </div>
+        </div>
+
+        <p class="contact-note">
+          Your personal information are not collected here. Please keep it respectful.
+        </p>
+      </form>
+    </article>
+  </div>
+</section>
+
+  </main>
+
+  <script src="js/utils.js"></script>
+  <script src="js/markdown-parser.js"></script>
+  <script src="js/blog-loader.js"></script>
+  <script>
+    // Load and display latest 3 posts
+    async function loadLatestPosts() {
+      const posts = await loadPosts();
+      const latestPosts = posts.slice(0, 3);
+      const container = document.getElementById('latest-posts-container');
+      
+      if (!container) {
+        console.error('latest-posts-container not found');
+        return;
+      }
+      
+      container.innerHTML = latestPosts.map(post => `
+        <article class="post-card">
+          <div class="post-card-content">
+            <h3><a href="blog.html?post=${post.slug}">${post.title}</a></h3>
+            <div class="post-meta">
+              <span>${formatDate(post.date)}</span>
+              <span>•</span>
+              <span>${formatCategory(post.category)}</span>
+              <span>•</span>
+              <span>${post.readTime} min read</span>
+            </div>
+            <p class="post-excerpt">${post.excerpt}</p>
+            <a href="blog.html?post=${post.slug}" class="read-more">Read more</a>
+          </div>
+          <img src="${post.cover}" alt="${post.title}" class="post-thumb" onerror="this.style.display='none'">
+        </article>
+      `).join('');
+    }
+
+    loadLatestPosts();
+  </script>
+</body>
+</html>

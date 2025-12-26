@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Blog - nomu.dev</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <!-- Header -->
+  <header class="site-header">
+    <div class="container">
+      <div class="header-content">
+        <div class="logo">nomu.dev</div>
+        <nav class="main-nav">
+          <a href="index.html" class="nav-link">Home</a>
+          <a href="blog.html" class="nav-link active">Blog</a>
+        </nav>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="container">
+    <!-- Blog List View -->
+    <div id="blog-list-view">
+      <h1>Posts</h1>
+      
+      <!-- Search Bar -->
+      <div class="search-bar">
+        <input type="text" id="search-input" placeholder="Search posts...">
+      </div>
+
+      <!-- Category Filters -->
+      <div class="category-filters">
+        <button class="filter-btn active" data-category="all">All</button>
+        <button class="filter-btn" data-category="Development">Development</button>
+        <button class="filter-btn" data-category="video-editing">Video editing</button>
+        <button class="filter-btn" data-category="Life">Life</button>
+        <button class="filter-btn" data-category="projects">Projects</button>
+      </div>
+
+      <!-- Posts List -->
+      <div id="posts-list" class="posts-list">
+        <!-- Posts will be loaded here by JS -->
+      </div>
+    </div>
+
+    <!-- Single Post View -->
+    <div id="single-post-view" style="display: none;">
+      <a href="blog.html" class="back-link">← Back to posts</a>
+      
+      <article id="post-content">
+        <!-- Post content will be loaded here by JS -->
+      </article>
+
+      <!-- Comments Section -->
+      <section class="comments-section">
+        <h3>Comments (anonymous)</h3>
+        <form id="comment-form" class="comment-form">
+          <input type="text" id="comment-name" placeholder="Name (optional)">
+          <textarea id="comment-text" placeholder="Your comment" required rows="4"></textarea>
+          <button type="submit" class="btn-primary">Submit</button>
+        </form>
+      </section>
+
+      <!-- Prev/Next Navigation -->
+      <nav class="post-navigation">
+        <a href="#" id="prev-post" class="nav-post" style="display: none;">
+          <span class="nav-label">← Previous</span>
+          <span class="nav-title"></span>
+        </a>
+        <a href="#" id="next-post" class="nav-post" style="display: none;">
+          <span class="nav-label">Next →</span>
+          <span class="nav-title"></span>
+        </a>
+      </nav>
+    </div>
+  </main>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/markdown-it/13.0.1/markdown-it.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/markdown-it-footnote/3.0.3/markdown-it-footnote.min.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/markdown-parser.js"></script>
+  <script src="js/blog-loader.js"></script>
+  <script>
+    // Initialize blog page
+    const postSlug = getQueryParam('post');
+    initBlogPage(postSlug);
+  </script>
+</body>
+</html>

@@ -1,0 +1,900 @@
+/* Reset & Base Styles */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+:root {
+  --bg-primary: #0a0a0a;
+  --bg-secondary: #1a1a1a;
+  --border-color: #2a2a2a;
+  --text-primary: #e0e0e0;
+  --text-secondary: #8a8a8a;
+  --accent: #7ade7a;
+  --accent-dim: #5a9e5a;
+}
+
+body {
+  font-family: 'Lexend', sans-serif;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  line-height: 1.6;
+  font-weight: 300;
+}
+
+/* Container */
+.container {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+}
+
+/* Header */
+.site-header {
+  background-color: var(--bg-secondary);
+  border-bottom: 1px solid var(--border-color);
+  padding: 1rem 0;
+}
+
+.header-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.logo {
+  font-size: 1.1rem;
+  color: var(--text-primary);
+  font-weight: 400;
+}
+
+.main-nav {
+  display: flex;
+  gap: 2rem;
+}
+
+.nav-link {
+  color: var(--text-secondary);
+  text-decoration: none;
+  font-size: 0.95rem;
+  transition: color 0.2s;
+}
+
+.nav-link:hover {
+  color: var(--text-primary);
+}
+
+.nav-link.active {
+  color: var(--accent);
+}
+
+/* Hero Section */
+.hero {
+  border: 1px solid var(--border-color);
+  padding: 3rem 2rem;
+  margin: 3rem 0;
+  text-align: center;
+}
+
+.hero h1 {
+  font-size: 2.5rem;
+  font-weight: 400;
+  margin-bottom: 1rem;
+  color: var(--text-primary);
+}
+
+.hero p {
+  color: var(--text-secondary);
+  margin-bottom: 2rem;
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* Buttons */
+.btn-primary {
+  display: inline-block;
+  padding: 0.75rem 2rem;
+  background-color: transparent;
+  color: var(--accent);
+  border: 1px solid var(--accent);
+  text-decoration: none;
+  transition: all 0.2s;
+  font-size: 0.95rem;
+}
+
+.btn-primary:hover {
+  background-color: var(--accent);
+  color: var(--bg-primary);
+}
+
+/* Section Headings */
+h2 {
+  font-size: 1.5rem;
+  font-weight: 400;
+  margin-bottom: 1.5rem;
+  color: var(--text-primary);
+}
+
+/* Latest Posts & Posts Grid */
+.latest-posts,
+.contact {
+  margin: 4rem 0;
+}
+
+.posts-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+/* Post Card */
+.post-card {
+  border: 1px solid var(--border-color);
+  padding: 1.5rem;
+  display: flex;
+  justify-content: space-between;
+  gap: 1.5rem;
+  transition: border-color 0.2s;
+}
+
+.post-card:hover {
+  border-color: var(--accent-dim);
+}
+
+.post-card-content {
+  flex: 1;
+}
+
+.post-card h3 {
+  font-size: 1.25rem;
+  font-weight: 400;
+  margin-bottom: 0.5rem;
+}
+
+.post-card h3 a {
+  color: var(--text-primary);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.post-card h3 a:hover {
+  color: var(--accent);
+}
+
+.post-meta {
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+  margin-bottom: 0.75rem;
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.post-excerpt {
+  color: var(--text-secondary);
+  margin-bottom: 1rem;
+  font-size: 0.95rem;
+}
+
+.read-more {
+  color: var(--accent);
+  text-decoration: none;
+  font-size: 0.9rem;
+  transition: color 0.2s;
+}
+
+.read-more:hover {
+  color: var(--text-primary);
+}
+
+.post-thumb {
+  width: 200px;
+  height: 140px;
+  object-fit: cover;
+  border: 1px solid var(--border-color);
+}
+
+/* Contact Section */
+.contact {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 2rem;
+}
+
+.contact > h2 {
+  grid-column: 1 / -1;
+}
+
+.contact-cards-wrapper {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+}
+
+.contact-card {
+  border: 1px solid var(--border-color);
+  padding: 2rem;
+}
+
+.contact-card p {
+  color: var(--text-secondary);
+  margin-bottom: 1.5rem;
+}
+
+.contact-card h3 {
+  margin-bottom: 1.5rem;
+  font-size: 1.25rem;
+}
+
+/* Contact Links */
+.contact-links {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.contact-links li {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.social-label {
+  font-size: 0.76rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-secondary);
+}
+
+.contact-links a {
+  color: var(--accent);
+  font-size: 0.9rem;
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.contact-links a:hover {
+  color: var(--text-primary);
+}
+
+/* Anonymous Form */
+#anon-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.anon-field-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+#anon-message {
+  width: 100%;
+  min-height: 120px;
+  padding: 0.75rem;
+  border: 1px solid var(--border-color);
+  background: transparent;
+  color: var(--text-primary);
+  font-family: inherit;
+  font-size: 0.9rem;
+  resize: none; /* Changed from 'vertical' to 'none' */
+  transition: border-color 0.2s ease;
+}
+
+#anon-message:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+#anon-message::placeholder {
+  color: var(--text-secondary);
+  opacity: 0.6;
+}
+
+.anon-actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.btn {
+  padding: 0.75rem 1.5rem;
+  background: var(--accent);
+  color: var(--bg-primary);
+  border: none;
+  cursor: pointer;
+  font-family: inherit; /* Inherits your site's font */
+  font-size: 0.9rem;
+  font-weight: 400; /* Increased from 500 for better readability */
+  letter-spacing: 0.02em; /* Slight spacing for clarity */
+  text-transform: none; /* Or use 'uppercase' if you prefer */
+  transition: all 0.2s ease;
+}
+
+.btn:hover {
+  opacity: 0.85;
+}
+
+.btn:active {
+  transform: translateY(0); /* Returns to position when clicked */
+}
+
+.btn-compact {
+  padding: 0.5rem 1.25rem;
+  font-size: 0.875rem;
+}
+
+.contact-note {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  margin: 0;
+  opacity: 0.7;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .contact-cards-wrapper {
+    grid-template-columns: 1fr;
+  }
+}
+
+
+/* Blog Page */
+#blog-list-view h1 {
+  font-size: 2rem;
+  font-weight: 400;
+  margin: 2rem 0 1.5rem;
+}
+
+/* Search Bar */
+.search-bar {
+  margin-bottom: 1.5rem;
+}
+
+.search-bar input {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  color: var(--text-primary);
+  font-family: 'Lexend', sans-serif;
+  font-size: 0.95rem;
+  transition: border-color 0.2s;
+}
+
+.search-bar input:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.search-bar input::placeholder {
+  color: var(--text-secondary);
+}
+
+/* Category Filters */
+.category-filters {
+  display: flex;
+  gap: 0.75rem;
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+}
+
+.filter-btn {
+  padding: 0.5rem 1rem;
+  background-color: transparent;
+  border: 1px solid var(--border-color);
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-family: 'Lexend', sans-serif;
+  font-size: 0.9rem;
+  transition: all 0.2s;
+}
+
+.filter-btn:hover {
+  border-color: var(--accent);
+  color: var(--text-primary);
+}
+
+.filter-btn.active {
+  border-color: var(--accent);
+  color: var(--accent);
+  background-color: rgba(122, 222, 122, 0.1);
+}
+
+/* Posts List */
+.posts-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  margin-bottom: 3rem;
+}
+
+.posts-list .post-card .post-thumb {
+  width: 250px;
+  height: 180px;
+}
+
+/* Single Post View */
+.back-link {
+  display: inline-block;
+  color: var(--text-secondary);
+  text-decoration: none;
+  margin: 2rem 0 1.5rem;
+  transition: color 0.2s;
+}
+
+.back-link:hover {
+  color: var(--accent);
+}
+
+/* Post Header */
+.post-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 2rem;
+  margin-bottom: 2rem;
+  padding-bottom: 2rem;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.post-header-content {
+  flex: 1;
+}
+
+.post-header h1 {
+  font-size: 2rem;
+  font-weight: 400;
+  margin-bottom: 1rem;
+  color: var(--text-primary);
+}
+
+.post-header .post-meta {
+  margin-bottom: 1rem;
+}
+
+.post-header .post-excerpt {
+  font-size: 1rem;
+}
+
+.post-cover {
+  width: 300px;
+  height: 220px;
+  object-fit: cover;
+  border: 1px solid var(--border-color);
+}
+/* Post Content */
+.post-body {
+  color: var(--text-secondary);
+  margin-bottom: 3rem;
+  line-height: 1.7;
+}
+
+/* Headings with gradient accents */
+.post-body h1,
+.post-body h2,
+.post-body h3,
+.post-body h4,
+.post-body h5,
+.post-body h6 {
+  color: var(--text-primary);
+  font-weight: 600;
+  margin-top: 2.5rem;
+  margin-bottom: 1rem;
+  line-height: 1.3;
+  position: relative;
+}
+
+.post-body h1 { 
+  font-size: 2rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 2px solid var(--accent);
+  margin-bottom: 1.5rem;
+}
+
+.post-body h2 { 
+  font-size: 1.6rem;
+  padding-left: 0.75rem;
+  border-left: 4px solid var(--accent);
+}
+
+.post-body h3 { 
+  font-size: 1.3rem;
+  color: var(--accent);
+}
+
+.post-body h4 { 
+  font-size: 1.1rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight: 500;
+}
+
+/* Paragraphs */
+.post-body p {
+  margin-bottom: 1.25rem;
+}
+
+/* Links with underline effect */
+.post-body a {
+  color: var(--accent);
+  text-decoration: none;
+  position: relative;
+  font-weight: 500;
+  transition: color 0.2s;
+  border-bottom: 1px solid transparent;
+}
+
+.post-body a:hover {
+  color: var(--text-primary);
+  border-bottom-color: var(--accent);
+}
+
+/* Styled Lists */
+.post-body ul,
+.post-body ol {
+  margin-left: 2rem;
+  margin-bottom: 1.5rem;
+}
+
+.post-body ul {
+  list-style: none;
+}
+
+.post-body ul li {
+  position: relative;
+  padding-left: 1.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.post-body ul li::before {
+  content: "▹";
+  position: absolute;
+  left: 0;
+  color: var(--accent);
+  font-weight: bold;
+  font-size: 1.2em;
+}
+
+.post-body ol {
+  counter-reset: item;
+  list-style: none;
+}
+
+.post-body ol li {
+  position: relative;
+  padding-left: 2rem;
+  margin-bottom: 0.75rem;
+  counter-increment: item;
+}
+
+.post-body ol li::before {
+  content: counter(item);
+  position: absolute;
+  left: 0;
+  color: var(--bg-primary);
+  background: var(--accent);
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8rem;
+  font-weight: 600;
+  line-height: 1;
+}
+
+/* Inline Code */
+.post-body code {
+  background: linear-gradient(135deg, var(--bg-secondary) 0%, rgba(var(--accent-rgb, 100, 100, 255), 0.1) 100%);
+  padding: 0.2rem 0.5rem;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  font-family: 'Fira Code', 'Courier New', monospace;
+  font-size: 0.9em;
+  color: var(--accent);
+  font-weight: 500;
+}
+
+/* Code Blocks */
+.post-body pre {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-left: 4px solid var(--accent);
+  padding: 1.25rem;
+  overflow-x: auto;
+  margin-bottom: 1.5rem;
+  border-radius: 6px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  position: relative;
+}
+
+.post-body pre::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--accent), transparent);
+}
+
+.post-body pre code {
+  background: none;
+  border: none;
+  padding: 0;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  line-height: 1.6;
+}
+
+/* Blockquotes */
+.post-body blockquote {
+  background: linear-gradient(135deg, var(--bg-secondary) 0%, rgba(var(--accent-rgb, 100, 100, 255), 0.05) 100%);
+  border-left: 4px solid var(--accent);
+  padding: 1.25rem 1.5rem;
+  margin: 1.5rem 0;
+  color: var(--text-primary);
+  font-style: italic;
+  position: relative;
+  border-radius: 0 6px 6px 0;
+}
+
+.post-body blockquote::before {
+  content: "";
+  position: absolute;
+  top: -0.25rem;
+  left: 1rem;
+  font-size: 3rem;
+  color: var(--accent);
+  opacity: 0.3;
+  font-family: Georgia, serif;
+  line-height: 1;
+}
+
+.post-body blockquote p:last-child {
+  margin-bottom: 0;
+}
+
+/* Tables */
+.post-body table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  margin-bottom: 1.5rem;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.post-body th,
+.post-body td {
+  border-bottom: 1px solid var(--border-color);
+  border-right: 1px solid var(--border-color);
+  padding: 0.75rem 1rem;
+  text-align: left;
+}
+
+.post-body th:last-child,
+.post-body td:last-child {
+  border-right: none;
+}
+
+.post-body tr:last-child td {
+  border-bottom: none;
+}
+
+.post-body th {
+  background: linear-gradient(135deg, var(--bg-secondary) 0%, rgba(var(--accent-rgb, 100, 100, 255), 0.1) 100%);
+  color: var(--text-primary);
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 0.85rem;
+  letter-spacing: 0.05em;
+}
+
+.post-body tbody tr {
+  transition: background-color 0.2s;
+}
+
+.post-body tbody tr:hover {
+  background-color: rgba(var(--accent-rgb, 100, 100, 255), 0.05);
+}
+
+/* Images */
+.post-body img {
+  max-width: 100%;
+  height: auto;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  margin: 1.5rem 0;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.post-body img:hover {
+  transform: scale(1.02);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+}
+
+/* Horizontal Rule */
+.post-body hr {
+  border: none;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--accent), transparent);
+  margin: 3rem 0;
+  opacity: 0.5;
+}
+
+/* Footnotes */
+.post-body .footnotes {
+  margin-top: 3rem;
+  padding-top: 1.5rem;
+  border-top: 2px solid var(--border-color);
+  font-size: 0.9rem;
+  background: var(--bg-secondary);
+  padding: 1.5rem;
+  border-radius: 6px;
+}
+
+.post-body .footnotes ol {
+  margin-left: 1.5rem;
+}
+
+/* Strong and Emphasis */
+.post-body strong {
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.post-body em {
+  color: var(--accent);
+  font-style: italic;
+}
+
+/* Mark/Highlight */
+.post-body mark {
+  background: linear-gradient(135deg, rgba(var(--accent-rgb, 100, 100, 255), 0.2) 0%, rgba(var(--accent-rgb, 100, 100, 255), 0.1) 100%);
+  padding: 0.1rem 0.3rem;
+  border-radius: 3px;
+  color: var(--text-primary);
+}
+
+/* Comments Section */
+.comments-section {
+  margin: 3rem 0;
+  padding-top: 2rem;
+  border-top: 1px solid var(--border-color);
+}
+
+.comments-section h3 {
+  font-size: 1.25rem;
+  font-weight: 400;
+  margin-bottom: 1.5rem;
+}
+
+.comment-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.comment-form input,
+.comment-form textarea {
+  width: 100%;
+  padding: 0.75rem;
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  color: var(--text-primary);
+  font-family: 'Lexend', sans-serif;
+  font-size: 0.95rem;
+  transition: border-color 0.2s;
+}
+
+.comment-form input:focus,
+.comment-form textarea:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.comment-form textarea {
+  resize: vertical;
+  min-height: 100px;
+}
+
+/* Post Navigation */
+.post-navigation {
+  display: flex;
+  justify-content: space-between;
+  gap: 2rem;
+  margin: 3rem 0;
+  padding-top: 2rem;
+  border-top: 1px solid var(--border-color);
+}
+
+.nav-post {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  text-decoration: none;
+  flex: 1;
+  max-width: 45%;
+}
+
+.nav-post:last-child {
+  text-align: right;
+}
+
+.nav-label {
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+}
+
+.nav-title {
+  color: var(--text-primary);
+  transition: color 0.2s;
+}
+
+.nav-post:hover .nav-title {
+  color: var(--accent);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .post-card {
+    flex-direction: column;
+  }
+  
+  .post-thumb,
+  .posts-list .post-card .post-thumb {
+    width: 100%;
+    height: 200px;
+  }
+  
+  .post-header {
+    flex-direction: column;
+  }
+  
+  .post-cover {
+    width: 100%;
+    height: 250px;
+
+  }
+  
+  .category-filters {
+    gap: 0.5rem;
+  }
+  
+  .filter-btn {
+    font-size: 0.85rem;
+    padding: 0.4rem 0.8rem;
+  }
+  
+  .post-navigation {
+    flex-direction: column;
+    gap: 1rem;
+  }
+  
+  .nav-post {
+    max-width: 100%;
+  }
+  
+  .nav-post:last-child {
+    text-align: left;
+  }
+}
