@@ -4,10 +4,10 @@
 
 // Manifest of all blog posts
 const POST_MANIFEST = [
-  'nomu/posts/Markdowntest.md',
-  'nomu/posts/Nomu\'s_Site.md',
-
+  './posts/Markdowntest.md',
+  './posts/Nomu\'s_Site.md',
 ];
+
 
 let allPosts = [];
 let filteredPosts = [];
