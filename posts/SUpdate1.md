@@ -4,6 +4,7 @@ date: 2025-12-26
 category: Development
 author: Nomu
 excerpt: Added Katex support to the blog!
+cover: assets/images/SUpdate1.png
 ---
 
 # Katex

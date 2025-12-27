@@ -26,7 +26,6 @@ function initMarkdown() {
     }
   });
   
-  // REPLACE THE OLD KATEX BLOCK WITH THIS:
   if (typeof texmath !== 'undefined' && typeof katex !== 'undefined') {
     md.use(texmath, { 
       engine: katex, 

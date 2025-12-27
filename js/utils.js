@@ -67,3 +67,26 @@ function formatCategory(category) {
   };
   return categoryMap[category] || category;
 }
+
+document.addEventListener('DOMContentLoaded', () => {
+  const currentPath = window.location.pathname;
+  const navLinks = document.querySelectorAll('.nav-link');
+
+  navLinks.forEach(link => {
+    // 1. Get the path from the link's href (e.g., "blog.html")
+    const linkPath = link.getAttribute('href');
+
+    // 2. Check if the current URL contains this link's path
+    // We use 'includes' because your path might be "/my-site/blog.html"
+    // Handle root "/" or "index.html" specifically if needed
+    
+    if (currentPath.includes(linkPath) || 
+       (linkPath === '/' && (currentPath === '/' || currentPath.endsWith('index.html'))) ||
+       (linkPath === 'index.html' && currentPath === '/')) {
+       
+      link.classList.add('active');
+    } else {
+      link.classList.remove('active');
+    }
+  });
+});

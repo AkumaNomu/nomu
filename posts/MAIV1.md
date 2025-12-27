@@ -1,13 +1,14 @@
 ---
 title: Trying to make playlists flow better
-date: 2025-12-26
+date: 2025-12-27
 category: Projects
 author: Nomu
 excerpt: Working on a little project to reorder playlists so songs transition better
+cover: assets/images/MAIV1.png
 ---
 
 # Why?
-So theres this youtube channel called [mai](https://www.youtube.com/@mai_dq) that makes these amazing playlists where every song just flows into the next one perfectly. its like magic. 
+So theres this youtube channel called [mai](https://www.youtube.com/@mai_dq)[^1] that makes these amazing playlists where every song just flows into the next one perfectly. its like magic. 
 
 i always shuffle my playlists and it's not the greatest (though my music taste is awesome).
 so i thought, what if i could make something that takes a playlist and reorders it to flow better? i'm calling it mai for now, after that channel.
@@ -16,15 +17,15 @@ i started with some code recently. just poking around.
 # Let's Play
 ## The Data
 ### This is a robbery, empty your databases!
-first i grabbed one of my playlists from spotify. Although I use youtube music now, I wanted to use spotify's api to get all the metadata i needed since they let you export playlists as a csv, which is nice. it comes with a ton of data about each song - not just the name and artist, but all these spotify audio features like danceability, energy, tempo, key, all that.
+First i grabbed one of my playlists from spotify. Although I use youtube music now, I wanted to use spotify's API to get all the metadata i needed since they let you export playlists as a csv, which is nice. it comes with a ton of data about each song - not just the name and artist, but all these spotify audio features like danceability, energy, tempo, key, all that.
 ### Cleaning
-i loaded it up and immediately got rid of most of the columns. i dont care about the record label or when i added the song. i just want the audio features. the ones i kept are: danceability, energy, speechiness, acousticness, liveness, valence, tempo, and key.
+I loaded it up and immediately got rid of most of the columns. i dont care about the record label or when I added the song. I just want the audio features. the ones I kept are: danceability, energy, speechiness, acousticness, liveness, valence, tempo, and key.
 
 ```python
 import pandas as pd
 
 # Grabbing my playlist data
-data_path = 'data/Focus.csv'
+data_path = 'data/Playlist.csv'
 df = pd.read_csv(data_path)
 
 # Just give me the stuff that actually affects how it SOUNDS
@@ -140,7 +141,7 @@ The 2:1 ratio? Complete guess. Feel free to tweak it. My ears aren't exactly gol
 
 ### The Asian Parents Method (Comparison & Bruteforce)
 
-Well, the code below has a complexity of **$O(n^2)$**
+Well, the code below has a complexity of **$O(n^2)$**, so it's not very efficient, but considering the length of a playlist will not exceed 200 songs for the most part, we can still work with this.
 
 ```python
 edges = []  # This will store all our song relationships
@@ -150,5 +151,97 @@ for i in range(len(df)):
     for j in range(i+1, len(df)):  # Don't compare a song to itself
         sim = Similarity(i, j)
         edges.append((i, j, sim))
-        print(f"Song {i} and Song {j}: {sim:.4f} similarity")
+        print(f"Song {i} and Song {j}: {sim:.4f} similarity") # Printing to make sure it works
 ```
+This creates a network of relationships between all the songs. Each edge has a "similarity score" - higher means they flow better together.
+
+## I Found The Lovers, Now What?
+Here's the problem I faced: **How do you arrange all the songs so that each transition is as smooth as possible?**
+Turns out, this is actually a classic computer science problem[^Salesman]! But I opted for a simple approach since an optimized solution is not needed.
+
+### Enter NetworkX
+First, I had to represent my songs and their relationships as a *graph*. 
+
+```python
+import networkx as nx
+
+# Create an empty graph
+G = nx.Graph()
+
+# Add edges with their weights (similarity scores)
+for u, v, w in edges:
+    G.add_edge(u, v, weight=w)
+
+# Let's find the weakest connection
+min_edge = min(edges, key=lambda x: x[2])
+print(f"\nMinimum similarity edge is between song {min_edge[0]} and song {min_edge[1]} with similarity {min_edge[2]:.4f}")
+```
+Basically, Each song is a **node**, and the similarity scores are **edges** connecting them. Since I compared every two songs, this makes a complete graph as shown below:
+<div style="text-align: center;">
+  <img src="assets/MAIV1/CompleteGraph.png" width="300">
+</div>
+
+### The "Start with the Worst" Strategy
+Here's my reasoning: if two songs don't flow well together, I want them as far apart as possible in the playlist. So I'll put one at the very beginning and the other at the very end.
+
+```python
+A, B = min_edge[0], min_edge[1]  # These two don't get along
+```
+
+### Pathfinding Algorithm (The Jewish Way)
+
+I'm using what's called a [greedy algorithm](https://en.wikipedia.org/wiki/Greedy_algorithm)[^greedy]: at each step, I just pick the best available option without worrying too much about the future.
+
+```python
+path = [A]  # Start with the first song
+visited = {A}  # Keep track of what we've used
+current = A
+all_nodes = set(G.nodes())
+
+while len(visited) < len(all_nodes) - 1:  # -1 B is last
+    # Find all neighbors of current that aren't visited and aren't B
+    neighbors = [(n, G[current][n]['weight']) for n in G.neighbors(current) 
+                 if n not in visited and n != B]
+    
+    # Pick the neighbor with highest similarity
+    next_node = max(neighbors, key=lambda x: x[1])[0]
+    
+    path.append(next_node)
+    visited.add(next_node)
+    current = next_node
+
+# Don't forget our other "bad match" song
+path.append(B)
+
+print(f"\nPath from {A} to {B} visiting all nodes: {path}")
+print(f"Path length: {len(path)} nodes (should be {len(df)})")
+```
+
+#### How This Actually Works (In Human Terms)
+1. Start with song A (one of the bad-match pair)
+2. Look at all its neighbors (songs it connects to)
+3. Pick the best one (highest similarity score)
+4. Move to that song and repeat
+5. Stop when we've used all songs except B
+5. End with song B (the other bad-match)
+
+## Does It Actually Work?
+
+Kind of. The playlist I get is definitely smoother than my original random ordering. But there are some issues:
+- It's greedy - it picks the best next step without considering the whole journey. Sometimes this leads to suboptimal overall paths.
+- It depends heavily on that initial A-B pair - if I pick a different "_worst edge_", I get a different playlist.
+- There might be better paths that this algorithm misses.
+
+## What's Next?
+
+I'm already thinking about improvements:
+
+- Using proper pathfinding algorithms (like Dijkstra or A*).
+- Using the Spotify / YouTube API to generate a new ordered playlist.
+- Looking at the *sound* of song endings and beginnings (not just metadata) to make transitions even smoother.
+
+But for now? It works. I can take my chaotic playlist and get something that actually flows. That's progress.
+
+[^1]: [Youtube Channel](https://www.youtube.com/@mai_dq)
+[^Salesman]: [Travelling Salesman Problem](https://en.wikipedia.org/wiki/Travelling_salesman_problem)
+[^greedy]: [Greedy Algorithm](https://en.wikipedia.org/wiki/Greedy_algorithm)
