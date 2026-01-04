@@ -23,6 +23,11 @@ body {
   font-weight: 300;
 }
 
+/* Smooth scrolling for the entire page */
+html {
+  scroll-behavior: smooth;
+}
+
 /* Container */
 .container {
   max-width: 900px;
@@ -432,17 +437,366 @@ h2 {
   height: 8rem;
 }
 
-/* Single Post View */
-.back-link {
-  display: inline-block;
+/* Pagination */
+.pagination {
+  display: flex;
+  justify-content: center;
+  margin: 2rem 0 3rem;
+}
+
+.pagination-controls {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.pagination-btn {
+  padding: 0.5rem 1rem;
+  background-color: transparent;
+  border: 1px solid var(--border-color);
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-family: 'Lexend', sans-serif;
+  font-size: 0.9rem;
+  transition: all 0.2s;
+}
+
+.pagination-btn:hover {
+  border-color: var(--accent);
+  color: var(--text-primary);
+}
+
+.pagination-btn.active {
+  border-color: var(--accent);
+  color: var(--accent);
+  background-color: rgba(122, 222, 122, 0.1);
+}
+
+.pagination-ellipsis {
+  color: var(--text-secondary);
+  padding: 0 0.5rem;
+}
+
+/* Page Jump Input */
+.page-jump {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-left: 1rem;
+  padding-left: 1rem;
+  border-left: 1px solid var(--border-color);
+}
+
+.page-jump span {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+}
+
+.page-jump input {
+  width: 3rem;
+  padding: 0.25rem 0.5rem;
+  border: 1px solid var(--border-color);
+  background-color: var(--bg-secondary);
+  color: var(--text-primary);
+  text-align: center;
+  font-family: 'Lexend', sans-serif;
+  font-size: 0.9rem;
+
+    /* Remove spinner arrows */
+  -webkit-appearance: textfield;
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+
+.page-jump input::-webkit-outer-spin-button,
+.page-jump input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.page-jump input:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+/* Table of Contents */
+.toc-sidebar {
+  position: fixed;
+  top: 160px; /* Moved down to avoid overlapping buttons */
+  left: 2rem; /* Fixed position from left edge */
+  width: 280px;
+  max-height: calc(100vh - 180px); /* Adjusted for new top position */
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  padding-left: 2rem;
+  padding-right: 1rem;
+  padding-top: 1.5rem;
+  padding-bottom: 1.5rem;
+  overflow-y: auto;
+  z-index: 100;
+  transform: translateX(-120%);
+  transition: transform 0.8s  cubic-bezier( 0.00, 0.19, 0.41, 1.00 ) ;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  user-select: none;
+}
+
+.toc-sidebar.open {
+  transform: translateX(0);
+}
+
+.toc-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.toc-header h3 {
+  margin: 0;
+  color: var(--text-primary);
+  font-size: 1.1rem;
+  font-weight: 500;
+}
+
+.toc-close-btn {
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  font-size: 1.5rem;
+  cursor: pointer;
+  padding: 0.25rem;
+  transition: all 0.2s;
+}
+
+.toc-close-btn:hover {
+  color: var(--text-primary);
+  background-color: var(--bg-primary);
+}
+
+.toc-nav {
+  flex: 1;
+}
+
+.toc-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.toc-item {
+  margin-bottom: 0.25rem;
+}
+
+.toc-link {
+  display: block;
   color: var(--text-secondary);
   text-decoration: none;
-  margin: 2rem 0 1.5rem;
-  transition: color 0.2s;
+  padding: 0.375rem 0.5rem;
+  border-radius: 4px;
+  transition: all 0.2s;
+  font-size: 0.9rem;
+  line-height: 1.4;
+}
+
+.toc-link:hover {
+  color: var(--accent);
+  background-color: rgba(122, 222, 122, 0.1);
+  cursor: default;
+}
+
+.toc-sublist {
+  margin-left: 1rem;
+  margin-top: 0.25rem;
+  list-style: none;
+
+}
+
+.toc-level-1 .toc-link {
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.toc-level-2 .toc-link {
+  padding-left: 1rem;
+  border-left: 2px solid var(--accent-dim);
+  font-size: 0.9rem;
+  margin-left: 1rem;
+}
+
+.toc-empty {
+  color: var(--text-secondary);
+  font-style: italic;
+  padding: 1rem;
+  text-align: center;
+}
+
+/* TOC Toggle Button */
+.toc-toggle-btn {
+    width: 60px;
+    height: 60px;
+    background: var(--bg-secondary);
+    border: 2px solid var(--border-color);
+    color: var(--accent);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    position: relative;
+    padding: 0;
+}
+
+/* Control Buttons Container */
+.control-buttons {
+  position: fixed;
+  top: 80px;
+  left: 2rem;
+  display: grid;
+  grid-template-columns: 60px 60px;
+  gap: 1rem;
+  z-index: 100;
+}
+
+/* Desktop toggle button positioning - now handled by grid */
+@media (min-width: 769px) {
+  .toc-toggle-btn {
+    position: static; /* Remove fixed positioning, let grid handle it */
+  }
+  
+  .music-fab {
+    position: static; /* Remove fixed positioning for grid layout */
+  }
+}
+
+.toc-toggle-btn:hover {
+    transform: scale(1.1);
+}
+
+/* Mobile positioning */
+@media (max-width: 768px) {
+  .control-buttons {
+    top: auto;
+    bottom: 2rem;
+    left: auto;
+    right: 2rem;
+    z-index: 1000;
+  }
+  
+  .control-buttons .music-fab,
+  .control-buttons .toc-toggle-btn {
+    width: 60px;
+    height: 60px;
+  }
+  
+  #music-container {
+    display: flex !important;
+  }
+  
+  #music-container button {
+    display: none;
+  }
+  
+  #music-container .music-controls {
+    opacity: 1;
+    visibility: visible;
+  }
+}
+
+/* Back to posts button - styled like music toggle */
+.back-link {
+    width: 50px;
+    height: 50px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg-secondary);
+    border: 2px solid var(--border-color);
+    color: var(--accent);
+    text-decoration: none;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    margin-bottom: 1rem;
 }
 
 .back-link:hover {
-  color: var(--accent);
+    transform: scale(1.1);
+    border-color: var(--accent);
+    box-shadow: 0 0 15px rgba(var(--accent-rgb), 0.3);
+    color: var(--accent);
+}
+
+.back-icon {
+    font-size: 1.4rem;
+    line-height: 1;
+}
+.toc-icon {
+  font-size: 1.4rem;
+  line-height: 1;
+}
+@media (min-width: 769px) {
+  .toc-icon {
+    font-size: 1.2rem;
+  }
+  
+  .toc-text {
+    display: none; /* Hide text on desktop for circular design */
+  }
+}
+
+/* Mobile styles for toggle button elements */
+@media (max-width: 768px) {
+  .toc-text {
+    font-size: 0.6rem;
+    margin-top: 2px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+}
+
+/* Post Container (no longer needs margin since TOC is floating) */
+.post-container {
+  /* No margin needed since TOC is positioned fixed */
+}
+
+/* Desktop Styles */
+@media (min-width: 769px) {
+  .toc-sidebar {
+    /* Hidden by default on desktop, can be toggled */
+  }
+  
+  .toc-toggle-btn {
+    /* Show toggle button on desktop */
+  }
+  
+  .toc-close-btn {
+    display: none; /* Hide close button on desktop */
+  }
+  
+  /* No padding needed since TOC floats next to content */
+  #single-post-view {
+    padding-left: 0;
+  }
+}
+
+/* Mobile Styles */
+@media (max-width: 768px) {
+  .toc-sidebar {
+    width: 280px;
+    box-shadow: 2px 0 8px rgba(0, 0, 0, 0.3);
+  }
+  
+  #single-post-view {
+    padding-left: 0;
+  }
+}
+
+/* Single Post View */
+#single-post-view {
+  margin: 3rem 0;
 }
 
 /* Post Header */
@@ -901,4 +1255,157 @@ h2 {
   .nav-post:last-child {
     text-align: left;
   }
+}
+
+
+/* --- Floating Music Button (FAB) --- */
+#music-container {
+    position: fixed;
+    bottom: 2rem;
+    right: 2rem;
+    z-index: 9999; /* Ensures it stays on top of everything */
+    display: flex;
+    flex-direction: column-reverse; /* Controls pop up above button */
+    align-items: center;
+    gap: 10px;
+}
+
+/* Hide music container on desktop since we have the button in the grid */
+@media (min-width: 769px) {
+    #music-container {
+        display: none;
+    }
+}
+
+/* Circular Toggle Button */
+.music-fab {
+    width: 60px;
+    height: 60px;
+    background: var(--bg-secondary);
+    border: 2px solid var(--border-color);
+    color: var(--accent);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    position: relative;
+    padding: 0;
+}
+
+.music-fab:hover {
+    transform: scale(1.1);
+    border-color: var(--accent);
+    box-shadow: 0 0 15px rgba(var(--accent-rgb), 0.3);
+}
+
+.music-fab.playing {
+    border-color: var(--accent);
+    animation: pulse-glow 2s infinite;
+}
+
+.music-icon {
+    font-size: 1.4rem;
+    z-index: 2;
+}
+
+
+/* Hidden Controls Popup */
+.music-controls {
+    background: var(--bg-secondary);
+    padding: 10px 15px;
+    border: 1px solid var(--border-color);
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(10px);
+    transition: all 0.2s ease;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    text-align: center;
+    min-width: 120px;
+}
+
+/* Show controls on hover over container */
+#music-container:hover .music-controls {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+.track-info {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    white-space: nowrap;
+}
+
+#volume-slider {
+    width: 100%;
+    height: 4px;
+    accent-color: var(--accent);
+}
+
+/* Animations */
+@keyframes spin { 100% { transform: rotate(360deg); } }
+@keyframes pulse-glow {
+    0% { box-shadow: 0 0 0 0 rgba(122, 222, 122, 0.4); }
+    70% { box-shadow: 0 0 0 10px rgba(122, 222, 122, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(0, 0, 0, 0); }
+}
+
+/* Progress Ring (Optional visual flair) */
+.progress-ring {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) rotate(-90deg);
+    pointer-events: none;
+}
+.progress-ring__circle {
+    stroke-dasharray: 113;
+    stroke-dashoffset: 113; /* Full circle initially hidden */
+    transition: stroke-dashoffset 0.5s;
+}
+
+
+.music-modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.7);
+  display: none;
+  justify-content: center;
+  align-items: center;
+  z-index: 2000;
+}
+
+.music-modal.open {
+  display: flex;
+}
+
+.music-modal-content {
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  padding: 1.5rem 2rem;
+  border-radius: 8px;
+  max-width: 320px;
+  text-align: center;
+  color: var(--text-primary);
+}
+
+.music-modal-actions {
+  margin-top: 1rem;
+  display: flex;
+  justify-content: center;
+  gap: 0.75rem;
+}
+
+.btn.btn-ghost {
+  background: transparent;
+  border: 1px solid var(--border-color);
+  color: var(--text-secondary);
+}
+.btn.btn-ghost:hover {
+  border-color: var(--accent);
+  color: var(--text-primary);
 }

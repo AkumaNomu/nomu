@@ -89,4 +89,164 @@ document.addEventListener('DOMContentLoaded', () => {
       link.classList.remove('active');
     }
   });
+
+  const audio = document.getElementById('bg-music');
+    const toggleBtnMobile = document.getElementById('music-toggle');
+    const toggleBtnDesktop = document.getElementById('music-toggle-desktop');
+    const volumeSlider = document.getElementById('volume-slider');
+    const trackNameDisplay = document.getElementById('track-name');
+  const modal = document.getElementById('music-modal');
+  const btnYes = document.getElementById('music-yes');
+  const btnNo = document.getElementById('music-no');
+
+  if (!audio || !modal || !btnYes || !btnNo) return;
+
+  // Restore previous state
+  const savedChoice = localStorage.getItem('music-enabled');
+  const savedTime = parseFloat(localStorage.getItem('music-time') || '0');
+
+  // Always show modal for now to test
+  modal.classList.add('open');
+
+  // User clicks "Yes"
+  btnYes.addEventListener('click', async () => {
+    try {
+      await audio.play(); // user gesture unlocks audio[web:57][web:59]
+      localStorage.setItem('music-enabled', 'yes');
+      modal.classList.remove('open');
+    } catch (e) {
+      console.error('Audio play blocked:', e);
+    }
+  });
+
+  // User clicks "No"
+  btnNo.addEventListener('click', () => {
+    audio.pause();
+    localStorage.setItem('music-enabled', 'no');
+    modal.classList.remove('open');
+  });
+
+  // Save playback position periodically so it can continue across pages
+  audio.addEventListener('timeupdate', () => {
+    localStorage.setItem('music-time', audio.currentTime.toString());
+  });
+
+
+    if (!audio || (!toggleBtnMobile && !toggleBtnDesktop)) return;
+
+    // 1. Configuration: Define songs per page
+    // Using relative paths works best for GitHub Pages
+    const playlist = {
+        'index.html': { file: './assets/audios/Index.mp3', title: 'World\'s Number One Oden Store' },
+        '/': { file: './assets/audios/Index.mp3', title: 'World\'s Number One Oden Store' } // Fallback for root
+    };
+
+    // 2. Determine current page and set song
+    const path = window.location.pathname;
+    // Get filename from path (e.g., "/site/blog.html" -> "blog.html")
+    let page = path.substring(path.lastIndexOf('/') + 1) || '/';
+    
+    // Default to index if unknown
+    if (!playlist[page]) page = 'index.html';
+
+    const currentTrack = playlist[page];
+    audio.src = currentTrack.file;
+    if(trackNameDisplay) trackNameDisplay.textContent = currentTrack.title;
+
+    // 3. Audio Fading Logic
+    let fadeInterval;
+    const targetVolume = 0.1; // Default max volume
+    
+    // Set slider to match target
+    if(volumeSlider) volumeSlider.value = targetVolume;
+
+    const updateButtonStates = (isPlaying) => {
+        const buttons = [toggleBtnMobile, toggleBtnDesktop].filter(btn => btn);
+        buttons.forEach(btn => {
+            if (isPlaying) {
+                btn.classList.add('playing');
+            } else {
+                btn.classList.remove('playing');
+            }
+        });
+    };
+
+    const fadeIn = () => {
+        audio.volume = 0;
+        audio.play().then(() => {
+            updateButtonStates(true);
+            clearInterval(fadeInterval);
+            fadeInterval = setInterval(() => {
+                if (audio.volume < targetVolume) {
+                    // Increase volume gradually
+                    audio.volume = Math.min(audio.volume + 0.05, targetVolume);
+                } else {
+                    clearInterval(fadeInterval);
+                }
+            }, 100); // Updates every 100ms
+        }).catch(e => console.log("Autoplay blocked:", e));
+    };
+
+    const fadeOut = (callback) => {
+        clearInterval(fadeInterval);
+        fadeInterval = setInterval(() => {
+            if (audio.volume > 0.01) {
+                // Decrease volume gradually
+                audio.volume = Math.max(audio.volume - 0.05, 0);
+            } else {
+                audio.volume = 0;
+                audio.pause();
+                updateButtonStates(false);
+                clearInterval(fadeInterval);
+                if (callback) callback();
+            }
+        }, 50); // Faster fade out (50ms)
+    };
+
+    // 4. Toggle Button Interaction - Handle both mobile and desktop buttons
+    [toggleBtnMobile, toggleBtnDesktop].filter(btn => btn).forEach(btn => {
+        btn.addEventListener('click', () => {
+            if (audio.paused) {
+                fadeIn();
+                localStorage.setItem('userPrefersMusic', 'true');
+            } else {
+                fadeOut();
+                localStorage.setItem('userPrefersMusic', 'false');
+            }
+        });
+    });
+
+    // 5. Volume Slider Interaction
+    if (volumeSlider) {
+        volumeSlider.addEventListener('input', (e) => {
+            audio.volume = e.target.value;
+            // Update "targetVolume" logic if you want dynamic fading limits
+        });
+    }
+
+    // 6. Handle Page Navigation (The "Fade Out" effect)
+    // Select all internal links to apply fade-out effect before leaving
+    const links = document.querySelectorAll('a');
+    links.forEach(link => {
+        link.addEventListener('click', (e) => {
+            const href = link.getAttribute('href');
+            
+            // Only fade out for internal navigation (not #anchors or external links)
+            if (href && !href.startsWith('#') && !href.startsWith('http') && !href.includes('mailto:')) {
+                if (!audio.paused) {
+                    e.preventDefault(); // Stop immediate jump
+                    fadeOut(() => {
+                        window.location.href = href; // Navigate after fade
+                    });
+                }
+            }
+        });
+    });
+
+    // 7. Auto-play check (Optional: Remember user preference)
+    if (localStorage.getItem('userPrefersMusic') === 'true') {
+        // Short delay to ensure page is ready
+        setTimeout(fadeIn, 500);
+    }
 });
+

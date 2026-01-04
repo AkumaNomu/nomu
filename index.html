@@ -6,8 +6,19 @@
   <title>Nomu's</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <link rel="stylesheet" href="css/styles.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/monokai-sublime.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/python.min.js"></script>
+
+<!-- 2. KaTeX CSS & JS (The math engine) -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+
+<!-- 3. Markdown-it-Texmath (The bridge plugin) -->
+<script src="https://cdn.jsdelivr.net/npm/markdown-it-texmath/texmath.min.js"></script>
 </head>
 <body>
   <!-- Header -->
@@ -16,8 +27,7 @@
       <div class="header-content">
         <div class="logo">Welcome to Nomu's</div>
         <nav class="main-nav">
-          <a href="index.html" class="nav-link active">Home</a>
-          <a href="blog.html" class="nav-link">Blog</a>
+          <a href="#hero" class="nav-link active">Home</a>
         </nav>
       </div>
     </div>
@@ -26,19 +36,83 @@
   <!-- Main Content -->
   <main class="container">
     <!-- Hero Section -->
-    <section class="hero">
+    <section id="hero" class="hero">
       <h1>Nomu</h1>
-      <p>I just post things I have in mind sometimes</p>
-      <a href="blog.html" class="btn-primary">View the rants</a>
+      <p>I just post about things I think about sometimes</p>
     </section>
 
-    <!-- Latest Posts Section -->
-    <section class="latest-posts">
-      <h2>Latest posts</h2>
-      <div id="latest-posts-container" class="posts-grid">
+    <!-- Blog Section -->
+    <section class="blog-section">
+      <h2>Posts</h2>
+      
+      <!-- Search Bar -->
+      <div class="search-bar">
+        <input type="text" id="search-input" placeholder="Search posts...">
+      </div>
+
+      <!-- Category Filters -->
+      <div class="category-filters">
+        <button class="filter-btn active" data-category="all">All</button>
+        <button class="filter-btn" data-category="Development">Development</button>
+        <button class="filter-btn" data-category="Video Editing">Video Editing</button>
+        <button class="filter-btn" data-category="Life">Life</button>
+        <button class="filter-btn" data-category="Projects">Projects</button>
+        <button class="filter-btn" data-category="Politics">Politics</button>
+      </div>
+
+      <!-- Posts List -->
+      <div id="posts-list" class="posts-list">
         <!-- Posts will be loaded here by JS -->
       </div>
+
+      <!-- Pagination -->
+      <div id="pagination" class="pagination">
+        <!-- Pagination controls will be added here -->
+      </div>
     </section>
+
+    <!-- Single Post View -->
+    <div id="single-post-view" style="display: none;">
+      <!-- Table of Contents -->
+      <aside id="toc-sidebar" class="toc-sidebar">
+        
+        <nav id="toc-nav" class="toc-nav">
+          <!-- TOC will be generated here -->
+        </nav>
+      </aside>
+      
+      <div class="post-container">
+        <a href="#" id="back-to-posts" class="back-link" aria-label="Back to posts">
+          <i class="fas fa-arrow-left back-icon" style="font-size: 16px;"></i>
+        </a>
+        
+        <article id="post-content">
+          <!-- Post content will be loaded here by JS -->
+        </article>
+
+        <!-- Comments Section -->
+        <section class="comments-section">
+          <h3>Comments (anonymous)</h3>
+          <form id="comment-form" class="comment-form">
+            <input type="text" id="comment-name" placeholder="Name (optional)">
+            <textarea id="comment-text" placeholder="Your comment" required rows="4"></textarea>
+            <button type="submit" class="btn-primary">Submit</button>
+          </form>
+        </section>
+
+        <!-- Prev/Next Navigation -->
+        <nav class="post-navigation">
+          <a href="#" id="prev-post" class="nav-post" style="display: none;">
+            <span class="nav-label">← Previous</span>
+            <span class="nav-title"></span>
+          </a>
+          <a href="#" id="next-post" class="nav-post" style="display: none;">
+            <span class="nav-label">Next →</span>
+            <span class="nav-title"></span>
+          </a>
+        </nav>
+      </div>
+    </div>
 
  <!-- Contact Section -->
 <section class="contact">
@@ -111,43 +185,59 @@
   </div>
 </section>
 
+
   </main>
 
+  <!-- Control Buttons Container (always visible) -->
+  <div id="control-buttons" class="control-buttons">
+    <!-- TOC Toggle Button -->
+    <button id="toc-toggle" class="toc-toggle-btn" aria-label="Toggle Table of Contents">
+      <i class="fas fa-list toc-icon" style="font-size: 16px;"></i>
+      <span class="toc-text">TOC</span>
+    </button>
+    
+    <!-- Music Toggle Button (Desktop) -->
+    <button id="music-toggle-desktop" class="music-fab" aria-label="Toggle Music">
+      <i class="fas fa-music music-icon" style="font-size: 16px;"></i>
+      <svg class="progress-ring" width="40" height="40">
+          <circle class="progress-ring__circle" stroke="var(--accent)" stroke-width="2" fill="transparent" r="18" cx="20" cy="20"/>
+      </svg>
+    </button>
+  </div>
+
+  <!-- Music Player Widget (always visible) -->
+  <div id="music-container">
+    <!-- ID 'bg-music' is crucial for the JS to find it -->
+    <audio id="bg-music" loop></audio> 
+    
+    <div class="music-controls">
+        <div class="track-info" id="track-name">Loading...</div>
+        <input type="range" id="volume-slider" min="0" max="1" step="0.01" value="0.1">
+    </div>
+  </div>
+
+<!-- Music consent modal -->
+<div class="music-modal" id="music-modal">
+  <div class="music-modal-content">
+    <h3>Background music?</h3>
+    <p>Want some chill music while you browse?</p>
+    <div class="music-modal-actions">
+      <button id="music-yes" class="btn">Yes, play</button>
+      <button id="music-no" class="btn btn-ghost">No, thanks</button>
+    </div>
+  </div>
+</div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/markdown-it/13.0.1/markdown-it.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/markdown-it-footnote/3.0.3/markdown-it-footnote.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/markdown-it-katex@2.0.3/dist/markdown-it-katex.min.js"></script>
   <script src="js/utils.js"></script>
   <script src="js/markdown-parser.js"></script>
   <script src="js/blog-loader.js"></script>
   <script>
-    // Load and display latest 3 posts
-    async function loadLatestPosts() {
-      const posts = await loadPosts();
-      const latestPosts = posts.slice(0, 3);
-      const container = document.getElementById('latest-posts-container');
-      
-      if (!container) {
-        console.error('latest-posts-container not found');
-        return;
-      }
-      
-      container.innerHTML = latestPosts.map(post => `
-        <article class="post-card">
-          <div class="post-card-content">
-            <h3><a href="blog.html?post=${post.slug}">${post.title}</a></h3>
-            <div class="post-meta">
-              <span>${formatDate(post.date)}</span>
-              <span>•</span>
-              <span>${formatCategory(post.category)}</span>
-              <span>•</span>
-              <span>${post.readTime} min read</span>
-            </div>
-            <p class="post-excerpt">${post.excerpt}</p>
-            <a href="blog.html?post=${post.slug}" class="read-more">Read more</a>
-          </div>
-          <img src="${post.cover}" alt="${post.title}" class="post-thumb" onerror="this.style.display='none'">
-        </article>
-      `).join('');
-    }
-
-    loadLatestPosts();
+    // Initialize the page
+    const postSlug = getQueryParam('post');
+    initPage(postSlug);
   </script>
 </body>
 </html>

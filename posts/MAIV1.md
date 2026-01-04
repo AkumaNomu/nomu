@@ -225,14 +225,14 @@ print(f"Path length: {len(path)} nodes (should be {len(df)})")
 5. Stop when we've used all songs except B
 5. End with song B (the other bad-match)
 
-## Does It Actually Work?
+# Does It Actually Work?
 
 Kind of. The playlist I get is definitely smoother than my original random ordering. But there are some issues:
 - It's greedy - it picks the best next step without considering the whole journey. Sometimes this leads to suboptimal overall paths.
 - It depends heavily on that initial A-B pair - if I pick a different "_worst edge_", I get a different playlist.
 - There might be better paths that this algorithm misses.
 
-## What's Next?
+# What's Next?
 
 I'm already thinking about improvements:
 
