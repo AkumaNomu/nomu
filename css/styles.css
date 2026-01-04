@@ -608,7 +608,6 @@ h2 {
 }
 
 .toc-sublist {
-  margin-left: 1rem;
   margin-top: 0.25rem;
   list-style: none;
 
@@ -691,19 +690,7 @@ h2 {
     width: 60px;
     height: 60px;
   }
-  
-  #music-container {
-    display: flex !important;
-  }
-  
-  #music-container button {
-    display: none;
-  }
-  
-  #music-container .music-controls {
-    opacity: 1;
-    visibility: visible;
-  }
+
 }
 
 /* Back to posts button - styled like music toggle */
@@ -741,37 +728,15 @@ h2 {
   .toc-icon {
     font-size: 1.2rem;
   }
-  
-  .toc-text {
-    display: none; /* Hide text on desktop for circular design */
-  }
 }
 
-/* Mobile styles for toggle button elements */
-@media (max-width: 768px) {
-  .toc-text {
-    font-size: 0.6rem;
-    margin-top: 2px;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-  }
-}
 
-/* Post Container (no longer needs margin since TOC is floating) */
-.post-container {
-  /* No margin needed since TOC is positioned fixed */
-}
+
+
 
 /* Desktop Styles */
 @media (min-width: 769px) {
-  .toc-sidebar {
-    /* Hidden by default on desktop, can be toggled */
-  }
-  
-  .toc-toggle-btn {
-    /* Show toggle button on desktop */
-  }
-  
+
   .toc-close-btn {
     display: none; /* Hide close button on desktop */
   }
@@ -1270,9 +1235,20 @@ h2 {
     gap: 10px;
 }
 
-/* Hide music container on desktop since we have the button in the grid */
+/* Show music container on desktop at top right */
 @media (min-width: 769px) {
     #music-container {
+        top: 80px;
+        bottom: auto;
+        right: 2rem;
+    }
+    
+    #music-container .music-controls {
+        opacity: 1;
+        visibility: visible;
+    }
+    
+    #music-container button {
         display: none;
     }
 }
@@ -1327,12 +1303,7 @@ h2 {
     min-width: 120px;
 }
 
-/* Show controls on hover over container */
-#music-container:hover .music-controls {
-    opacity: 1;
-    visibility: visible;
-    transform: translateY(0);
-}
+
 
 .track-info {
     font-size: 0.75rem;

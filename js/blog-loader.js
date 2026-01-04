@@ -5,7 +5,7 @@
 // Manifest of all blog posts
 const POST_MANIFEST = [
   'Markdowntest.md',
-  'Nomu\'s_Site.md',
+  'NomuSite.md',
   'MAIV1.md',
   'SUpdate1.md',
   'Pornban.md',
@@ -405,7 +405,7 @@ function setupTOC() {
       // We're not on a single post page, hide TOC button and adjust grid
       tocToggle.style.display = 'none';
       if (controlButtons) {
-        controlButtons.style.gridTemplateColumns = '50px';
+        controlButtons.style.gridTemplateColumns = '60px';
       }
     }
   }
@@ -456,7 +456,7 @@ function generateTOCFromProcessed(htmlContent) {
   }
   
   // Create a simple hierarchical list
-  let tocHtml = '<ul class="toc-list">';
+  let tocHtml = '<div class="toc-list">';
   let currentLevel = 1;
   let openLists = [1]; // Track open list levels
   
@@ -467,31 +467,31 @@ function generateTOCFromProcessed(htmlContent) {
     
     // Close lists for higher levels
     while (openLists.length > 0 && openLists[openLists.length - 1] >= level) {
-      tocHtml += '</ul>';
+      tocHtml += '</div>';
       openLists.pop();
     }
     
     // Open new list if needed
     if (level > currentLevel) {
-      tocHtml += '<ul class="toc-sublist">';
+      tocHtml += '<div class="toc-sublist">';
       openLists.push(level);
     }
     
     currentLevel = level;
     
     // Add the list item
-    tocHtml += `<li class="toc-item toc-level-${level}">
+    tocHtml += `<div class="toc-item toc-level-${level}">
       <a href="#${id}" class="toc-link" onclick="smoothScrollTo('${id}'); return false;">${text}</a>
-    </li>`;
+    </div>`;
   });
   
   // Close any remaining open lists
   while (openLists.length > 1) {
-    tocHtml += '</ul>';
+    tocHtml += '</div>';
     openLists.pop();
   }
   
-  tocHtml += '</ul>';
+  tocHtml += '</div>';
   return tocHtml;
 }
 
