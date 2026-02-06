@@ -35,4 +35,3 @@ Thought it would be nice to add a table of contents to enhance the reading exper
 
 Speaking of scrolling, I just made the autoscrolling smoother! 
 
-

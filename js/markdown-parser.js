@@ -26,14 +26,11 @@ function initMarkdown() {
     }
   });
   
-  if (typeof texmath !== 'undefined' && typeof katex !== 'undefined') {
-    md.use(texmath, { 
-      engine: katex, 
-      delimiters: 'dollars', // Supports $...$ and $$...$$
-      katexOptions: { macros: { "\\R": "\\mathbb{R}" } } // Optional macros
-    });
+  // Use markdown-it-katex for math support
+  if (typeof window.markdownItKatex !== 'undefined') {
+    md.use(window.markdownItKatex);
   } else {
-    console.warn('Math plugins (texmath/katex) not loaded');
+    console.warn('markdown-it-katex not loaded');
   }
 
   // Footnotes

@@ -1,24 +1,50 @@
-# Nomu's
+# Nomu's Blog
 
-A simple static website and blog built with HTML, CSS, JavaScript, and Markdown.
+A modern, minimalist blog built with vanilla JavaScript and Markdown.
 
-## Description
+## Quick Start
 
-This is my personal website featuring a blog section where I share thoughts, projects, and ideas. The site is built using vanilla html for simplicity and performance.
+1. Open index.html in your browser
+2. Create .md files in posts/ folder
+3. Add filenames to POST_MANIFEST in js/blog-loader.js
+4. Customize colors in css/styles.css
 
-## Project Structure
+## Features
 
-```
-├── index.html          # Main homepage
-├── blog.html           # Blog listing page
-├── assets/
-│   └── images/         # Site images
-├── css/
-│   └── styles.css      # Main styles
-├── js/
-│   ├── blog-loader.js  # Blog post loading logic
-│   ├── markdown-parser.js # Markdown parsing
-│   └── utils.js        # Utility functions
-└── posts/              # Blog posts in Markdown
-    └── Example.md
-```
+-  Search & filter posts
+-  Mobile responsive design
+-  Background music player
+-  Auto-generated table of contents
+-  Simple Markdown posts
+-  Comments system ready
+
+## Writing Posts
+
+Create a new .md file in posts/ with this format:
+
+`markdown
+---
+title: Post Title
+date: 2026-01-20
+category: Life
+excerpt: Brief description for listing
+cover: assets/images/image.jpg
+---
+
+# Your content in Markdown
+`
+
+**Categories:** Development | Video Editing | Life | Projects | Politics
+
+## Customization
+
+See DEVELOPMENT.md for complete guide including:
+- Theme colors & styling
+- Background music setup
+- Comments implementation
+- Mobile/Desktop features
+- Feature roadmap
+
+---
+
+Built with  by Nomu
