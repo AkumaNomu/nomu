@@ -266,7 +266,6 @@ function showSinglePost(slug) {
     }
     
     renderSinglePost(slug);
-    setupCommentForm();
     
     // Scroll to top
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -646,7 +645,6 @@ async function renderSinglePost(slug) {
   
   // Load and setup comments
   setupCommentForm(slug);
-  loadComments(slug);
 }
 
 // Setup TOC toggle functionality
@@ -805,121 +803,18 @@ function smoothScrollTo(id) {
 
 // Setup comment form
 function setupCommentForm(postSlug) {
-  const commentForm = document.getElementById('comment-form');
-  
-  if (!commentForm) return;
-  
-  commentForm.addEventListener('submit', (e) => {
-    e.preventDefault();
-    
-    const name = document.getElementById('comment-name').value;
-    const email = document.getElementById('comment-email').value;
-    const text = document.getElementById('comment-text').value;
-    
-    // Get existing comments from localStorage
-    const commentsKey = `comments_${postSlug}`;
-    const existingComments = JSON.parse(localStorage.getItem(commentsKey)) || [];
-    
-    // Create new comment
-    const newComment = {
-      id: Date.now(),
-      name,
-      email,
-      text,
-      date: new Date().toISOString(),
-      approved: true,
-      replies: []
-    };
-    
-    existingComments.push(newComment);
-    localStorage.setItem(commentsKey, JSON.stringify(existingComments));
-    
-    // Clear form
-    commentForm.reset();
-    
-    // Reload comments
-    loadComments(postSlug);
-    
-    // Show success message
-    alert('Comment posted successfully!');
-  });
+  if (typeof initializeComments === 'function') {
+    initializeComments(postSlug);
+    return;
+  }
+  console.warn('Comments system not loaded.');
 }
 
 // Load and display comments
 function loadComments(postSlug) {
-  const commentsList = document.getElementById('comments-list');
-  const commentsKey = `comments_${postSlug}`;
-  const comments = JSON.parse(localStorage.getItem(commentsKey)) || [];
-  
-  if (!commentsList) return;
-  
-  // Filter only approved comments
-  const approvedComments = comments.filter(c => c.approved);
-  
-  if (approvedComments.length === 0) {
-    commentsList.innerHTML = '<p style="color: var(--text-secondary); text-align: center; padding: 2rem;">No comments yet. Be the first to comment!</p>';
-    return;
+  if (typeof refreshComments === 'function') {
+    refreshComments(postSlug);
   }
-  
-  commentsList.innerHTML = approvedComments.map(comment => `
-    <div class="comment" data-id="${comment.id}">
-      <div class="comment-author">
-        <div class="comment-avatar">${comment.name.charAt(0).toUpperCase()}</div>
-        <div class="comment-header">
-          <span class="comment-name">${escapeHtml(comment.name)}</span>
-          <span class="comment-time">${formatDate(comment.date)}</span>
-        </div>
-        <div class="moderation-dashboard" style="margin-left: auto;">
-          <button class="moderation-btn delete" onclick="deleteComment('${postSlug}', ${comment.id})">Delete</button>
-        </div>
-      </div>
-      <div class="comment-text">${escapeHtml(comment.text)}</div>
-      <div class="comment-actions">
-        <button class="comment-btn" onclick="replyToComment(${comment.id})">Reply</button>
-      </div>
-      ${comment.replies && comment.replies.length > 0 ? `
-        <div class="comment-replies">
-          ${comment.replies.map(reply => `
-            <div class="comment reply">
-              <div class="comment-author">
-                <div class="comment-avatar">${reply.name.charAt(0).toUpperCase()}</div>
-                <div class="comment-header">
-                  <span class="comment-name">${escapeHtml(reply.name)}</span>
-                  <span class="comment-time">${formatDate(reply.date)}</span>
-                </div>
-              </div>
-              <div class="comment-text">${escapeHtml(reply.text)}</div>
-            </div>
-          `).join('')}
-        </div>
-      ` : ''}
-    </div>
-  `).join('');
-}
-
-// Helper function to escape HTML
-function escapeHtml(text) {
-  const div = document.createElement('div');
-  div.textContent = text;
-  return div.innerHTML;
-}
-
-// Delete comment (moderation)
-function deleteComment(postSlug, commentId) {
-  if (!confirm('Are you sure you want to delete this comment?')) return;
-  
-  const commentsKey = `comments_${postSlug}`;
-  const comments = JSON.parse(localStorage.getItem(commentsKey)) || [];
-  
-  const updatedComments = comments.filter(c => c.id !== commentId);
-  localStorage.setItem(commentsKey, JSON.stringify(updatedComments));
-  
-  loadComments(postSlug);
-}
-
-// Reply to comment (placeholder for now)
-function replyToComment(commentId) {
-  alert('Reply feature coming soon!');
 }
 
 // Setup share buttons
