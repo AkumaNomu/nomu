@@ -180,7 +180,7 @@
         </div>
 
         <!-- Comments Section -->
-        <section class="comments-section" id="comments-section" style="display: none;">
+        <section class="comments-section" id="comments-section">
           <h3>Comments</h3>
           
           <!-- Comment Form -->
@@ -283,10 +283,15 @@
   <div class="music-modal" id="music-modal">
     <div class="music-modal-content">
       <h3>Background music?</h3>
-      <p>Want some chill music while you browse?</p>
+      <p>Want some chill music while you browse? You can change this anytime in Settings.</p>
       <div class="music-modal-actions">
         <button id="music-yes" class="btn">Yes, play</button>
         <button id="music-no" class="btn btn-ghost">No, thanks</button>
+      </div>
+      <div class="music-modal-actions music-modal-options">
+        <button id="simple-ui-toggle-modal" class="btn btn-ghost simple-ui-toggle" type="button" aria-pressed="false">
+          Simple UI: Off
+        </button>
       </div>
     </div>
   </div>
@@ -357,6 +362,14 @@
               Red
             </button>
           </div>
+        </div>
+
+        <div class="options-section">
+          <h4>Performance</h4>
+          <p class="options-note">Use a simplified UI for smoother scrolling on low-power devices.</p>
+          <button id="simple-ui-toggle" class="btn btn-ghost simple-ui-toggle" type="button" aria-pressed="false">
+            Simple UI: Off
+          </button>
         </div>
       </div>
     </div>

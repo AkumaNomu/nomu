@@ -11,6 +11,7 @@ const POST_MANIFEST = [
   'Pornban.md',
   'SUpdate2.md',
   'SUpdate3.md',
+  'PlanChina.md',
 ];
 
 
@@ -600,7 +601,6 @@ async function renderSinglePost(slug) {
       <img src="${post.cover}" alt="${post.title}" class="post-cover" onerror="this.style.display='none'">
     </div>
     <div class="post-body">
-      ${post.excerpt ? `<p class="post-excerpt post-body-excerpt">${post.excerpt}</p>` : ''}
       ${processedHtml}
     </div>
   `;
@@ -644,6 +644,10 @@ async function renderSinglePost(slug) {
   }
   
   // Load and setup comments
+  const commentsSection = document.getElementById('comments-section');
+  if (commentsSection) {
+    commentsSection.style.display = 'block';
+  }
   setupCommentForm(slug);
 }
 
@@ -805,9 +809,13 @@ function smoothScrollTo(id) {
 function setupCommentForm(postSlug) {
   if (typeof initializeComments === 'function') {
     initializeComments(postSlug);
-    return;
+  } else {
+    console.warn('Comments system not loaded.');
   }
-  console.warn('Comments system not loaded.');
+
+  if (typeof refreshComments === 'function') {
+    refreshComments(postSlug);
+  }
 }
 
 // Load and display comments

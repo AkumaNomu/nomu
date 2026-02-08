@@ -104,9 +104,32 @@ function updateActiveNavLink() {
   });
 }
 
+function updateSimpleUiToggle(isEnabled) {
+  const toggles = document.querySelectorAll('.simple-ui-toggle');
+  if (!toggles.length) return;
+  toggles.forEach((toggle) => {
+    toggle.classList.toggle('active', isEnabled);
+    toggle.setAttribute('aria-pressed', isEnabled ? 'true' : 'false');
+    toggle.textContent = isEnabled ? 'Simple UI: On' : 'Simple UI: Off';
+  });
+}
+
+function setSimpleUi(enabled) {
+  document.body.classList.toggle('simple-ui', enabled);
+  localStorage.setItem('simple-ui', enabled ? 'yes' : 'no');
+  updateSimpleUiToggle(enabled);
+}
+
+function initSimpleUiPreference() {
+  const enabled = localStorage.getItem('simple-ui') === 'yes';
+  document.body.classList.toggle('simple-ui', enabled);
+  updateSimpleUiToggle(enabled);
+}
+
 // Initialize DOMContentLoaded event handlers
 document.addEventListener('DOMContentLoaded', () => {
   updateActiveNavLink();
+  initSimpleUiPreference();
   setupMusicPlayer();
   setupReadingProgress();
 });
@@ -165,7 +188,20 @@ function setupMusicPlayer() {
     { file: './assets/audios/Sorry, I Like You.mp3', title: 'Sorry, I Like You' }
   ];
 
-  let currentTrackIndex = localStorage.getItem('current-track-index') ? parseInt(localStorage.getItem('current-track-index')) : 0;
+  const storedTrackIndex = localStorage.getItem('current-track-index');
+  let currentTrackIndex = Number.isInteger(parseInt(storedTrackIndex, 10))
+    ? parseInt(storedTrackIndex, 10)
+    : 1;
+  if (currentTrackIndex < 0 || currentTrackIndex >= playlist.length) {
+    currentTrackIndex = 1;
+  }
+
+  const defaultTrackFlag = 'music-default-track-v2';
+  if (localStorage.getItem(defaultTrackFlag) !== 'yes') {
+    currentTrackIndex = 1;
+    localStorage.setItem('current-track-index', '1');
+    localStorage.setItem(defaultTrackFlag, 'yes');
+  }
   
   const setTrack = (index) => {
     currentTrackIndex = Math.max(0, Math.min(index, playlist.length - 1));
@@ -240,6 +276,7 @@ function setupOptionsModal() {
   const optionsModal = document.getElementById('options-modal');
   const optionsClose = document.getElementById('options-close');
   const themeButtons = document.querySelectorAll('.theme-btn');
+  const simpleUiToggles = document.querySelectorAll('.simple-ui-toggle');
   const audio = document.getElementById('bg-music');
   const musicTitle = document.getElementById('music-title');
   const musicDuration = document.getElementById('music-duration');
@@ -354,6 +391,15 @@ function setupOptionsModal() {
       optionsModal.classList.remove('open');
     }
   });
+
+  if (simpleUiToggles.length) {
+    updateSimpleUiToggle(document.body.classList.contains('simple-ui'));
+    simpleUiToggles.forEach((toggle) => {
+      toggle.addEventListener('click', () => {
+        setSimpleUi(!document.body.classList.contains('simple-ui'));
+      });
+    });
+  }
 
   // Options music toggle
   if (optionsMusicToggle && audio) {

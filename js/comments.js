@@ -6,7 +6,7 @@ const COMMENTS_CONFIG = {
   // Supabase setup: create a `comments` table with columns:
   // id (uuid or int), post_slug (text), name (text), text (text), created_at (timestamptz).
   supabaseUrl: 'https://xvrrmphwymqnsabgvaow.supabase.co',
-  supabaseAnonKey: 'sb_publishable_DfJML-kfznX-9BnipbuHFg_YpmiUm26',
+  supabaseAnonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh2cnJtcGh3eW1xbnNhYmd2YW93Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAzOTg1NTIsImV4cCI6MjA4NTk3NDU1Mn0.N0rdWIf1OoTQPm3GqhRc1D1GMtUATCI4tETolkAvAFE',
   supabaseTable: 'comments',
   maxLength: 2000
 };
