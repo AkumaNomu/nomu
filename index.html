@@ -1,11 +1,24 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="description" content="Nomu's blog - thoughts on development, life, and more">
+  <meta name="robots" content="index,follow">
   <meta name="theme-color" content="#0a0a0a">
+  <meta property="og:type" content="website" id="meta-og-type">
+  <meta property="og:site_name" content="Nomu's Blog" id="meta-og-site-name">
+  <meta property="og:title" content="Nomu's Blog" id="meta-og-title">
+  <meta property="og:description" content="Nomu's blog - thoughts on development, life, and more" id="meta-og-description">
+  <meta property="og:url" content="" id="meta-og-url">
+  <meta property="og:image" content="assets/Peak.png" id="meta-og-image">
+  <meta name="twitter:card" content="summary_large_image" id="meta-twitter-card">
+  <meta name="twitter:title" content="Nomu's Blog" id="meta-twitter-title">
+  <meta name="twitter:description" content="Nomu's blog - thoughts on development, life, and more" id="meta-twitter-description">
+  <meta name="twitter:image" content="assets/Peak.png" id="meta-twitter-image">
+  <link rel="canonical" href="" id="canonical-url">
   <title>Nomu's Blog</title>
+  <link rel="alternate" type="application/rss+xml" title="RSS" href="feed.xml">
   
   <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -14,7 +27,8 @@
   
   <!-- Icons & Styles -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-  <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet" href="css/styles.css?v=20260220a">
+  <link rel="stylesheet" href="css/tools.css?v=20260220a">
   
   <!-- Code Syntax Highlighting -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/monokai-sublime.min.css">
@@ -32,19 +46,35 @@
   <header class="site-header">
     <div class="container">
       <div class="header-content">
-        <div class="logo-container">
-          <a href="javascript:void(0);" onclick="if(document.getElementById('single-post-view').style.display !== 'none') { hideSinglePost(); } else { smoothScrollTo('posts-list'); } return false;" class="logo nav-link active">Nomu</a>
+        <div class="header-left">
+          <div class="logo-container">
+            <a href="#home" id="logo-link" class="logo nav-link active" data-route="home">Nomu</a>
+            <a href="#blog" class="nav-link" data-route="blog">Blog</a>
+            <a href="#now" class="nav-link" data-route="now">Now</a>
+            <a href="#uses" class="nav-link" data-route="uses">Uses</a>
+            <a href="#setup" class="nav-link" data-route="setup">Setup</a>
+            <a href="#tools" class="nav-link" data-route="tools">Tools</a>
+          </div>
         </div>
         <nav class="main-nav">
-          <!-- TOC Toggle Button -->
-          <button id="toc-toggle" class="toc-toggle-btn" aria-label="Toggle Table of Contents">
-            <i class="fas fa-list"></i>
-          </button>
-          <!-- Options Button -->
-          <button id="options-toggle" class="options-btn" aria-label="Open options">
-            <i class="fas fa-cog"></i>
-          </button>
+          <a href="#" id="prev-post" class="top-post-nav top-post-nav-prev" style="display: none;" aria-label="Previous post">
+            <i class="fas fa-chevron-left"></i>
+            <span class="nav-title"></span>
+          </a>
+          <a href="#" id="next-post" class="top-post-nav top-post-nav-next" style="display: none;" aria-label="Next post">
+            <span class="nav-title"></span>
+            <i class="fas fa-chevron-right"></i>
+          </a>
         </nav>
+        <div class="header-right">
+          <div class="navbar-music-control">
+            <span id="navbar-track-name" class="navbar-track-info" aria-live="polite">Music: Off</span>
+            <button id="music-quick-toggle" class="music-fab" type="button" aria-label="Play background music" aria-pressed="false" title="Play background music">
+              <i class="fas fa-music" aria-hidden="true"></i>
+              <span class="sr-only">Play background music</span>
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   </header>
@@ -54,10 +84,182 @@
     <!-- Reading Progress Bar -->
     <div id="reading-progress" class="reading-progress-bar"></div>
     
+    <!-- Hero Section -->
+    <section id="hero" class="hero hero-compact" data-app-view="home">
+      <div class="hero-right">
+        <div class="hero-content">
+          <h1 class="hero-title">Nomu's Blog</h1>
+          <p class="hero-text">Writing about development, projects, and whatever else keeps me up at night.</p>
+          <p class="hero-about">Expect deep dives, small experiments, and occasional life updates.</p>
+          <button class="btn hero-cta" type="button" data-route="blog" data-scroll-target="posts">Go to posts</button>
+        </div>
+      </div>
+    </section>
 
+    <!-- Now / Uses / Setup + Status -->
+    <section id="now-status" class="now-section" data-app-view="home" style="display: none;">
+      <div class="now-header">
+        <h2>Now / Uses / Setup</h2>
+        <p class="now-subtitle">Current focus, tools, and how things are wired.</p>
+      </div>
+      <div class="now-grid">
+        <article class="now-card status-card" aria-live="polite">
+          <div class="status-top">
+            <span class="status-pill">Status</span>
+            <span class="status-live">Open to collaborations</span>
+          </div>
+          <h3>Shipping small, often</h3>
+          <p class="status-summary">Building this site in public, tightening writing cadence, and iterating quickly.</p>
+          <div class="status-meta">
+            <span>Updated: <time datetime="2026-02-15">February 15, 2026</time></span>
+          </div>
+          <div class="status-links">
+            <a href="#now" class="status-link" data-route="now">
+              <span class="status-link-title">Now</span>
+              <span class="status-link-text">Current priorities and active work.</span>
+            </a>
+            <a href="#uses" class="status-link" data-route="uses">
+              <span class="status-link-title">Uses</span>
+              <span class="status-link-text">Daily tools, stack, and hardware.</span>
+            </a>
+            <a href="#setup" class="status-link" data-route="setup">
+              <span class="status-link-title">Setup</span>
+              <span class="status-link-text">Architecture and content workflow.</span>
+            </a>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <!-- Details (Single Page) -->
+    <section id="details" class="detail-sections" style="display: none;">
+      <div class="now-header">
+        <h2>Details</h2>
+        <p class="now-subtitle">Everything in one place, styled like mini post pages.</p>
+      </div>
+      <nav class="detail-tabs" aria-label="Jump to section">
+        <a href="#now-details" class="detail-tab">Now</a>
+        <a href="#uses-details" class="detail-tab">Uses</a>
+        <a href="#setup-details" class="detail-tab">Setup</a>
+      </nav>
+
+      <article id="now-details" class="detail-section">
+        <div class="detail-hero">
+          <span class="detail-kicker">Now</span>
+          <h1>Current focus and active work</h1>
+          <p>Short, practical updates on what I am building, writing, and tightening this month.</p>
+          <div class="detail-meta">
+            <span>Updated: <time datetime="2026-02-15">February 15, 2026</time></span>
+            <a href="#blog" data-route="blog">Back to blog</a>
+          </div>
+        </div>
+        <div class="detail-grid">
+          <article class="detail-card">
+            <h2>Current Focus</h2>
+            <ul class="detail-list">
+              <li>Publishing weekly development notes</li>
+              <li>Improving performance and accessibility</li>
+              <li>Building out project writeups</li>
+            </ul>
+          </article>
+          <article class="detail-card">
+            <h2>In Progress</h2>
+            <ul class="detail-list">
+              <li>Refining the blog experience and navigation</li>
+              <li>Drafting long-form project retrospectives</li>
+              <li>Experimenting with audio and UI cohesion</li>
+            </ul>
+          </article>
+          <article class="detail-card">
+            <h2>Near-Term Goals</h2>
+            <ul class="detail-list">
+              <li>Ship tighter post navigation patterns</li>
+              <li>Document project decisions with changelogs</li>
+              <li>Keep the writing rhythm predictable</li>
+            </ul>
+          </article>
+        </div>
+      </article>
+
+      <article id="uses-details" class="detail-section">
+        <div class="detail-hero">
+          <span class="detail-kicker">Uses</span>
+          <h1>Tools and stack I rely on</h1>
+          <p>A compact breakdown of the hardware, software, and services behind the site and workflow.</p>
+          <div class="detail-meta">
+            <span>Updated: <time datetime="2026-02-15">February 15, 2026</time></span>
+            <a href="#blog" data-route="blog">Back to blog</a>
+          </div>
+        </div>
+        <div class="detail-grid">
+          <article class="detail-card">
+            <h2>Editor and Tools</h2>
+            <ul class="detail-list">
+              <li>Editor: VS Code</li>
+              <li>Terminal: PowerShell</li>
+              <li>Fonts: Lexend, Telegraf, Fira Code</li>
+            </ul>
+          </article>
+          <article class="detail-card">
+            <h2>Web Stack</h2>
+            <ul class="detail-list">
+              <li>HTML, CSS, and vanilla JavaScript</li>
+              <li>Markdown parsing with KaTeX support</li>
+              <li>Highlight.js for code blocks</li>
+            </ul>
+          </article>
+          <article class="detail-card">
+            <h2>Infrastructure</h2>
+            <ul class="detail-list">
+              <li>GitHub Pages for hosting</li>
+              <li>Supabase for optional comments</li>
+              <li>RSS feed for subscribers</li>
+            </ul>
+          </article>
+        </div>
+      </article>
+
+      <article id="setup-details" class="detail-section">
+        <div class="detail-hero">
+          <span class="detail-kicker">Setup</span>
+          <h1>How the site is organized</h1>
+          <p>The content pipeline and architecture choices that keep publishing fast and maintenance low.</p>
+          <div class="detail-meta">
+            <span>Updated: <time datetime="2026-02-15">February 15, 2026</time></span>
+            <a href="#blog" data-route="blog">Back to blog</a>
+          </div>
+        </div>
+        <div class="detail-grid">
+          <article class="detail-card">
+            <h2>Content Flow</h2>
+            <ul class="detail-list">
+              <li>Write posts as Markdown in `posts/`</li>
+              <li>Use frontmatter for title, date, tags, and category</li>
+              <li>Load and render posts dynamically on the client</li>
+            </ul>
+          </article>
+          <article class="detail-card">
+            <h2>Build Helpers</h2>
+            <ul class="detail-list">
+              <li>Generate `posts/index.json` for faster loading</li>
+              <li>Generate `feed.xml` for RSS readers</li>
+              <li>Cache key assets with the service worker</li>
+            </ul>
+          </article>
+          <article class="detail-card">
+            <h2>Customization</h2>
+            <ul class="detail-list">
+              <li>Theme switching through CSS variables</li>
+              <li>Simple UI mode for low-power devices</li>
+              <li>Optional analytics in `js/site-config.js`</li>
+            </ul>
+          </article>
+        </div>
+      </article>
+    </section>
 
     <!-- Featured Post & Featured Quote Section -->
-    <section id="featured-section" class="featured-about-section" style="display: none;">
+    <section id="featured-section" class="featured-about-section" data-app-view="home" style="display: none;">
       <div class="featured-post">
         <span class="featured-badge">Featured Post</span>
         <h3 id="featured-title">Featured Post</h3>
@@ -67,41 +269,267 @@
           <span id="featured-category">Category</span>
           <span id="featured-readtime">5 min read</span>
         </div>
-        <button class="btn" id="featured-btn" onclick="showSinglePost('')">Read Post</button>
+        <button class="btn" id="featured-btn" type="button">Read Post</button>
       </div>
 
       <!-- Featured Quote -->
       <div class="about-me featured-quote">
         <span class="featured-badge quote-badge">Featured Quote</span>
-        <blockquote id="featured-quote-text">“So this is what a revolution looks like, people in expensive clothing running around. Not how I pictured it.”</blockquote>
-        <p id="featured-quote-author" class="quote-author">— Elliot Alderson, Mr. Robot</p>
+        <blockquote id="featured-quote-text">&ldquo;So this is what a revolution looks like, people in expensive clothing running around. Not how I pictured it.&rdquo;</blockquote>
+        <p id="featured-quote-author" class="quote-author">&mdash; Elliot Alderson, Mr. Robot</p>
       </div>
     </section>
 
+    <!-- Tools Source (hidden, injected into info view) -->
+    <section id="tools-section" class="tools-section" style="display: none;">
+      <section class="tools-hero">
+        <h1>Toolbox</h1>
+        <p>Static tools that run fully client-side with offline support after first load.</p>
+        <nav class="tools-nav" aria-label="Tools navigation">
+          <button type="button" class="tools-nav-link active" data-tool-target="hub">Toolbox</button>
+          <button type="button" class="tools-nav-link" data-tool-target="gpa">GPA</button>
+          <button type="button" class="tools-nav-link" data-tool-target="password">Password</button>
+          <button type="button" class="tools-nav-link" data-tool-target="pomodoro">Pomodoro</button>
+        </nav>
+      </section>
+
+      <section class="tool-shell">
+        <div class="tool-view" data-tool-view="hub">
+          <section class="tool-grid" aria-label="Available tools">
+            <article class="tool-card">
+              <h2>GPA Calculator</h2>
+              <p>Per-semester and cumulative averages on the Algerian 0-20 scale, with save/load and CSV export.</p>
+              <button type="button" class="btn" data-tool-target="gpa">Open GPA Tool</button>
+            </article>
+
+            <article class="tool-card">
+              <h2>Password Generator</h2>
+              <p>Random passwords or passphrases with entropy estimation, ambiguous-character filtering, and auto-clear copy flow.</p>
+              <button type="button" class="btn" data-tool-target="password">Open Password Tool</button>
+            </article>
+
+            <article class="tool-card">
+              <h2>Pomodoro Timer</h2>
+              <p>Custom work/break cycles, optional notification prompts, and persisted settings between sessions.</p>
+              <button type="button" class="btn" data-tool-target="pomodoro">Open Pomodoro</button>
+            </article>
+          </section>
+        </div>
+
+        <div class="tool-view hidden" data-tool-view="gpa">
+          <article class="tool-panel">
+            <h2>Mode</h2>
+            <div id="gpa-mode-toggle" class="mode-toggle" role="group" aria-label="Calculation mode">
+              <button type="button" data-mode="semester" aria-pressed="true">Per semester</button>
+              <button type="button" data-mode="cumulative" aria-pressed="false">Cumulative</button>
+            </div>
+          </article>
+
+          <article class="tool-panel">
+            <h2>Grading Scale</h2>
+            <div class="tool-row">
+              <label for="gpa-scale-preset">Preset</label>
+              <select id="gpa-scale-preset">
+                <option value="20">Algerian /20</option>
+                <option value="4">US GPA /4.0</option>
+                <option value="100">Percentage /100</option>
+                <option value="custom">Custom</option>
+              </select>
+              <label for="gpa-scale-custom">Custom max</label>
+              <input type="number" id="gpa-scale-custom" min="1" max="1000" step="0.01" value="20" disabled>
+            </div>
+            <p class="result-sub">Inputs and results follow the selected scale.</p>
+          </article>
+
+          <article id="mode-semester" class="tool-panel">
+            <h2>Per Semester</h2>
+            <table class="tool-table">
+              <thead>
+                <tr>
+                  <th>Module</th>
+                  <th>Grade /20</th>
+                  <th>Coefficient</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="semester-rows"></tbody>
+            </table>
+            <div class="tool-actions">
+              <button type="button" class="btn btn-compact" id="add-semester-row">Add module</button>
+            </div>
+          </article>
+
+          <article id="mode-cumulative" class="tool-panel hidden">
+            <h2>Cumulative</h2>
+            <table class="tool-table">
+              <thead>
+                <tr>
+                  <th>Semester</th>
+                  <th>Average /20</th>
+                  <th>Weight</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="cumulative-rows"></tbody>
+            </table>
+            <div class="tool-actions">
+              <button type="button" class="btn btn-compact" id="add-cumulative-row">Add semester</button>
+            </div>
+          </article>
+
+          <article class="tool-panel">
+            <h2>Result</h2>
+            <div class="result-box">
+              <div id="gpa-result-main" class="result-main">-- / 20</div>
+              <p id="gpa-result-sub" class="result-sub">Enter rows then calculate.</p>
+            </div>
+            <div class="tool-actions" style="margin-top: 0.75rem;">
+              <button type="button" class="btn" id="gpa-calculate">Calculate</button>
+              <button type="button" class="btn btn-ghost" id="gpa-export">Export CSV</button>
+            </div>
+          </article>
+
+          <article class="tool-panel">
+            <h2>Save / Load</h2>
+            <div class="tool-row">
+              <label for="gpa-setup-name">Setup name</label>
+              <input type="text" id="gpa-setup-name" placeholder="e.g. Year 1">
+              <button type="button" class="btn btn-compact" id="gpa-save-setup">Save</button>
+            </div>
+            <div class="tool-row">
+              <label for="gpa-setup-select">Saved setups</label>
+              <select id="gpa-setup-select"></select>
+              <button type="button" class="btn btn-compact" id="gpa-load-setup">Load</button>
+              <button type="button" class="btn btn-ghost" id="gpa-delete-setup">Delete</button>
+            </div>
+          </article>
+        </div>
+
+        <div class="tool-view hidden" data-tool-view="password">
+          <article class="tool-panel">
+            <h2>Mode</h2>
+            <div class="inline-controls">
+              <label><input type="radio" name="generator-mode" value="password" checked> Password</label>
+              <label><input type="radio" name="generator-mode" value="passphrase"> Passphrase</label>
+            </div>
+          </article>
+
+          <article class="tool-panel" id="password-settings">
+            <h2>Password options</h2>
+            <div class="tool-row">
+              <label for="password-length">Length</label>
+              <input type="range" id="password-length" min="4" max="128" value="16">
+              <input type="number" id="password-length-number" min="4" max="128" value="16" style="width: 90px;">
+            </div>
+            <div class="inline-controls">
+              <label><input type="checkbox" id="use-upper" checked> Uppercase</label>
+              <label><input type="checkbox" id="use-lower" checked> Lowercase</label>
+              <label><input type="checkbox" id="use-digits" checked> Digits</label>
+              <label><input type="checkbox" id="use-symbols"> Symbols</label>
+              <label><input type="checkbox" id="avoid-ambiguous" checked> Avoid ambiguous chars</label>
+            </div>
+          </article>
+
+          <article class="tool-panel hidden" id="passphrase-settings">
+            <h2>Passphrase options</h2>
+            <div class="tool-row">
+              <label for="passphrase-word-count">Word count</label>
+              <input type="number" id="passphrase-word-count" min="2" max="12" value="4" style="width: 90px;">
+              <label for="passphrase-separator">Separator</label>
+              <input type="text" id="passphrase-separator" value="-" style="width: 80px;">
+            </div>
+          </article>
+
+          <article class="tool-panel">
+            <h2>Generate</h2>
+            <div class="tool-actions">
+              <button type="button" class="btn" id="generate-password">Generate</button>
+              <button type="button" class="btn btn-ghost" id="copy-password">Copy</button>
+            </div>
+            <div class="tool-row" style="margin-top: 0.75rem;">
+              <label for="auto-clear-seconds">Auto-clear after (seconds)</label>
+              <input type="number" id="auto-clear-seconds" min="0" max="120" value="20" style="width: 100px;">
+            </div>
+            <div class="tool-row">
+              <textarea id="password-output" class="output-field" readonly aria-label="Generated password"></textarea>
+            </div>
+            <div class="tool-row">
+              <label for="strength-meter">Strength</label>
+              <progress id="strength-meter" class="strength-meter" max="100" value="0"></progress>
+            </div>
+            <div class="tool-row">
+              <span id="strength-label" class="phase-badge">N/A</span>
+              <span id="entropy-value" class="result-sub">0 bits</span>
+            </div>
+          </article>
+        </div>
+
+        <div class="tool-view hidden" data-tool-view="pomodoro">
+          <article class="tool-panel">
+            <h2>Timer</h2>
+            <p><span id="pomodoro-phase" class="phase-badge">Work session</span></p>
+            <p id="pomodoro-time" class="timer-display">25:00</p>
+            <p id="pomodoro-summary" class="result-sub">Completed work sessions: 0. Long break every 4 cycles.</p>
+            <div class="tool-actions">
+              <button type="button" class="btn" id="pomodoro-start-pause" aria-pressed="false">Start</button>
+              <button type="button" class="btn btn-ghost" id="pomodoro-reset">Reset</button>
+              <button type="button" class="btn btn-ghost" id="pomodoro-skip">Skip phase</button>
+            </div>
+          </article>
+
+          <article class="tool-panel">
+            <h2>Settings</h2>
+            <div class="tool-row">
+              <label for="work-minutes">Work (min)</label>
+              <input type="number" id="work-minutes" min="1" max="120" value="25" style="width: 95px;">
+              <label for="short-break-minutes">Short break (min)</label>
+              <input type="number" id="short-break-minutes" min="1" max="60" value="5" style="width: 95px;">
+            </div>
+            <div class="tool-row">
+              <label for="long-break-minutes">Long break (min)</label>
+              <input type="number" id="long-break-minutes" min="1" max="90" value="15" style="width: 95px;">
+              <label for="cycles-before-long">Cycles before long break</label>
+              <input type="number" id="cycles-before-long" min="2" max="12" value="4" style="width: 95px;">
+            </div>
+            <div class="inline-controls">
+              <label><input type="checkbox" id="pomodoro-sound"> Sound alerts</label>
+              <label><input type="checkbox" id="pomodoro-notifications"> Desktop notifications</label>
+            </div>
+            <div class="tool-actions" style="margin-top: 0.75rem;">
+              <button type="button" class="btn btn-compact" id="pomodoro-apply-settings">Apply settings</button>
+              <button type="button" class="btn btn-ghost" id="request-notifications">Request notification permission</button>
+            </div>
+            <p id="notification-status" class="result-sub" style="margin-top: 0.65rem;">Permission: default</p>
+          </article>
+        </div>
+      </section>
+    </section>
+
     <!-- Blog Section -->
-    <section class="blog-section">
+    <section id="posts" class="blog-section" data-app-view="blog">
       <h2>Posts</h2>
       
       <!-- Search Bar -->
       <div class="search-bar">
         <div class="search-wrapper" id="search-wrapper">
-          <input type="text" id="search-input" placeholder="Search posts...">
-          <button id="search-clear" class="search-clear-btn" title="Clear search" style="display: none;">
+          <label for="search-input" class="sr-only">Search posts</label>
+          <input type="text" id="search-input" placeholder="Search posts..." autocomplete="off" role="searchbox" aria-controls="search-suggestions" aria-autocomplete="list" aria-expanded="false">
+          <button id="search-clear" class="search-clear-btn" type="button" title="Clear search" style="display: none;">
             <i class="fas fa-times"></i>
           </button>
         </div>
-        <div id="search-results-info" class="search-results-info"></div>
-        <div id="search-suggestions" class="search-suggestions"></div>
+        <div id="search-results-info" class="search-results-info" role="status" aria-live="polite"></div>
+        <div id="search-suggestions" class="search-suggestions" role="listbox" aria-label="Search suggestions" aria-hidden="true"></div>
       </div>
 
       <!-- Category Filters -->
       <div class="category-filters" role="group" aria-label="Filter posts by category">
-        <button class="filter-btn active" data-category="all">All</button>
-        <button class="filter-btn" data-category="Development">Development</button>
-        <button class="filter-btn" data-category="Video Editing">Video Editing</button>
-        <button class="filter-btn" data-category="Life">Life</button>
-        <button class="filter-btn" data-category="Projects">Projects</button>
-        <button class="filter-btn" data-category="Politics">Politics</button>
+        <button class="filter-btn active" type="button" data-category="all">All</button>
+        <button class="filter-btn" type="button" data-category="Development">Development</button>
+        <button class="filter-btn" type="button" data-category="Video Editing">Video Editing</button>
+        <button class="filter-btn" type="button" data-category="Life">Life</button>
+        <button class="filter-btn" type="button" data-category="Projects">Projects</button>
+        <button class="filter-btn" type="button" data-category="Politics">Politics</button>
       </div>
 
       <!-- Posts List -->
@@ -116,23 +544,18 @@
     </section>
 
     <!-- Single Post View -->
-    <div id="single-post-view" style="display: none;">
-      <!-- Table of Contents -->
-      <aside id="toc-sidebar" class="toc-sidebar">
-        
-        <nav id="toc-nav" class="toc-nav">
-          <!-- TOC will be generated here -->
-        </nav>
-      </aside>
-      
+    <div id="single-post-view" data-app-view="post" style="display: none;">
       <div class="post-container">
-        <a href="#" id="back-to-posts" class="back-link" aria-label="Back to posts">
-          <i class="fas fa-arrow-left back-icon" style="font-size: 16px;"></i>
-        </a>
+        <div class="post-sticky-header" id="post-sticky-header" aria-hidden="true">
+          <button id="post-sticky-back" class="post-sticky-back" type="button" aria-label="Back to posts">
+            <i class="fas fa-arrow-left"></i>
+          </button>
+          <div class="post-sticky-title" id="post-sticky-title">Post Title</div>
+        </div>
         
         <!-- Breadcrumb Navigation -->
         <nav id="breadcrumb" class="breadcrumb" style="display: none;">
-          <a href="#" onclick="hideSinglePost(); return false;" class="breadcrumb-item">Posts</a>
+          <a href="#blog" class="breadcrumb-item" data-route="blog">Posts</a>
           <span class="breadcrumb-separator">/</span>
           <span id="breadcrumb-post" class="breadcrumb-item active">Post Title</span>
         </nav>
@@ -140,32 +563,6 @@
         <article id="post-content">
           <!-- Post content will be loaded here by JS -->
         </article>
-
-        <!-- Prev/Next Navigation -->
-        <nav class="post-navigation">
-          <a href="#" id="prev-post" class="nav-post" style="display: none;">
-            <span class="nav-label">←</span>
-            <span class="nav-title"></span>
-          </a>
-          <a href="#" id="next-post" class="nav-post" style="display: none;">
-            <span class="nav-label">→</span>
-            <span class="nav-title"></span>
-          </a>
-        </nav>
-
-        <!-- Share Buttons -->
-        <div class="share-buttons" id="share-buttons">
-          <label>Share Post:</label>
-          <a href="#" id="share-twitter" class="share-btn" title="Share on Twitter/X">
-            <i class="fab fa-twitter"></i> Twitter/X
-          </a>
-          <a href="#" id="share-discord" class="share-btn" title="Share on Discord">
-            <i class="fab fa-discord"></i> Discord
-          </a>
-          <button id="share-copy" class="share-btn" title="Copy link to clipboard">
-            <i class="fas fa-link"></i> Copy Link
-          </button>
-        </div>
 
         <!-- Animated Visualizer -->
         <div class="visualizer-container">
@@ -182,72 +579,79 @@
         <!-- Comments Section -->
         <section class="comments-section" id="comments-section">
           <h3>Comments</h3>
-          
-          <!-- Comment Form -->
-          <form class="comment-form" id="comment-form">
-            <div class="comment-form-group">
-              <label for="comment-name">Name</label>
-              <input type="text" id="comment-name" name="name" placeholder="Your name" required>
-            </div>
-            <div class="comment-form-group">
-              <label for="comment-email">Email (optional)</label>
-              <input type="email" id="comment-email" name="email" placeholder="you@example.com">
-            </div>
-            <div class="comment-form-group">
-              <label for="comment-text">Comment</label>
-              <textarea id="comment-text" name="text" placeholder="Share your thoughts..." required></textarea>
-            </div>
-            <button type="submit" class="btn btn-compact">Post Comment</button>
-          </form>
-          
-          <!-- Comments List -->
-          <div class="comments-list" id="comments-list">
-            <!-- Comments will be loaded here -->
+          <p id="comments-state" class="comments-state" role="status" aria-live="polite">
+            Comments will load when this section comes into view.
+          </p>
+          <button type="button" id="comments-load-btn" class="btn btn-compact comments-load-btn">Load comments now</button>
+          <div class="giscus-thread" id="giscus-thread">
+            <!-- giscus thread mounts here -->
           </div>
         </section>
       </div>
     </div>
 
+    <!-- Info View (Now / Uses / Setup / Tools) -->
+    <div id="info-view" data-app-view="info" style="display: none;">
+      <div class="post-container info-container">
+        <div class="post-sticky-header" id="info-sticky-header" aria-hidden="true">
+          <button id="info-sticky-back" class="post-sticky-back" type="button" data-route="blog" aria-label="Back to posts">
+            <i class="fas fa-arrow-left"></i>
+          </button>
+          <div class="post-sticky-title" id="info-sticky-title">Section</div>
+        </div>
+
+        <nav id="info-breadcrumb" class="breadcrumb" style="display: none;">
+          <a href="#home" id="info-breadcrumb-home" class="breadcrumb-item" data-route="home">Home</a>
+          <span class="breadcrumb-separator">/</span>
+          <span id="info-breadcrumb-label" class="breadcrumb-item active">Section</span>
+        </nav>
+
+        <article id="info-content">
+          <!-- Injected content -->
+        </article>
+      </div>
+    </div>
+
  <!-- Contact Section -->
-<section class="contact">  
+<section class="contact" data-app-view="home">  
   <div class="contact-cards-wrapper">
     <!-- Contact Links Card (Left) -->
     <div class="contact-card">
-      <h3 style="user-select: none;">Connect With Me</h3>
+      <h3 class="no-select">Connect With Me</h3>
 
       <ul class="contact-links">
         <li>
-          <span class="social-label" style="user-select: none;">
+          <span class="social-label no-select">
             <i class="fab fa-discord"></i> Discord
           </span>
-          <a href="https://discord.com/users/orewanomu" target="_blank" rel="noreferrer">
+          <a href="https://discord.com/users/orewanomu" target="_blank" rel="noopener noreferrer">
             orewanomu
           </a>
         </li>
         <li>
-          <span class="social-label" style="user-select: none;">
+          <span class="social-label no-select">
             <i class="fab fa-github"></i> GitHub
           </span>
-          <a href="https://github.com/akumanomu" target="_blank" rel="noreferrer">
+          <a href="https://github.com/akumanomu" target="_blank" rel="noopener noreferrer">
             akumanomu
           </a>
         </li>
         <li>
-          <span class="social-label" style="user-select: none;">
+          <span class="social-label no-select">
             <i class="fab fa-instagram"></i> Instagram
           </span>
-          <a href="https://instagram.com/akumanomu" target="_blank" rel="noreferrer">
+          <a href="https://instagram.com/akumanomu" target="_blank" rel="noopener noreferrer">
             akumanomu
           </a>
         </li>
         <li>
-          <span class="social-label" style="user-select: none;">
+          <span class="social-label no-select">
             <i class="fas fa-envelope"></i> Email
           </span>
           <a
             href="mailto:akumanomu@proton.me?subject=Hi%20from%20your%20site"
             target="_blank"
-            rel="noreferrer"
+            rel="noopener noreferrer"
           >
             akumanomu@proton.me
           </a>
@@ -261,7 +665,7 @@
   </main>
 
   <!-- Back to Top Button -->
-  <button id="back-to-top" class="back-to-top" aria-label="Back to top">
+  <button id="back-to-top" class="back-to-top" type="button" aria-label="Back to top">
     <i class="fas fa-chevron-up"></i>
   </button>
 
@@ -269,123 +673,161 @@
   <footer class="site-footer">
     <div class="container">
       <p>&copy; 2026 Nomu. All thoughts my own.</p>
+      <p class="footer-links">
+        <a href="#home" data-route="home">Home</a>
+        <a href="#tools" data-route="tools">Tools</a>
+        <a href="feed.xml">RSS</a>
+      </p>
     </div>
   </footer>
 
   <!-- Music Player Widget (always visible) -->
   <div id="music-container">
     <!-- ID 'bg-music' is crucial for the JS to find it -->
-    <audio id="bg-music" loop></audio> 
+    <audio id="bg-music" preload="none"></audio> 
+    <div id="yt-music-player" aria-hidden="true"></div>
  
   </div>
 
-  <!-- Music consent modal -->
-  <div class="music-modal" id="music-modal">
-    <div class="music-modal-content">
-      <h3>Background music?</h3>
-      <p>Want some chill music while you browse? You can change this anytime in Settings.</p>
-      <div class="music-modal-actions">
-        <button id="music-yes" class="btn">Yes, play</button>
-        <button id="music-no" class="btn btn-ghost">No, thanks</button>
+  <!-- Pinned Side Controls -->
+  <div class="side-rail side-rail-left" aria-label="Table of contents">
+    <aside id="toc-sidebar" class="side-panel toc-panel" aria-hidden="false" aria-label="Table of contents">
+      <nav id="toc-nav" class="toc-nav" aria-label="Table of contents">
+        <!-- TOC will be generated here -->
+      </nav>
+    </aside>
+  </div>
+
+  <div class="side-rail side-rail-right" aria-label="Quick controls">
+    <aside class="side-panel music-panel" id="music-panel" aria-label="Music controls">
+      <div class="music-controls-box">
+        <div class="music-info-box" id="music-info-box">
+          <img id="music-cover" class="music-cover" src="assets/Peak.png" alt="Current track cover art" loading="lazy" decoding="async">
+          <p id="music-title">Loading...</p>
+          <p id="music-duration" class="music-duration">--:-- / --:--</p>
+          <input type="range" id="music-progress" class="music-progress-bar" min="0" max="100" value="0">
+        </div>
+        <div class="music-buttons">
+          <div class="music-button-row">
+            <button id="music-skip-prev" class="btn btn-compact" type="button" title="Previous Track">
+              <i class="fas fa-step-backward"></i>
+            </button>
+            <button id="options-music-toggle" class="btn btn-compact music-main-btn" type="button" title="Toggle Music">
+              <i class="fas fa-play"></i> Play
+            </button>
+            <button id="music-skip-next" class="btn btn-compact" type="button" title="Next Track">
+              <i class="fas fa-step-forward"></i>
+            </button>
+          </div>
+          <label class="volume-label">
+            <i class="fas fa-volume-up"></i> Volume
+          </label>
+          <input type="range" id="options-volume-slider" min="0" max="1" step="0.01" value="0.1" class="volume-slider-options" title="Music Volume">
+        </div>
       </div>
-      <div class="music-modal-actions music-modal-options">
-        <button id="simple-ui-toggle-modal" class="btn btn-ghost simple-ui-toggle" type="button" aria-pressed="false">
+    </aside>
+
+    <aside class="side-panel engagement-panel" id="engagement-panel" aria-label="Post share and reactions">
+      <div class="share-buttons side-share" id="share-buttons">
+        <button id="share-native" class="share-btn icon-only" type="button" title="Share this post" aria-label="Share this post">
+          <i class="fas fa-share-alt"></i>
+        </button>
+        <a href="#" id="share-twitter" class="share-btn icon-only" title="Share on Twitter/X" aria-label="Share on Twitter/X">
+          <i class="fab fa-twitter"></i>
+        </a>
+        <a href="#" id="share-discord" class="share-btn icon-only" title="Share on Discord" aria-label="Share on Discord">
+          <i class="fab fa-discord"></i>
+        </a>
+        <button id="share-copy" class="share-btn icon-only" type="button" title="Copy post link" aria-label="Copy post link">
+          <i class="fas fa-link"></i>
+        </button>
+      </div>
+      <div class="reactions side-reactions" id="reactions" role="group" aria-label="Post reactions">
+        <button class="reaction-btn" type="button" data-reaction="like" aria-pressed="false" aria-label="Like reaction">
+          <i class="fas fa-thumbs-up"></i>
+          <span class="reaction-count" data-count-for="like">0</span>
+        </button>
+        <button class="reaction-btn" type="button" data-reaction="fire" aria-pressed="false" aria-label="Fire reaction">
+          <i class="fas fa-fire"></i>
+          <span class="reaction-count" data-count-for="fire">0</span>
+        </button>
+        <button class="reaction-btn" type="button" data-reaction="idea" aria-pressed="false" aria-label="Idea reaction">
+          <i class="fas fa-lightbulb"></i>
+          <span class="reaction-count" data-count-for="idea">0</span>
+        </button>
+      </div>
+    </aside>
+
+    <aside class="side-panel theme-panel" id="theme-panel" aria-label="Theme controls">
+      <div class="theme-selector">
+        <button class="theme-btn active theme-dot" type="button" data-theme="default" title="Default theme" aria-label="Default theme"></button>
+        <button class="theme-btn theme-dot" type="button" data-theme="blue" title="Blue theme" aria-label="Blue theme"></button>
+        <button class="theme-btn theme-dot" type="button" data-theme="purple" title="Purple theme" aria-label="Purple theme"></button>
+        <button class="theme-btn theme-dot" type="button" data-theme="green" title="Green theme" aria-label="Green theme"></button>
+        <button class="theme-btn theme-dot" type="button" data-theme="red" title="Red theme" aria-label="Red theme"></button>
+      </div>
+      <div class="simple-ui-row">
+        <button id="simple-ui-toggle" class="btn btn-ghost simple-ui-toggle" type="button" aria-pressed="false">
           Simple UI: Off
         </button>
-      </div>
-    </div>
-  </div>
-
-  <!-- Options Popup Modal -->
-  <div class="options-modal" id="options-modal">
-    <div class="options-modal-content">
-      <div class="options-header">
-        <h3>Options</h3>
-        <button id="options-close" class="options-close-btn" aria-label="Close options">
-          <i class="fas fa-times"></i>
+        <button id="simple-ui-info" class="simple-ui-info-btn" type="button" aria-expanded="false" aria-controls="simple-ui-description" aria-label="What is Simple UI?">
+          <i class="fas fa-circle-info" aria-hidden="true"></i>
+          <span class="sr-only">Simple UI details</span>
         </button>
       </div>
-      
-      <div class="options-grid">
-        <div class="options-section">
-          <h4>Music Player</h4>
-          <div class="music-controls-box">
-            <div class="music-info-box" id="music-info-box">
-              <p id="music-title">Loading...</p>
-              <p id="music-duration" class="music-duration">--:-- / --:--</p>
-              <input type="range" id="music-progress" class="music-progress-bar" min="0" max="100" value="0">
-            </div>
-            <div class="music-buttons">
-              <div class="music-button-row">
-                <button id="music-skip-prev" class="btn btn-compact" title="Previous Track">
-                  <i class="fas fa-step-backward"></i>
-                </button>
-                <button id="options-music-toggle" class="btn btn-compact" title="Toggle Music" style="flex: 1;">
-                  <i class="fas fa-play"></i> Play
-                </button>
-                <button id="music-skip-next" class="btn btn-compact" title="Next Track">
-                  <i class="fas fa-step-forward"></i>
-                </button>
-              </div>
-              <label class="volume-label">
-                <i class="fas fa-volume-up"></i> Volume
-              </label>
-              <input type="range" id="options-volume-slider" min="0" max="1" step="0.01" value="0.1" class="volume-slider-options" title="Music Volume">
-            </div>
-            <div class="playlist-selector" id="playlist-selector">
-              <label style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 0.5rem; display: block;">Playlist</label>
-            </div>
-          </div>
-        </div>
-
-        <div class="options-section">
-          <h4>Theme</h4>
-          <div class="theme-selector">
-            <button class="theme-btn active" data-theme="default" title="Default (Dark)">
-              <span class="theme-preview default-preview"></span>
-              Default
-            </button>
-            <button class="theme-btn" data-theme="blue" title="Blue Theme">
-              <span class="theme-preview blue-preview"></span>
-              Blue
-            </button>
-            <button class="theme-btn" data-theme="purple" title="Purple Theme">
-              <span class="theme-preview purple-preview"></span>
-              Purple
-            </button>
-            <button class="theme-btn" data-theme="green" title="Green Theme">
-              <span class="theme-preview green-preview"></span>
-              Green
-            </button>
-            <button class="theme-btn" data-theme="red" title="Red Theme">
-              <span class="theme-preview red-preview"></span>
-              Red
-            </button>
-          </div>
-        </div>
-
-        <div class="options-section">
-          <h4>Performance</h4>
-          <p class="options-note">Use a simplified UI for smoother scrolling on low-power devices.</p>
-          <button id="simple-ui-toggle" class="btn btn-ghost simple-ui-toggle" type="button" aria-pressed="false">
-            Simple UI: Off
-          </button>
-        </div>
-      </div>
-    </div>
+      <p id="simple-ui-description" class="simple-ui-description">Simple UI reduces visual effects and keeps the interface lightweight for focus and low-power devices.</p>
+    </aside>
   </div>
 
+  <div id="toast-container" class="toast-container" aria-live="polite" aria-atomic="true"></div>
+
+  <!-- Image Viewer Modal -->
+  <div class="image-viewer" id="image-viewer" role="dialog" aria-modal="true" aria-hidden="true" aria-label="Image viewer">
+    <div class="image-stage" id="image-viewer-stage">
+      <img id="image-viewer-img" alt="">
+    </div>
+    <div class="viewer-toolbar">
+      <button class="viewer-btn" id="image-zoom-out" type="button" aria-label="Zoom out">
+        <i class="fas fa-minus"></i>
+      </button>
+      <button class="viewer-btn" id="image-zoom-reset" type="button" aria-label="Reset zoom">
+        <i class="fas fa-compress"></i>
+      </button>
+      <button class="viewer-btn" id="image-zoom-in" type="button" aria-label="Zoom in">
+        <i class="fas fa-plus"></i>
+      </button>
+      <button class="viewer-btn" id="image-viewer-close" type="button" aria-label="Close image viewer">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+    <div class="viewer-hint">Scroll to zoom &middot; Drag to move &middot; Esc to close</div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/markdown-it/13.0.1/markdown-it.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/markdown-it-footnote/3.0.3/markdown-it-footnote.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/markdown-it-katex@2.0.3/dist/markdown-it-katex.min.js"></script>
-  <script src="js/utils.js"></script>
+  <script src="js/site-config.js?v=20260220a"></script>
+  <script src="js/analytics.js"></script>
+  <script src="js/utils.js?v=20260220a"></script>
   <script src="js/markdown-parser.js"></script>
-  <script src="js/comments.js"></script>
-  <script src="js/blog-loader.js"></script>
+  <script src="js/comments.js?v=20260220a"></script>
+  <script src="js/blog-loader.js?v=20260220a"></script>
+  <script src="js/tools-common.js"></script>
+  <script src="js/tools-wordlist.js"></script>
+  <script src="js/tool-gpa.js"></script>
+  <script src="js/tool-password.js"></script>
+  <script src="js/tool-pomodoro.js"></script>
+  <script src="js/sw-register.js"></script>
   <script>
     // Initialize the page
-    const postSlug = getQueryParam('post');
-    initPage(postSlug);
+    initPage();
   </script>
 </body>
 </html>
+
+
+
+
+
