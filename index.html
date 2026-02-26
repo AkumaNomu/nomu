@@ -296,7 +296,6 @@
           <div class="category-filters" role="group" aria-label="Filter posts by category">
             <button class="filter-btn chip active" data-category="all">All</button>
             <button class="filter-btn chip" data-category="Development">Development</button>
-            <button class="filter-btn chip" data-category="Video Editing">Video Editing</button>
             <button class="filter-btn chip" data-category="Life">Life</button>
             <button class="filter-btn chip" data-category="Projects">Projects</button>
             <button class="filter-btn chip" data-category="Politics">Politics</button>
@@ -312,6 +311,25 @@
             </select>
           </label>
         </div>
+
+        <section id="video-editing-space" class="video-editing-space" hidden aria-label="Video editing feature">
+          <div class="video-shell glass-card glass-card--media">
+            <div class="video-shell-head">
+              <div>
+                <p class="video-tag">Category • Video Editing</p>
+                <h4>Feature Cut Preview</h4>
+              </div>
+              <span class="video-meta">MP4 • 1080p</span>
+            </div>
+            <div class="video-frame">
+              <video controls preload="metadata" poster="assets/images/Markdowntest.png">
+                <source src="" type="video/mp4">
+                Your browser does not support the video tag.
+              </video>
+            </div>
+            <p class="video-help">Drop your draft cut here or paste a URL to review alongside posts.</p>
+          </div>
+        </section>
 
         <!-- Posts List -->
         <div id="posts-list" class="posts-list">

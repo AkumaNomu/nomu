@@ -60,7 +60,7 @@ function parseFrontmatter(content) {
 function formatCategory(category) {
   const categoryMap = {
     'Development': 'Development',
-    'Video Editing': 'Video editing',
+    'Video Editing': 'Projects',
     'Life': 'Life',
     'Projects': 'Projects',
     'Politics': 'Politics',

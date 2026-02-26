@@ -4030,46 +4030,15 @@
   }
 
   async function setupDashboard() {
-    bootstrap();
     state.root = document.getElementById('tools-dashboard');
-    state.tabPillsEl = document.getElementById('tools-tab-pills');
-    state.tabsEl = document.getElementById('tools-tabs');
-    state.panelEl = document.getElementById('tools-panel');
-    state.searchEl = document.getElementById('tools-search-input');
-    state.searchClear = document.getElementById('tools-search-clear');
-    state.favoritesBtn = document.getElementById('tools-favorites-filter');
-    state.favoritesRow = document.getElementById('tools-favorites-row');
-    state.commandBtn = document.getElementById('tools-command-button');
-    if (!state.root || !state.tabsEl || !state.panelEl) return;
-
-    if (!state.inited) {
-      state.favorites = loadFavorites();
-      if (state.searchEl && state.favoritesBtn) setupHeader();
-      hotkeys();
-      state.inited = true;
-    }
-
-    const list = orderedTabs();
-    for (const tab of list) {
-      await ensureTabLoaded(tab.id);
-    }
-
-    const storedTab = localStorage.getItem(STORAGE.TAB);
-    const storedTool = localStorage.getItem(STORAGE.TOOL);
-    state.activeTab = storedTab && tabs.has(storedTab) ? storedTab : (list[0] ? list[0].id : null);
-    state.activeTool = storedTool && toolMeta.has(storedTool) ? storedTool : null;
-    if (!state.activeTool) {
-      const tab = tabs.get(state.activeTab);
-      if (tab && Array.isArray(tab.tools) && tab.tools.length) state.activeTool = tab.tools[0];
-      else {
-        const first = allToolMeta()[0];
-        state.activeTool = first ? first.id : null;
-      }
-    }
-
-    renderFavoritesRow();
-    window.dispatchEvent(new CustomEvent('tools-favorites-changed'));
-    await renderWorkspace({ persist: false });
+    if (!state.root) return;
+    state.root.innerHTML = `
+      <div class="tools-placeholder">
+        <h2>Utility workspace is being rebuilt.</h2>
+        <p>Check back soon for the new experience.</p>
+      </div>
+    `;
+    state.root.style.display = 'block';
   }
 
   window.toolsDashboard = {

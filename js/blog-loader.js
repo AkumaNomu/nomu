@@ -61,7 +61,6 @@ const homePreviewLimits = {
 const POST_CATEGORY_ICONS = {
   all: 'fas fa-layer-group',
   Development: 'fas fa-code',
-  'Video Editing': 'fas fa-film',
   Life: 'fas fa-leaf',
   Projects: 'fas fa-diagram-project',
   Politics: 'fas fa-landmark'
@@ -83,67 +82,9 @@ const PROJECT_TYPE_ICONS = {
   'Video Editing': 'fas fa-film'
 };
 
-const EXTERNAL_RESOURCES = [
-  {
-    id: 'mdn',
-    title: 'MDN Web Docs',
-    description: 'Reliable HTML, CSS, and JavaScript docs with practical examples.',
-    type: 'Docs',
-    icon: 'fas fa-book-open',
-    url: 'https://developer.mozilla.org/'
-  },
-  {
-    id: 'javascript-info',
-    title: 'javascript.info',
-    description: 'Deep, structured JavaScript tutorials from fundamentals to advanced topics.',
-    type: 'Tutorial',
-    icon: 'fas fa-code',
-    url: 'https://javascript.info/'
-  },
-  {
-    id: 'web-dev',
-    title: 'web.dev',
-    description: 'Performance, UX, and modern platform guides from Google Chrome teams.',
-    type: 'Guide',
-    icon: 'fas fa-gauge-high',
-    url: 'https://web.dev/'
-  },
-  {
-    id: 'css-tricks',
-    title: 'CSS-Tricks',
-    description: 'Front-end walkthroughs and practical snippets for layout and interaction.',
-    type: 'Reference',
-    icon: 'fas fa-wand-magic-sparkles',
-    url: 'https://css-tricks.com/'
-  }
-];
+const EXTERNAL_RESOURCES = [];
 
-const TOOLS_PREVIEW = [
-  {
-    id: 'tool-writing',
-    title: 'Text Studio',
-    description: 'Case tools, regex, markdown preview, and readability.',
-    icon: 'fa-pen-nib'
-  },
-  {
-    id: 'tool-data',
-    title: 'Universal Converter',
-    description: 'Number bases, encoding, time, units, and structured conversion.',
-    icon: 'fa-repeat'
-  },
-  {
-    id: 'tool-security',
-    title: 'Crypto & Security Lab',
-    description: 'Hashing, JWT/HMAC, password generation, and entropy checks.',
-    icon: 'fa-lock'
-  },
-  {
-    id: 'tool-productivity',
-    title: 'Productivity Lab',
-    description: 'Pomodoro, scheduling helpers, calculators, and randomization.',
-    icon: 'fa-bolt'
-  }
-];
+const TOOLS_PREVIEW = [];
 
 const GAMES_LIST = [
   {
@@ -589,7 +530,7 @@ function buildGamesRailMarkup() {
 }
 
 function buildPostsRailMarkup() {
-  const categories = ['all', 'Development', 'Video Editing', 'Life', 'Projects', 'Politics']
+  const categories = ['all', 'Development', 'Life', 'Projects', 'Politics']
     .map((category) => ({
       label: category === 'all' ? 'All Posts' : category,
       icon: getPostCategoryIcon(category),
@@ -1131,7 +1072,7 @@ function categoryToTag(category) {
 function tagToCategory(tag) {
   if (!tag || tag === 'all') return 'all';
   const normalized = String(tag).toLowerCase();
-  const match = ['all', 'Development', 'Video Editing', 'Life', 'Projects', 'Politics']
+  const match = ['all', 'Development', 'Life', 'Projects', 'Politics']
     .find((category) => categoryToTag(category) === normalized);
   return match || 'all';
 }
@@ -2941,6 +2882,12 @@ function applyCategoryFilter(category = 'all', options = {}) {
   });
 
   currentCategory = targetButton ? targetButton.dataset.category : 'all';
+
+  const videoSpace = document.getElementById('video-editing-space');
+  if (videoSpace) {
+    const isVideoCategory = currentCategory === 'Video Editing';
+    videoSpace.hidden = !isVideoCategory;
+  }
 
   filterPosts({
     resetPage: options.resetPage !== false,
