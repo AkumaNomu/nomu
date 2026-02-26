@@ -3292,13 +3292,20 @@ function setupBackToTop() {
   if (!backToTopBtn) return;
   
   // Show/hide button on scroll
+  let ticking = false;
   window.addEventListener('scroll', () => {
-    if (window.pageYOffset > 300) {
-      backToTopBtn.classList.add('visible');
-    } else {
-      backToTopBtn.classList.remove('visible');
+    if (!ticking) {
+      window.requestAnimationFrame(() => {
+        if (window.pageYOffset > 300) {
+          backToTopBtn.classList.add('visible');
+        } else {
+          backToTopBtn.classList.remove('visible');
+        }
+        ticking = false;
+      });
+      ticking = true;
     }
-  });
+  }, { passive: true });
   
   // Scroll to top on click
   backToTopBtn.addEventListener('click', () => {
