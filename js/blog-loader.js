@@ -1333,32 +1333,30 @@ async function loadPosts() {
   if (allPosts.length > 0) {
     return allPosts;
   }
-  
-  const posts = [];
-  
-  for (const filename of POST_MANIFEST) {
+
+  // Bolt ⚡ Optimization: Parallel fetch and parse for all posts
+  const postPromises = POST_MANIFEST.map(async (filename) => {
     try {
       console.log(`Attempting to load: posts/${filename}`);
       const response = await fetch(`./posts/${filename}`);
-      
+
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
-      
+
       const content = await response.text();
       console.log(`Loaded ${filename}, length: ${content.length}`);
-      
+
       const { frontmatter, body } = parseFrontmatter(content);
-      console.log(`Parsed frontmatter:`, frontmatter);
-      
+
       // Derive slug from filename if not in frontmatter
       const slug = frontmatter.slug || filename.replace('.md', '');
-      
+
       // Calculate reading time
       const readTime = frontmatter.readTime || calculateReadingTime(body);
-      
+
       // Construct post object
-      const post = {
+      return {
         slug,
         title: frontmatter.title || 'Untitled',
         date: frontmatter.date || new Date().toISOString().split('T')[0],
@@ -1369,19 +1367,19 @@ async function loadPosts() {
         body,
         filename
       };
-      
-      posts.push(post);
-      console.log(`Successfully loaded post:`, post.title);
     } catch (error) {
       console.error(`Error loading post ${filename}:`, error);
+      return null;
     }
-  }
-  
+  });
+
+  const posts = (await Promise.all(postPromises)).filter(Boolean);
+
   // Sort by date (newest first)
   posts.sort((a, b) => new Date(b.date) - new Date(a.date));
-  
+
   console.log(`Total posts loaded: ${posts.length}`);
-  
+
   allPosts = posts;
   filteredPosts = posts;
   return posts;
@@ -1390,9 +1388,8 @@ async function loadPosts() {
 async function loadResources() {
   if (allResources.length > 0) return allResources;
 
-  const internalResources = [];
-
-  for (const filename of RESOURCE_MANIFEST) {
+  // Bolt ⚡ Optimization: Parallel fetch and parse for internal resources
+  const resourcePromises = RESOURCE_MANIFEST.map(async (filename) => {
     try {
       const response = await fetch(`./resources/${filename}`);
       if (!response.ok) {
@@ -1404,7 +1401,7 @@ async function loadResources() {
       const slug = frontmatter.slug || filename.replace('.md', '');
       const readTime = frontmatter.readTime || calculateReadingTime(body);
 
-      internalResources.push({
+      return {
         id: slug,
         slug,
         title: frontmatter.title || slug,
@@ -1420,12 +1417,14 @@ async function loadResources() {
         body,
         filename,
         external: false
-      });
+      };
     } catch (error) {
       console.error(`Error loading resource ${filename}:`, error);
+      return null;
     }
-  }
+  });
 
+  const internalResources = (await Promise.all(resourcePromises)).filter(Boolean);
   internalResources.sort((a, b) => new Date(b.date) - new Date(a.date));
 
   const externalResources = EXTERNAL_RESOURCES.map((resource) => ({
@@ -1453,9 +1452,8 @@ async function loadResources() {
 async function loadProjects() {
   if (allProjects.length > 0) return allProjects;
 
-  const projects = [];
-
-  for (const filename of PROJECT_MANIFEST) {
+  // Bolt ⚡ Optimization: Parallel fetch and parse for all projects
+  const projectPromises = PROJECT_MANIFEST.map(async (filename) => {
     try {
       const response = await fetch(`./projects/${filename}`);
       if (!response.ok) {
@@ -1468,7 +1466,7 @@ async function loadProjects() {
       const description = frontmatter.description || frontmatter.excerpt || generateExcerpt(body, 24);
       const summary = frontmatter.summary || generateExcerpt(body, 50);
 
-      projects.push({
+      return {
         id: frontmatter.id || slug,
         slug,
         title: frontmatter.title || slug,
@@ -1487,13 +1485,14 @@ async function loadProjects() {
           video: frontmatter.video || ''
         },
         date: frontmatter.date || ''
-      });
+      };
     } catch (error) {
       console.error(`Error loading project ${filename}:`, error);
+      return null;
     }
-  }
+  });
 
-  allProjects = projects;
+  allProjects = (await Promise.all(projectPromises)).filter(Boolean);
   return allProjects;
 }
 
@@ -3369,9 +3368,12 @@ async function initPage(postSlug, projectId = null, resourceSlug = null) {
     pageLoader.classList.remove('hidden');
   }
 
-  await loadPosts();
-  await loadResources();
-  await loadProjects();
+  // Bolt ⚡ Optimization: Load all content types in parallel
+  await Promise.all([
+    loadPosts(),
+    loadResources(),
+    loadProjects()
+  ]);
 
   setupHubActions();
   renderPostsPreview();
