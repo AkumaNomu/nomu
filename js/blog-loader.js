@@ -2,8 +2,7 @@
 // NO MODULE EXPORTS - Using global scope for compatibility
 // Requires: utils.js, markdown-parser.js to be loaded first
 
-// Manifest of all blog posts (fallback if posts/index.json is missing)
-const DEFAULT_POST_MANIFEST = [
+const POST_MANIFEST = [
   'Markdowntest.md',
   'NomuSite.md',
   'MAIV1.md',
@@ -11,42 +10,162 @@ const DEFAULT_POST_MANIFEST = [
   'Pornban.md',
   'SUpdate2.md',
   'SUpdate3.md',
-  'SUpdate4.md',
-  'PlanChina.md',
+  'PlanChina.md'
 ];
 
-let POST_MANIFEST = DEFAULT_POST_MANIFEST.slice();
-let manifestLoaded = false;
+const RESOURCE_MANIFEST = [
+  'StarterTutorial.md',
+  'ToolingWorkflow.md'
+];
 
+const PROJECT_MANIFEST = [
+  'mai-engine.md',
+  'nomu-site.md',
+  'micro-code-2.0.md',
+];
 
 let allPosts = [];
 let filteredPosts = [];
+let allResources = [];
+let allProjects = [];
 let currentCategory = 'all';
 let currentSearchQuery = '';
+let currentSort = 'newest';
 let currentPage = 1;
+let currentHubView = 'home';
+let currentResourceTypeFilter = 'all';
+let currentResourceSearch = '';
+let currentResourceSort = 'newest';
+let currentResourcePage = 1;
+let currentProjectSearch = '';
+let currentProjectSort = 'featured';
+let currentProjectFilter = 'all';
+let currentProjectPage = 1;
 let searchHistory = [];
-let activeSuggestionIndex = -1;
-let searchBound = false;
-let filtersBound = false;
-let currentPostSlug = '';
-let currentInfoView = '';
-let keyboardNavBound = false;
-const postsPerPage = 4;
+let blogControlsInitialized = false;
+let hubActionsInitialized = false;
+let suppressPostsListScroll = false;
+let leftRailEventsBound = false;
+let leftRailContext = 'home';
+const postsPerPage = 6;
+const projectsPerPage = 6;
+const resourcesPerPage = 6;
+const LEFT_RAIL_BREAKPOINT = 1024;
+const homePreviewLimits = {
+  projects: 2,
+  resources: 2,
+  posts: 2,
+  tools: 4
+};
+
+const POST_CATEGORY_ICONS = {
+  all: 'fas fa-layer-group',
+  Development: 'fas fa-code',
+  'Video Editing': 'fas fa-film',
+  Life: 'fas fa-leaf',
+  Projects: 'fas fa-diagram-project',
+  Politics: 'fas fa-landmark'
+};
+
+const RESOURCE_TYPE_ICONS = {
+  all: 'fas fa-layer-group',
+  Tutorial: 'fas fa-graduation-cap',
+  Guide: 'fas fa-compass',
+  Reference: 'fas fa-book-open',
+  Docs: 'fas fa-file-lines'
+};
+
+const PROJECT_TYPE_ICONS = {
+  all: 'fas fa-layer-group',
+  Coding: 'fas fa-code',
+  Website: 'fas fa-globe',
+  Research: 'fas fa-flask',
+  'Video Editing': 'fas fa-film'
+};
+
+const EXTERNAL_RESOURCES = [
+  {
+    id: 'mdn',
+    title: 'MDN Web Docs',
+    description: 'Reliable HTML, CSS, and JavaScript docs with practical examples.',
+    type: 'Docs',
+    icon: 'fas fa-book-open',
+    url: 'https://developer.mozilla.org/'
+  },
+  {
+    id: 'javascript-info',
+    title: 'javascript.info',
+    description: 'Deep, structured JavaScript tutorials from fundamentals to advanced topics.',
+    type: 'Tutorial',
+    icon: 'fas fa-code',
+    url: 'https://javascript.info/'
+  },
+  {
+    id: 'web-dev',
+    title: 'web.dev',
+    description: 'Performance, UX, and modern platform guides from Google Chrome teams.',
+    type: 'Guide',
+    icon: 'fas fa-gauge-high',
+    url: 'https://web.dev/'
+  },
+  {
+    id: 'css-tricks',
+    title: 'CSS-Tricks',
+    description: 'Front-end walkthroughs and practical snippets for layout and interaction.',
+    type: 'Reference',
+    icon: 'fas fa-wand-magic-sparkles',
+    url: 'https://css-tricks.com/'
+  }
+];
+
+const TOOLS_PREVIEW = [
+  {
+    id: 'tool-writing',
+    title: 'Text Studio',
+    description: 'Case tools, regex, markdown preview, and readability.',
+    icon: 'fa-pen-nib'
+  },
+  {
+    id: 'tool-data',
+    title: 'Universal Converter',
+    description: 'Number bases, encoding, time, units, and structured conversion.',
+    icon: 'fa-repeat'
+  },
+  {
+    id: 'tool-security',
+    title: 'Crypto & Security Lab',
+    description: 'Hashing, JWT/HMAC, password generation, and entropy checks.',
+    icon: 'fa-lock'
+  },
+  {
+    id: 'tool-productivity',
+    title: 'Productivity Lab',
+    description: 'Pomodoro, scheduling helpers, calculators, and randomization.',
+    icon: 'fa-bolt'
+  }
+];
+
+const GAMES_LIST = [
+  {
+    id: 'imposter-game',
+    title: 'Imposter Game',
+    description: 'Social deduction round where one player is the imposter and everyone else shares the same secret role.',
+    icon: 'fa-user-secret',
+    chips: ['Social', 'Party']
+  },
+  {
+    id: 'fishbowl-characters',
+    title: 'Fishbowl Characters',
+    description: 'Character fishbowl in 3 rounds: full description, miming, and 1 word only.',
+    icon: 'fa-fish',
+    chips: ['3 rounds', 'Characters']
+  }
+];
 
 // Load search history from localStorage
 function loadSearchHistory() {
   const saved = localStorage.getItem('searchHistory');
-  if (!saved) {
-    searchHistory = [];
-    return;
-  }
-  try {
-    searchHistory = JSON.parse(saved) || [];
-  } catch (error) {
-    console.warn('Failed to parse search history, resetting.', error);
-    searchHistory = [];
-    localStorage.removeItem('searchHistory');
-  }
+  searchHistory = saved ? JSON.parse(saved) : [];
 }
 
 // Save search history to localStorage
@@ -69,623 +188,1203 @@ function generateExcerpt(markdown, wordLimit = 30) {
   return words.slice(0, wordLimit).join(' ') + '...';
 }
 
-function escapeHtml(text) {
-  const map = {
-    '&': '&amp;',
-    '<': '&lt;',
-    '>': '&gt;',
-    '"': '&quot;',
-    "'": '&#39;'
-  };
-  return String(text || '').replace(/[&<>"']/g, (char) => map[char]);
+function clampWords(text = '', limit = 28) {
+  const words = String(text || '').split(/\s+/).filter(Boolean);
+  if (words.length <= limit) return words.join(' ');
+  return `${words.slice(0, limit).join(' ')}…`;
 }
 
-function sanitizeUrl(url) {
-  if (!url) return '';
-  const trimmed = String(url).trim();
-  if (/^(https?:|\/|\.\/|\.\.\/|assets\/)/i.test(trimmed)) {
-    return trimmed;
-  }
-  return '';
+function escapeHtml(value = '') {
+  return String(value)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
 }
 
-const DEFAULT_PAGE_META = {
-  title: document.title,
-  description: (document.querySelector('meta[name="description"]') || {}).content || '',
-  ogTitle: (document.querySelector('meta[property="og:title"]') || {}).content || '',
-  ogDescription: (document.querySelector('meta[property="og:description"]') || {}).content || '',
-  ogImage: (document.querySelector('meta[property="og:image"]') || {}).content || '',
-  twitterTitle: (document.querySelector('meta[name="twitter:title"]') || {}).content || '',
-  twitterDescription: (document.querySelector('meta[name="twitter:description"]') || {}).content || '',
-  twitterImage: (document.querySelector('meta[name="twitter:image"]') || {}).content || ''
-};
-
-function resolveSiteBasePath() {
-  const path = window.location.pathname || '/';
-  const postIndex = path.indexOf('/post/');
-  if (postIndex >= 0) {
-    return path.slice(0, postIndex + 1);
-  }
-
-  const fileSegment = path.endsWith('/') ? path : path.slice(0, path.lastIndexOf('/') + 1);
-  return fileSegment || '/';
+function parsePipeList(value = '') {
+  return String(value || '')
+    .split('|')
+    .map((item) => item.trim())
+    .filter(Boolean);
 }
 
-function buildAbsoluteUrl(relativePath) {
-  const basePath = resolveSiteBasePath();
-  const cleaned = String(relativePath || '').replace(/^\//, '');
-  return `${window.location.origin}${basePath}${cleaned}`;
+function parseInlineList(value = '') {
+  return String(value || '')
+    .split(/[|,]/)
+    .map((item) => item.trim())
+    .filter(Boolean);
 }
 
-function buildPostPermalink(slug) {
-  return buildAbsoluteUrl(`post/${encodeURIComponent(slug)}/`);
-}
-
-function resolveAbsoluteAssetUrl(value) {
-  const input = String(value || '').trim();
-  if (!input) return buildAbsoluteUrl('assets/Peak.png');
-  if (/^https?:\/\//i.test(input)) return input;
-  if (input.startsWith('/')) return `${window.location.origin}${input}`;
-  return buildAbsoluteUrl(input);
-}
-
-function updatePageMeta(title, description) {
-  if (title) {
-    document.title = title;
-  }
-  const meta = document.querySelector('meta[name="description"]');
-  if (meta && description) {
-    meta.setAttribute('content', description);
-  }
-}
-
-function setMetaValue(selector, value) {
-  const el = document.querySelector(selector);
-  if (!el || !value) return;
-  el.setAttribute('content', value);
-}
-
-function updateCanonical(url) {
-  const canonical = document.querySelector('#canonical-url');
-  if (!canonical || !url) return;
-  canonical.setAttribute('href', url);
-}
-
-function updateSocialMeta(post) {
-  if (!post) return;
-  const title = `${post.title} | Nomu's Blog`;
-  const description = post.excerpt || DEFAULT_PAGE_META.description;
-  const image = resolveAbsoluteAssetUrl(post.cover);
-  const url = buildPostPermalink(post.slug);
-
-  setMetaValue('meta[property="og:title"]', title);
-  setMetaValue('meta[property="og:description"]', description);
-  setMetaValue('meta[property="og:image"]', image);
-  setMetaValue('meta[property="og:url"]', url);
-  setMetaValue('meta[name="twitter:title"]', title);
-  setMetaValue('meta[name="twitter:description"]', description);
-  setMetaValue('meta[name="twitter:image"]', image);
-  updateCanonical(url);
-}
-
-function restorePageMeta() {
-  updatePageMeta(DEFAULT_PAGE_META.title, DEFAULT_PAGE_META.description);
-  setMetaValue('meta[property="og:title"]', DEFAULT_PAGE_META.ogTitle || DEFAULT_PAGE_META.title);
-  setMetaValue('meta[property="og:description"]', DEFAULT_PAGE_META.ogDescription || DEFAULT_PAGE_META.description);
-  setMetaValue('meta[property="og:image"]', DEFAULT_PAGE_META.ogImage || buildAbsoluteUrl('assets/Peak.png'));
-  setMetaValue('meta[property="og:url"]', buildAbsoluteUrl('index.html'));
-  setMetaValue('meta[name="twitter:title"]', DEFAULT_PAGE_META.twitterTitle || DEFAULT_PAGE_META.title);
-  setMetaValue('meta[name="twitter:description"]', DEFAULT_PAGE_META.twitterDescription || DEFAULT_PAGE_META.description);
-  setMetaValue('meta[name="twitter:image"]', DEFAULT_PAGE_META.twitterImage || buildAbsoluteUrl('assets/Peak.png'));
-  updateCanonical(buildAbsoluteUrl('index.html'));
-}
-
-const infoSectionState = new Map();
-const ROUTE_NAMES = new Set(['home', 'blog', 'now', 'uses', 'setup', 'tools', 'post']);
-const TOOL_NAMES = new Set(['hub', 'gpa', 'password', 'pomodoro']);
-
-let activeInfoSection = null;
-let routerBound = false;
-let routeLinksBound = false;
-let paginationBound = false;
-let pendingRouteOptions = null;
-let currentMainView = 'home';
-
-function normalizeRouteName(value) {
-  const candidate = String(value || '').trim().toLowerCase();
-  return ROUTE_NAMES.has(candidate) ? candidate : '';
-}
-
-function sanitizeToolName(value) {
-  const candidate = String(value || '').trim().toLowerCase();
-  if (!candidate) return 'hub';
-  return TOOL_NAMES.has(candidate) ? candidate : 'hub';
-}
-
-function parseHashRoute(hashValue = window.location.hash) {
-  const cleaned = String(hashValue || '').replace(/^#/, '').replace(/^\/+/, '').trim();
-  if (!cleaned) return { view: 'home' };
-
-  const [headRaw, ...restRaw] = cleaned.split('/');
-  const head = String(headRaw || '').toLowerCase();
-  const rest = restRaw.map((part) => decodeURIComponent(part));
-
-  if (head === 'posts') {
-    return { view: 'blog' };
-  }
-  if (head === 'blog' || head === 'home' || head === 'now' || head === 'uses' || head === 'setup') {
-    return { view: head };
-  }
-  if (head === 'tools') {
-    return { view: 'tools', tool: sanitizeToolName(rest[0]) };
-  }
-  if (head === 'post') {
-    const slug = rest.join('/').trim();
-    return { view: 'post', slug };
-  }
-  return { view: 'home' };
-}
-
-function buildHashForRoute(route) {
-  const view = normalizeRouteName(route && route.view) || 'home';
-  if (view === 'post') {
-    const slug = String(route && route.slug || '').trim();
-    return slug ? `#post/${encodeURIComponent(slug)}` : '#blog';
-  }
-  if (view === 'tools') {
-    const tool = sanitizeToolName(route && route.tool);
-    return tool === 'hub' ? '#tools' : `#tools/${tool}`;
-  }
-  return `#${view}`;
-}
-
-function getScrollBehavior(options = {}) {
-  if (options.initial) return 'auto';
-  if (options.scrollBehavior) return options.scrollBehavior;
-  return 'smooth';
-}
-
-function scrollPageTop(behavior = 'auto') {
-  window.scrollTo({ top: 0, behavior });
-}
-
-function scrollToElementStart(targetId, behavior = 'smooth') {
-  const target = document.getElementById(targetId);
-  if (!target) {
-    scrollPageTop(behavior);
-    return;
-  }
-  const rootStyles = getComputedStyle(document.documentElement);
-  const headerOffset = Number.parseInt(rootStyles.getPropertyValue('--header-offset'), 10) || 0;
-  const top = target.getBoundingClientRect().top + window.scrollY - headerOffset - 8;
-  window.scrollTo({ top: Math.max(0, top), behavior });
-}
-
-function hideTopPostNav() {
-  const prevLink = document.getElementById('prev-post');
-  const nextLink = document.getElementById('next-post');
-  if (prevLink) prevLink.style.display = 'none';
-  if (nextLink) nextLink.style.display = 'none';
-}
-
-function setActiveNav(view) {
-  const normalized = normalizeRouteName(view) || 'home';
-  document.querySelectorAll('.nav-link').forEach((link) => {
-    const route = normalizeRouteName(link.dataset.route || link.dataset.view);
-    const isHomeLink = link.id === 'logo-link' || route === 'home';
-    const isActive = normalized === 'home' ? isHomeLink : route === normalized;
-    link.classList.toggle('active', isActive);
-  });
-}
-
-function setMainView(view) {
-  const heroSection = document.getElementById('hero');
-  const nowSection = document.getElementById('now-status');
-  const blogSection = document.querySelector('.blog-section');
-  const featuredSection = document.getElementById('featured-section');
-  const detailsSection = document.getElementById('details');
-  const contactSection = document.querySelector('.contact');
-  const singleView = document.getElementById('single-post-view');
-  const infoView = document.getElementById('info-view');
-
-  const showHome = view === 'home';
-  const showBlog = view === 'blog';
-  const showPost = view === 'post';
-  const showInfo = view === 'info';
-
-  if (heroSection) heroSection.style.display = showHome ? 'block' : 'none';
-  if (nowSection) nowSection.style.display = showHome ? 'block' : 'none';
-  if (blogSection) blogSection.style.display = showBlog ? 'block' : 'none';
-  if (featuredSection) featuredSection.style.display = (showHome || showBlog) ? 'grid' : 'none';
-  if (detailsSection) detailsSection.style.display = 'none';
-  if (contactSection) contactSection.style.display = (showHome || showBlog) ? 'block' : 'none';
-  if (singleView) singleView.style.display = showPost ? 'block' : 'none';
-  if (infoView) infoView.style.display = showInfo ? 'block' : 'none';
-
-  document.body.classList.toggle('post-view', showPost);
-  document.body.classList.toggle('info-view', showInfo);
-  document.body.classList.toggle('list-view', !showPost && !showInfo);
-
-  currentMainView = view;
-  setupTOC();
-}
-
-function storeSectionPosition(section) {
-  if (!section || infoSectionState.has(section)) return;
-  infoSectionState.set(section, {
-    parent: section.parentElement,
-    next: section.nextElementSibling
-  });
-}
-
-function moveSection(section, target) {
-  if (!section || !target) return;
-  storeSectionPosition(section);
-  target.innerHTML = '';
-  target.appendChild(section);
-}
-
-function restoreSection(section) {
-  if (!section) return;
-  const state = infoSectionState.get(section);
-  if (!state || !state.parent) return;
-  if (state.next && state.parent.contains(state.next)) {
-    state.parent.insertBefore(section, state.next);
-  } else {
-    state.parent.appendChild(section);
-  }
-}
-
-function activateToolView(viewId) {
-  const toolsSection = document.getElementById('tools-section');
-  if (!toolsSection) return;
-  const target = sanitizeToolName(viewId);
-  toolsSection.querySelectorAll('[data-tool-view]').forEach((section) => {
-    section.classList.toggle('hidden', section.dataset.toolView !== target);
-  });
-  toolsSection.querySelectorAll('.tools-nav-link').forEach((button) => {
-    button.classList.toggle('active', button.dataset.toolTarget === target);
-  });
-}
-
-function setupToolsView() {
-  const toolsSection = document.getElementById('tools-section');
-  if (!toolsSection || toolsSection.dataset.bound === 'true') return;
-
-  toolsSection.addEventListener('click', (event) => {
-    const button = event.target.closest('[data-tool-target]');
-    if (!button || !toolsSection.contains(button)) return;
-    event.preventDefault();
-    const target = sanitizeToolName(button.dataset.toolTarget);
-    activateToolView(target);
-    if (currentInfoView === 'tools') {
-      navigateToRoute({ view: 'tools', tool: target }, {
-        keepScroll: true,
-        scrollBehavior: 'auto'
-      });
-    }
-  });
-
-  toolsSection.dataset.bound = 'true';
-}
-
-function showInfoView(view, toolView, options = {}) {
-  const infoView = document.getElementById('info-view');
-  const infoContent = document.getElementById('info-content');
-  const infoTitle = document.getElementById('info-sticky-title');
-  const infoBreadcrumb = document.getElementById('info-breadcrumb');
-  const infoBreadcrumbLabel = document.getElementById('info-breadcrumb-label');
-  const infoStickyHeader = document.getElementById('info-sticky-header');
-
-  if (!infoView || !infoContent) return;
-
-  const labelMap = {
-    now: 'Now',
-    uses: 'Uses',
-    setup: 'Setup',
-    tools: 'Toolbox'
-  };
-
-  const sourceMap = {
-    now: document.getElementById('now-details'),
-    uses: document.getElementById('uses-details'),
-    setup: document.getElementById('setup-details'),
-    tools: document.getElementById('tools-section')
-  };
-
-  const source = sourceMap[view];
-  if (!source) return;
-
-  if (activeInfoSection && activeInfoSection !== source) {
-    if (activeInfoSection.id === 'tools-section') {
-      activeInfoSection.style.display = 'none';
-    }
-    restoreSection(activeInfoSection);
-  }
-  activeInfoSection = source;
-
-  setMainView('info');
-  resetPostChrome();
-  currentInfoView = view;
-  currentPostSlug = '';
-
-  moveSection(source, infoContent);
-  source.style.display = 'block';
-
-  hideTopPostNav();
-
-  if (infoTitle) infoTitle.textContent = labelMap[view] || 'Info';
-  if (infoBreadcrumbLabel) infoBreadcrumbLabel.textContent = labelMap[view] || 'Info';
-  if (infoBreadcrumb) infoBreadcrumb.style.display = 'flex';
-  if (infoStickyHeader) infoStickyHeader.setAttribute('aria-hidden', 'false');
-
-  if (view === 'tools') {
-    setupToolsView();
-    activateToolView(toolView || 'hub');
-  }
-
-  setActiveNav(view);
-  restorePageMeta();
-
-  if (!options.keepScroll) {
-    scrollPageTop(options.scrollBehavior || 'auto');
-  }
-}
-
-function hideInfoView() {
-  const infoContent = document.getElementById('info-content');
-  const infoStickyHeader = document.getElementById('info-sticky-header');
-  const infoBreadcrumb = document.getElementById('info-breadcrumb');
-
-  if (activeInfoSection) {
-    if (activeInfoSection.id === 'tools-section') {
-      activeInfoSection.style.display = 'none';
-    }
-    restoreSection(activeInfoSection);
-  }
-  activeInfoSection = null;
-
-  if (infoContent) {
-    infoContent.innerHTML = '';
-  }
-  if (infoStickyHeader) infoStickyHeader.setAttribute('aria-hidden', 'true');
-  if (infoBreadcrumb) infoBreadcrumb.style.display = 'none';
-  currentInfoView = '';
-}
-
-function showBlogListView(scrollTarget, options = {}) {
-  hideInfoView();
-  resetPostChrome();
-  currentPostSlug = '';
-  setMainView('blog');
-  setActiveNav('blog');
-  restorePageMeta();
-
-  if (scrollTarget) {
-    scrollToElementStart(scrollTarget, options.scrollBehavior || 'smooth');
-    return;
-  }
-  if (!options.keepScroll) {
-    scrollPageTop(options.scrollBehavior || 'auto');
-  }
-}
-
-function openHomeView(options = {}) {
-  hideInfoView();
-  resetPostChrome();
-  currentPostSlug = '';
-  setMainView('home');
-  setActiveNav('home');
-  restorePageMeta();
-
-  if (!options.keepScroll) {
-    scrollPageTop(options.scrollBehavior || 'auto');
-  }
-}
-
-async function openPostView(slug, options = {}) {
-  if (!slug) {
-    showBlogListView('posts', { keepScroll: false, scrollBehavior: options.scrollBehavior || 'auto' });
-    return;
-  }
-  const postExists = allPosts.some((post) => post.slug === slug);
-  if (!postExists) {
-    showBlogListView('posts', { keepScroll: false, scrollBehavior: options.scrollBehavior || 'auto' });
-    return;
-  }
-
-  hideInfoView();
-  setMainView('post');
-  setActiveNav('blog');
-  currentPostSlug = slug;
-  await renderSinglePost(slug);
-
-  if (!options.keepScroll) {
-    scrollPageTop(options.scrollBehavior || 'auto');
-  }
-}
-
-async function applyRoute(route, options = {}) {
-  const resolved = route || { view: 'home' };
-  const view = normalizeRouteName(resolved.view) || 'home';
-  const behavior = getScrollBehavior(options);
-
-  if (view === 'post') {
-    await openPostView(resolved.slug, {
-      keepScroll: options.keepScroll,
-      scrollBehavior: behavior
-    });
-    return;
-  }
-
-  if (view === 'blog') {
-    showBlogListView(options.scrollTarget || '', {
-      keepScroll: options.keepScroll,
-      scrollBehavior: behavior
-    });
-    return;
-  }
-
-  if (view === 'now' || view === 'uses' || view === 'setup' || view === 'tools') {
-    showInfoView(view, resolved.tool, {
-      keepScroll: options.keepScroll,
-      scrollBehavior: behavior
-    });
-    return;
-  }
-
-  openHomeView({
-    keepScroll: options.keepScroll,
-    scrollBehavior: behavior
-  });
-}
-
-function handleHashChange() {
-  const options = pendingRouteOptions || {};
-  pendingRouteOptions = null;
-  const route = parseHashRoute(window.location.hash);
-  Promise.resolve(applyRoute(route, options)).catch((error) => {
-    console.error('Failed to apply route:', error);
-  });
-}
-
-function navigateToRoute(route, options = {}) {
-  const hash = buildHashForRoute(route);
-  const currentHash = window.location.hash || '';
-
-  if (currentHash === hash) {
-    Promise.resolve(applyRoute(parseHashRoute(hash), {
-      keepScroll: options.keepScroll,
-      scrollTarget: options.scrollTarget || '',
-      scrollBehavior: options.scrollBehavior || 'smooth'
-    })).catch((error) => {
-      console.error('Failed to apply route:', error);
-    });
-    return;
-  }
-
-  pendingRouteOptions = {
-    keepScroll: options.keepScroll,
-    scrollTarget: options.scrollTarget || '',
-    scrollBehavior: options.scrollBehavior || 'smooth'
-  };
-
-  if (options.replace) {
-    history.replaceState({}, '', `${window.location.pathname}${hash}`);
-    handleHashChange();
-    return;
-  }
-
-  window.location.hash = hash;
-}
-
-function setupHashRouter() {
-  if (routerBound) return;
-  window.addEventListener('hashchange', handleHashChange);
-  routerBound = true;
-}
-
-function setupInfoLinks() {
-  if (routeLinksBound) return;
-
-  document.addEventListener('click', (event) => {
-    if (event.defaultPrevented) return;
-    if (event.button !== 0) return;
-    if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
-
-    const routeTrigger = event.target.closest('[data-route]');
-    if (!routeTrigger) return;
-
-    const route = normalizeRouteName(routeTrigger.dataset.route);
-    if (!route) return;
-
-    if (routeTrigger.tagName.toLowerCase() === 'a' || routeTrigger.tagName.toLowerCase() === 'button') {
-      event.preventDefault();
-    }
-
-    if (route === 'post') {
-      const slug = routeTrigger.dataset.slug || '';
-      if (slug) {
-        navigateToRoute({ view: 'post', slug });
-      }
-      return;
-    }
-
-    if (route === 'blog') {
-      const scrollTarget = routeTrigger.dataset.scrollTarget || '';
-      navigateToRoute({ view: 'blog' }, {
-        keepScroll: false,
-        scrollTarget: scrollTarget || 'posts'
-      });
-      return;
-    }
-
-    if (route === 'tools') {
-      navigateToRoute({ view: 'tools', tool: routeTrigger.dataset.tool || '' }, {
-        keepScroll: false
-      });
-      return;
-    }
-
-    navigateToRoute({ view: route }, {
-      keepScroll: false
-    });
-  });
-
-  routeLinksBound = true;
-}
-
-function resolveInitialRoute() {
-  if (window.location.hash && window.location.hash.length > 1) {
-    return parseHashRoute(window.location.hash);
-  }
-
-  const postParam = getQueryParam('post');
-  if (postParam) {
-    return { view: 'post', slug: postParam };
-  }
-
-  const viewParam = normalizeRouteName(getQueryParam('view'));
-  if (viewParam === 'tools') {
-    return { view: 'tools', tool: sanitizeToolName(getQueryParam('tool')) };
-  }
-  if (viewParam) {
-    return { view: viewParam };
-  }
-
-  return { view: 'home' };
-}
-
-window.navigateToView = function navigateToView(view, options = {}) {
-  const normalized = normalizeRouteName(view) || 'home';
-  if (normalized === 'post') {
-    navigateToRoute({ view: 'post', slug: options.slug || '' }, options);
-    return;
-  }
-  if (normalized === 'tools') {
-    navigateToRoute({ view: 'tools', tool: options.tool || '' }, options);
-    return;
-  }
-  navigateToRoute({ view: normalized }, options);
-};
-
-async function loadPostManifest() {
-  if (manifestLoaded) return POST_MANIFEST;
-  manifestLoaded = true;
+function parseJsonArray(value = '') {
+  const trimmed = String(value || '').trim();
+  if (!trimmed) return [];
   try {
-    const response = await fetch('./posts/index.json', { cache: 'no-store' });
-    if (response.ok) {
-      const data = await response.json();
-      if (Array.isArray(data.posts) && data.posts.length > 0) {
-        POST_MANIFEST = data.posts;
-        return POST_MANIFEST;
-      }
-    }
+    const parsed = JSON.parse(trimmed);
+    return Array.isArray(parsed) ? parsed : [];
   } catch (error) {
-    console.warn('Failed to load posts/index.json, using fallback manifest.', error);
+    return [];
   }
-  POST_MANIFEST = DEFAULT_POST_MANIFEST.slice();
-  return POST_MANIFEST;
+}
+
+function parseDownloads(value = '') {
+  return parsePipeList(value)
+    .map((item) => {
+      const [labelRaw, urlRaw] = item.includes('::') ? item.split('::') : ['', item];
+      const url = String(urlRaw || '').trim();
+      if (!url) return null;
+      const label = String(labelRaw || '').trim();
+      return {
+        label: label || url.replace(/^https?:\/\//i, '').replace(/\/$/, ''),
+        url
+      };
+    })
+    .filter(Boolean);
+}
+
+function parseSteps(frontmatter = {}, body = '') {
+  const fromFrontmatter = parsePipeList(frontmatter.steps || '');
+  if (fromFrontmatter.length) return fromFrontmatter;
+
+  const bodyMatches = String(body || '')
+    .split(/\r?\n/)
+    .map((line) => line.match(/^\s*\d+\.\s+(.+)$/))
+    .filter(Boolean)
+    .map((match) => match[1].trim())
+    .filter(Boolean);
+
+  return bodyMatches.slice(0, 8);
+}
+
+function formatCompactDate(dateString = '') {
+  const date = new Date(dateString);
+  if (Number.isNaN(date.getTime())) return '';
+  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+}
+
+function buildMetaMarkup(parts = []) {
+  const safeParts = parts.filter(Boolean).map((part) => escapeHtml(part));
+  if (!safeParts.length) return '';
+  return safeParts
+    .map((part) => `<span>${part}</span>`)
+    .join('<span class="meta-sep">&bull;</span>');
+}
+
+function getPostCategoryIcon(category = 'all') {
+  return POST_CATEGORY_ICONS[category] || 'fas fa-tag';
+}
+
+function getResourceTypeIcon(type = 'all') {
+  return RESOURCE_TYPE_ICONS[type] || 'fas fa-book-open';
+}
+
+function getProjectTypeIcon(type = 'all') {
+  return PROJECT_TYPE_ICONS[type] || 'fas fa-diagram-project';
+}
+
+function getFavoritePostSlugs() {
+  try {
+    const parsed = JSON.parse(localStorage.getItem('post-favorites-v1') || '[]');
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
+
+function createMediaBackdropCard(options = {}) {
+  const {
+    tag = 'button',
+    href = '',
+    typeClass = '',
+    size = 'md',
+    layout = 'bottomText',
+    title = '',
+    description = '',
+    cover = '',
+    chips = [],
+    meta = [],
+    iconHtml = '',
+    actionHtml = '',
+    showExcerpt = true,
+    showMeta = true,
+    ctaText = '',
+    dataAttrs = ''
+  } = options;
+
+  const chipsMarkup = chips.length
+    ? `<div class="media-card-chips">${chips.map((chip) => `<span class="chip">${escapeHtml(chip)}</span>`).join('')}</div>`
+    : '';
+  const topMarkup = iconHtml || actionHtml
+    ? `
+      <div class="media-card-top">
+        ${iconHtml ? `<span class="media-card-icon">${iconHtml}</span>` : '<span></span>'}
+        ${actionHtml ? `<span class="media-card-action">${actionHtml}</span>` : ''}
+      </div>
+    `
+    : '';
+  const metaMarkup = showMeta ? buildMetaMarkup(meta) : '';
+  const descriptionMarkup = showExcerpt && description ? `<p class="media-card-desc">${escapeHtml(description)}</p>` : '';
+  const ctaMarkup = ctaText ? `<span class="media-card-cta" aria-hidden="true">${escapeHtml(ctaText)}</span>` : '';
+  const mediaMarkup = cover
+    ? `
+      <div class="card-media-wrap media-card-media">
+        <img class="media-card-image" src="${cover}" alt="${escapeHtml(title)}" loading="lazy" decoding="async">
+        <div class="media-card-overlay"></div>
+      </div>
+    `
+    : `
+      <div class="card-media-wrap media-card-media no-media">
+        <div class="media-card-fallback" aria-hidden="true">
+          ${iconHtml ? iconHtml : '<i class="fas fa-layer-group"></i>'}
+          <span>Preview</span>
+        </div>
+      </div>
+    `;
+
+  const classes = `media-card ${typeClass} glass-card glass-card--media media-card--${size} ${layout === 'centerText' ? 'media-card--center' : ''}`.trim();
+  const attrs = [dataAttrs, href && tag === 'a' ? `href="${href}" target="_blank" rel="noopener noreferrer"` : '', tag === 'button' ? 'type="button"' : '']
+    .filter(Boolean)
+    .join(' ');
+
+  return `
+    <${tag} class="${classes}" ${attrs}>
+      ${mediaMarkup}
+      <div class="media-card-content">
+        ${topMarkup}
+        ${chipsMarkup}
+        <h4 class="media-card-title">${escapeHtml(title)}</h4>
+        ${descriptionMarkup}
+        ${metaMarkup ? `<p class="media-card-meta">${metaMarkup}</p>` : ''}
+        ${ctaMarkup}
+      </div>
+    </${tag}>
+  `;
+}
+
+function isSingleContentView() {
+  const singleView = document.getElementById('single-post-view');
+  return Boolean(singleView && singleView.style.display !== 'none');
+}
+
+function getActiveRailElement() {
+  return isSingleContentView()
+    ? document.getElementById('toc-sidebar')
+    : document.getElementById('left-rail');
+}
+
+function setRailMode(mode = 'hub') {
+  const leftRail = document.getElementById('left-rail');
+  const tocRail = document.getElementById('toc-sidebar');
+  const isSingle = mode === 'single';
+  const isHidden = mode === 'hidden';
+  if (leftRail) leftRail.hidden = isSingle || isHidden;
+  if (tocRail) tocRail.hidden = !isSingle || isHidden;
+  if (!isSingle) {
+    document.body.classList.remove('single-rail-mode');
+  } else {
+    document.body.classList.add('single-rail-mode');
+  }
+}
+
+function setRailDrawerOpen(open) {
+  const rail = getActiveRailElement();
+  const toggle = document.getElementById('left-rail-toggle');
+  const backdrop = document.getElementById('left-rail-backdrop');
+  if (!rail || !toggle || !backdrop) return;
+
+  const shouldOpen = Boolean(open);
+  document.body.classList.toggle('left-rail-open', shouldOpen);
+  toggle.setAttribute('aria-expanded', shouldOpen ? 'true' : 'false');
+  backdrop.hidden = !shouldOpen;
+  rail.classList.toggle('open', shouldOpen);
+}
+
+function closeRailDrawer() {
+  setRailDrawerOpen(false);
+}
+
+function railItemMarkup(item = {}) {
+  const icon = item.icon ? `<i class="${item.icon}" aria-hidden="true"></i>` : '';
+  const meta = item.meta ? `<span class="left-rail-item-meta">${escapeHtml(item.meta)}</span>` : '';
+  const activeClass = item.active ? ' is-active' : '';
+  const attrs = [
+    item.action ? `data-rail-action="${escapeHtml(item.action)}"` : '',
+    item.value ? `data-rail-value="${escapeHtml(item.value)}"` : '',
+    item.slug ? `data-rail-slug="${escapeHtml(item.slug)}"` : '',
+    item.projectId ? `data-rail-project="${escapeHtml(item.projectId)}"` : '',
+    item.toolId ? `data-rail-tool="${escapeHtml(item.toolId)}"` : '',
+    item.tabId ? `data-rail-tab="${escapeHtml(item.tabId)}"` : '',
+    item.targetId ? `data-rail-target="${escapeHtml(item.targetId)}"` : ''
+  ].filter(Boolean).join(' ');
+
+  if (item.href) {
+    return `
+      <li>
+        <a class="left-rail-item list-item${activeClass}" href="${escapeHtml(item.href)}" target="_blank" rel="noopener noreferrer">
+          ${icon}
+          <span>${escapeHtml(item.label || '')}</span>
+          ${meta}
+        </a>
+      </li>
+    `;
+  }
+
+  if (!item.action) {
+    return `
+      <li>
+        <div class="left-rail-item list-item is-static${activeClass}">
+          ${icon}
+          <span>${escapeHtml(item.label || '')}</span>
+          ${meta}
+        </div>
+      </li>
+    `;
+  }
+
+  return `
+    <li>
+      <button class="left-rail-item list-item${activeClass}" type="button" ${attrs}>
+        ${icon}
+        <span>${escapeHtml(item.label || '')}</span>
+        ${meta}
+      </button>
+    </li>
+  `;
+}
+
+function railGroupMarkup(title, items = []) {
+  const body = items.length
+    ? `<ul class="left-rail-list" role="list">${items.map((item) => railItemMarkup(item)).join('')}</ul>`
+    : '<p class="left-rail-empty">No items yet.</p>';
+  return `
+    <section class="left-rail-group">
+      <h3>${escapeHtml(title)}</h3>
+      ${body}
+    </section>
+  `;
+}
+
+function railPillGroupMarkup(title, items = []) {
+  const body = items.length
+    ? `
+      <div class="left-rail-pill-row" role="group" aria-label="${escapeHtml(title)} filters">
+        ${items.map((item) => {
+          const icon = item.icon ? `<i class="${item.icon}" aria-hidden="true"></i>` : '';
+          const activeClass = item.active ? ' is-active' : '';
+          const attrs = [
+            item.action ? `data-rail-action="${escapeHtml(item.action)}"` : '',
+            item.value ? `data-rail-value="${escapeHtml(item.value)}"` : ''
+          ].filter(Boolean).join(' ');
+          return `<button class="left-rail-pill chip${activeClass}" type="button" ${attrs}>${icon}<span>${escapeHtml(item.label || '')}</span></button>`;
+        }).join('')}
+      </div>
+    `
+    : '<p class="left-rail-empty">No filters available.</p>';
+  return `
+    <section class="left-rail-group">
+      <h3>${escapeHtml(title)}</h3>
+      ${body}
+    </section>
+  `;
+}
+
+function buildHomeRailMarkup() {
+  const latestPost = sortPosts(allPosts, 'newest')[0];
+  const quickJump = [
+    { label: 'Projects', icon: 'fas fa-diagram-project', action: 'hub-view', value: 'projects' },
+    { label: 'Resources', icon: 'fas fa-book-bookmark', action: 'hub-view', value: 'resources' },
+    { label: 'Games', icon: 'fas fa-gamepad', action: 'hub-view', value: 'games' },
+    { label: 'Latest Posts', icon: 'fas fa-newspaper', action: 'hub-view', value: 'posts' },
+    { label: 'Tools Workspace', icon: 'fas fa-screwdriver-wrench', action: 'open-tools' }
+  ];
+  const status = [
+    { label: `${allProjects.length} tracked projects`, icon: 'fas fa-layer-group' },
+    { label: `${allResources.length} resources in hub`, icon: 'fas fa-book-open' },
+    latestPost
+      ? { label: 'Latest post', icon: 'fas fa-clock', meta: `${formatCompactDate(latestPost.date)} - ${latestPost.title}` }
+      : { label: 'No posts published yet', icon: 'fas fa-clock' }
+  ];
+  return `${railGroupMarkup('Quick Jump', quickJump)}${railGroupMarkup('Now / Status', status)}`;
+}
+
+function buildProjectsRailMarkup() {
+  const typeCount = new Map();
+  allProjects.forEach((project) => {
+    const key = project.type || 'General';
+    typeCount.set(key, (typeCount.get(key) || 0) + 1);
+  });
+
+  const categories = Array.from(typeCount.entries()).map(([type, count]) => ({
+    label: type,
+    icon: getProjectTypeIcon(type),
+    action: 'project-filter',
+    value: type,
+    active: currentProjectFilter === type,
+    meta: `${count} project${count === 1 ? '' : 's'}`
+  }));
+  categories.unshift({
+    label: 'All Projects',
+    icon: getProjectTypeIcon('all'),
+    action: 'project-filter',
+    value: 'all',
+    active: currentProjectFilter === 'all'
+  });
+
+  const inProgress = allProjects
+    .filter((project) => /progress|wip|active/i.test(String(project.status || '')))
+    .slice(0, 4)
+    .map((project) => ({
+      label: project.title,
+      icon: getProjectTypeIcon(project.type),
+      action: 'open-project',
+      projectId: project.id,
+      meta: project.status || ''
+    }));
+
+  return `${railPillGroupMarkup('Filters', categories)}${railGroupMarkup('In Progress', inProgress)}`;
+}
+
+function buildResourcesRailMarkup() {
+  const types = ['all', ...new Set(allResources.map((item) => String(item.type || '').trim()).filter(Boolean))];
+  const typeFilters = types.map((type) => ({
+    label: type === 'all' ? 'All Types' : type,
+    icon: getResourceTypeIcon(type),
+    action: 'resource-filter',
+    value: type,
+    active: currentResourceTypeFilter === type
+  }));
+
+  const recommended = allResources
+    .slice()
+    .sort((a, b) => String(a.title || '').localeCompare(String(b.title || '')))
+    .slice(0, 4)
+    .map((resource) => {
+      if (resource.external) {
+        return {
+          label: resource.title,
+          icon: getResourceTypeIcon(resource.type),
+          href: resource.url,
+          meta: 'External'
+        };
+      }
+      return {
+        label: resource.title,
+        icon: getResourceTypeIcon(resource.type),
+        action: 'open-resource',
+        slug: resource.slug
+      };
+    });
+
+  return `${railPillGroupMarkup('Filters', typeFilters)}${railGroupMarkup('Recommended', recommended)}`;
+}
+
+function buildGamesRailMarkup() {
+  const items = GAMES_LIST.map((game) => ({
+    label: game.title,
+    icon: `fas ${game.icon || 'fa-gamepad'}`,
+    meta: (game.chips || []).join(' • ')
+  }));
+  return railGroupMarkup('Games', items);
+}
+
+function buildPostsRailMarkup() {
+  const categories = ['all', 'Development', 'Video Editing', 'Life', 'Projects', 'Politics']
+    .map((category) => ({
+      label: category === 'all' ? 'All Posts' : category,
+      icon: getPostCategoryIcon(category),
+      action: 'post-category',
+      value: category,
+      active: currentCategory === category
+    }));
+
+  const favoriteSlugs = getFavoritePostSlugs();
+  const favoritePosts = favoriteSlugs
+    .map((slug) => allPosts.find((post) => post.slug === slug))
+    .filter(Boolean)
+    .slice(0, 3);
+  const recommendedPosts = sortPosts(allPosts, 'newest')
+    .filter((post) => !favoritePosts.some((item) => item.slug === post.slug))
+    .slice(0, 3);
+  const recommendedOrFavorites = [...favoritePosts, ...recommendedPosts]
+    .slice(0, 5)
+    .map((post) => ({
+      label: post.title,
+      icon: getPostCategoryIcon(post.category),
+      action: 'open-post',
+      slug: post.slug,
+      meta: favoriteSlugs.includes(post.slug) ? 'Favorite' : 'Recommended'
+    }));
+
+  return `${railPillGroupMarkup('Filters', categories)}${railGroupMarkup('Recommended / Favorites', recommendedOrFavorites)}`;
+}
+
+function buildToolsRailMarkup() {
+  const tabs = [
+    { id: 'writing', label: 'Text Studio', icon: 'fas fa-pen-nib' },
+    { id: 'data', label: 'Universal Converter', icon: 'fas fa-repeat' },
+    { id: 'security', label: 'Crypto & Security Lab', icon: 'fas fa-lock' },
+    { id: 'data-lab', label: 'Data Utility Lab', icon: 'fas fa-database' },
+    { id: 'productivity', label: 'Productivity Lab', icon: 'fas fa-bolt' }
+  ];
+
+  const tabItems = tabs.map((tab) => ({
+    label: tab.label,
+    icon: tab.icon,
+    action: 'tool-tab',
+    tabId: tab.id
+  }));
+
+  const favorites = [];
+  const dashboard = window.toolsDashboard;
+  let favoriteIds = [];
+  if (dashboard && typeof dashboard.getFavorites === 'function') {
+    favoriteIds = dashboard.getFavorites();
+  } else {
+    try {
+      const parsed = JSON.parse(localStorage.getItem('tools-favorites-v3') || '[]');
+      favoriteIds = Array.isArray(parsed) ? parsed : [];
+    } catch {
+      favoriteIds = [];
+    }
+  }
+  const metaList = dashboard && typeof dashboard.listToolMeta === 'function'
+    ? dashboard.listToolMeta()
+    : [];
+  const metaById = new Map(metaList.map((meta) => [meta.id, meta]));
+  favoriteIds.slice(0, 5).forEach((toolId) => {
+    const meta = metaById.get(toolId);
+    favorites.push({
+      label: meta ? meta.title : toolId,
+      icon: 'fas fa-star',
+      action: 'tool-open',
+      toolId
+    });
+  });
+
+  const shortcuts = [
+    { label: 'Open command palette', icon: 'fas fa-keyboard', meta: 'Ctrl/Cmd + K' },
+    { label: 'Navigate tool list', icon: 'fas fa-arrow-up', meta: 'Arrow keys + Enter' },
+    { label: 'Toggle favorites', icon: 'fas fa-star', meta: 'Use star icon in header' }
+  ];
+
+  return `${railGroupMarkup('Tool Categories', tabItems)}${railGroupMarkup('Favorites', favorites)}${railGroupMarkup('Shortcuts', shortcuts)}`;
+}
+
+function renderLeftRailContent(context = 'home') {
+  const railContent = document.getElementById('left-rail-content');
+  const railTitle = document.querySelector('#left-rail .left-rail-title');
+  if (!railContent || !railTitle) return;
+
+  let title = 'Quick Jump';
+  let content = '';
+
+  if (context === 'projects') {
+    title = 'Projects';
+    content = buildProjectsRailMarkup();
+  } else if (context === 'resources') {
+    title = 'Resources';
+    content = buildResourcesRailMarkup();
+  } else if (context === 'games') {
+    title = 'Games';
+    content = buildGamesRailMarkup();
+  } else if (context === 'posts') {
+    title = 'Blog';
+    content = buildPostsRailMarkup();
+  } else if (context === 'tools') {
+    title = 'Utility Workspace';
+    content = buildToolsRailMarkup();
+  } else {
+    title = '';
+    content = buildHomeRailMarkup();
+  }
+
+  railTitle.textContent = title;
+  railContent.innerHTML = content;
+}
+
+function handleLeftRailAction(actionEl) {
+  const action = actionEl.getAttribute('data-rail-action');
+  if (!action) return;
+
+  if (action === 'hub-view') {
+    const view = actionEl.getAttribute('data-rail-value') || 'home';
+    setContentHubView(view, { replaceState: false, scrollToSection: true });
+  } else if (action === 'open-tools') {
+    if (typeof window.showToolsDashboardView === 'function') {
+      window.showToolsDashboardView();
+    }
+  } else if (action === 'resource-filter') {
+    currentResourceTypeFilter = actionEl.getAttribute('data-rail-value') || 'all';
+    currentResourcePage = 1;
+    setupResourcesShowcase({ preview: false });
+    setLeftRailContext('resources');
+  } else if (action === 'project-filter') {
+    currentProjectFilter = actionEl.getAttribute('data-rail-value') || 'all';
+    currentProjectPage = 1;
+    setupProjectsShowcase({ preview: false });
+    setLeftRailContext('projects');
+  } else if (action === 'post-category') {
+    const category = actionEl.getAttribute('data-rail-value') || 'all';
+    setContentHubView('posts', { replaceState: false, scrollToSection: true });
+    applyCategoryFilter(category, {
+      clearSearch: false,
+      suppressAutoScroll: true,
+      resetPage: true,
+      replaceState: false
+    });
+  } else if (action === 'open-post') {
+    const slug = actionEl.getAttribute('data-rail-slug');
+    if (slug) showSinglePost(slug);
+  } else if (action === 'open-project') {
+    const projectId = actionEl.getAttribute('data-rail-project');
+    if (projectId) showProjectShowcase(projectId);
+  } else if (action === 'open-resource') {
+    const slug = actionEl.getAttribute('data-rail-slug');
+    if (slug) showResourcePage(slug);
+  } else if (action === 'tool-tab') {
+    const tabId = actionEl.getAttribute('data-rail-tab');
+    if (typeof window.showToolsDashboardView === 'function') {
+      window.showToolsDashboardView({ pushState: false });
+    }
+    if (tabId && window.toolsDashboard && typeof window.toolsDashboard.activateTab === 'function') {
+      window.toolsDashboard.activateTab(tabId);
+    }
+  } else if (action === 'tool-open') {
+    const toolId = actionEl.getAttribute('data-rail-tool');
+    if (toolId && window.toolsDashboard && typeof window.toolsDashboard.openTool === 'function') {
+      window.toolsDashboard.openTool(toolId);
+    }
+  }
+
+  if (window.innerWidth <= LEFT_RAIL_BREAKPOINT) {
+    closeRailDrawer();
+  }
+}
+
+function ensureLeftRailEvents() {
+  if (leftRailEventsBound) return;
+  leftRailEventsBound = true;
+
+  const toggle = document.getElementById('left-rail-toggle');
+  const backdrop = document.getElementById('left-rail-backdrop');
+  const leftRail = document.getElementById('left-rail');
+  const tocRail = document.getElementById('toc-sidebar');
+
+  if (toggle) {
+    toggle.addEventListener('click', () => {
+      const isOpen = document.body.classList.contains('left-rail-open');
+      setRailDrawerOpen(!isOpen);
+    });
+  }
+
+  if (backdrop) {
+    backdrop.addEventListener('click', () => closeRailDrawer());
+  }
+
+  document.querySelectorAll('[data-left-rail-close]').forEach((btn) => {
+    btn.addEventListener('click', () => closeRailDrawer());
+  });
+
+  if (leftRail) {
+    leftRail.addEventListener('click', (event) => {
+      const actionEl = event.target.closest('[data-rail-action]');
+      if (!actionEl) return;
+      handleLeftRailAction(actionEl);
+    });
+
+    leftRail.addEventListener('input', (event) => {
+      const target = event.target;
+      if (!(target instanceof HTMLInputElement || target instanceof HTMLSelectElement)) return;
+      if (target.matches('[data-rail-search="posts"]')) {
+        currentSearchQuery = target.value.trim();
+        filterPosts({ resetPage: true, replaceState: true });
+      } else if (target.matches('[data-rail-search="resources"]')) {
+        currentResourceSearch = target.value.trim();
+        currentResourcePage = 1;
+        setupResourcesShowcase({ preview: false });
+      } else if (target.matches('[data-rail-search="projects"]')) {
+        currentProjectSearch = target.value.trim();
+        currentProjectPage = 1;
+        setupProjectsShowcase({ preview: false });
+      }
+    });
+
+    leftRail.addEventListener('change', (event) => {
+      const target = event.target;
+      if (!(target instanceof HTMLInputElement || target instanceof HTMLSelectElement)) return;
+      if (target.matches('[data-rail-sort="posts"]')) {
+        currentSort = normalizeSort(target.value);
+        filterPosts({ resetPage: true, replaceState: false });
+      } else if (target.matches('[data-rail-sort="resources"]')) {
+        currentResourceSort = normalizeResourceSort(target.value);
+        currentResourcePage = 1;
+        setupResourcesShowcase({ preview: false });
+      } else if (target.matches('[data-rail-sort="projects"]')) {
+        currentProjectSort = normalizeProjectSort(target.value);
+        currentProjectPage = 1;
+        setupProjectsShowcase({ preview: false });
+      }
+    });
+  }
+
+  if (tocRail) {
+    tocRail.addEventListener('click', (event) => {
+      const closeBtn = event.target.closest('[data-left-rail-close]');
+      if (closeBtn) {
+        closeRailDrawer();
+      }
+    });
+  }
+
+  window.addEventListener('resize', () => {
+    if (window.innerWidth > LEFT_RAIL_BREAKPOINT) {
+      closeRailDrawer();
+    }
+  });
+
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape' && document.body.classList.contains('left-rail-open')) {
+      closeRailDrawer();
+    }
+  });
+
+  window.addEventListener('tools-favorites-changed', () => {
+    if (leftRailContext === 'tools') {
+      renderLeftRailContent('tools');
+    }
+  });
+}
+
+function setLeftRailContext(context = 'home') {
+  leftRailContext = context;
+  ensureLeftRailEvents();
+
+  if (context === 'hidden') {
+    const leftRail = document.getElementById('left-rail');
+    if (leftRail) {
+      leftRail.hidden = true;
+    }
+    closeRailDrawer();
+    return;
+  }
+
+  if (isSingleContentView()) {
+    setRailMode('single');
+    return;
+  }
+
+  setRailMode('hub');
+  renderLeftRailContent(context);
+}
+
+const projectAlbumLightboxState = {
+  mounted: false,
+  items: [],
+  index: 0,
+  root: null,
+  stage: null,
+  image: null,
+  caption: null,
+  counter: null,
+  zoom: 1,
+  panX: 0,
+  panY: 0,
+  isDragging: false
+};
+
+function closeProjectAlbumLightbox() {
+  const { root } = projectAlbumLightboxState;
+  if (!root) return;
+  root.classList.remove('open');
+  root.setAttribute('aria-hidden', 'true');
+  window.setTimeout(() => {
+    root.hidden = true;
+  }, 160);
+}
+
+function applyProjectAlbumTransform() {
+  const { image, zoom, panX, panY } = projectAlbumLightboxState;
+  if (!image) return;
+  image.style.transform = `translate(${panX}px, ${panY}px) scale(${zoom})`;
+}
+
+function resetProjectAlbumTransform() {
+  projectAlbumLightboxState.zoom = 1;
+  projectAlbumLightboxState.panX = 0;
+  projectAlbumLightboxState.panY = 0;
+  applyProjectAlbumTransform();
+}
+
+function renderProjectAlbumLightbox() {
+  const { items, index, image, caption, counter, root } = projectAlbumLightboxState;
+  if (!items.length || !image || !caption || !counter) return;
+  const current = items[index] || items[0];
+  if (!current) return;
+  image.src = current.src;
+  image.alt = current.alt || current.caption || `Album image ${index + 1}`;
+  image.setAttribute('draggable', 'false');
+  caption.textContent = current.caption || current.alt || '';
+  counter.textContent = `${index + 1} / ${items.length}`;
+  if (root) {
+    root.classList.toggle('single', items.length <= 1);
+  }
+  resetProjectAlbumTransform();
+}
+
+function ensureProjectAlbumLightbox() {
+  if (projectAlbumLightboxState.mounted && projectAlbumLightboxState.root) {
+    return projectAlbumLightboxState.root;
+  }
+
+  const root = document.createElement('div');
+  root.id = 'project-album-lightbox';
+  root.className = 'project-album-lightbox';
+  root.hidden = true;
+  root.setAttribute('aria-hidden', 'true');
+  root.innerHTML = `
+    <div class="project-album-lightbox-dialog" role="dialog" aria-modal="true" aria-label="Project album viewer">
+      <button class="project-album-close" type="button" data-album-close aria-label="Close album">
+        <i class="fas fa-xmark" aria-hidden="true"></i>
+      </button>
+      <button class="project-album-nav prev" type="button" data-album-prev aria-label="Previous image">
+        <i class="fas fa-arrow-left" aria-hidden="true"></i>
+      </button>
+      <div class="project-album-stage" data-album-stage>
+        <img class="project-album-image" data-album-image src="" alt="">
+      </div>
+      <button class="project-album-nav next" type="button" data-album-next aria-label="Next image">
+        <i class="fas fa-arrow-right" aria-hidden="true"></i>
+      </button>
+      <div class="project-album-foot">
+        <div class="project-album-meta">
+          <span class="project-album-count" data-album-count>1 / 1</span>
+          <div class="project-album-zoom-controls" aria-label="Zoom controls">
+            <button class="project-album-zoom-btn" type="button" data-album-zoom-out aria-label="Zoom out">
+              <i class="fas fa-minus" aria-hidden="true"></i>
+            </button>
+            <button class="project-album-zoom-btn" type="button" data-album-zoom-reset aria-label="Reset zoom">
+              <i class="fas fa-arrows-rotate" aria-hidden="true"></i>
+            </button>
+            <button class="project-album-zoom-btn" type="button" data-album-zoom-in aria-label="Zoom in">
+              <i class="fas fa-plus" aria-hidden="true"></i>
+            </button>
+          </div>
+        </div>
+        <p class="project-album-caption" data-album-caption></p>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(root);
+
+  const prev = root.querySelector('[data-album-prev]');
+  const next = root.querySelector('[data-album-next]');
+  const stage = root.querySelector('[data-album-stage]');
+  const zoomIn = root.querySelector('[data-album-zoom-in]');
+  const zoomOut = root.querySelector('[data-album-zoom-out]');
+  const zoomReset = root.querySelector('[data-album-zoom-reset]');
+
+  prev.addEventListener('click', () => {
+    const total = projectAlbumLightboxState.items.length;
+    if (!total) return;
+    projectAlbumLightboxState.index = (projectAlbumLightboxState.index - 1 + total) % total;
+    renderProjectAlbumLightbox();
+  });
+  next.addEventListener('click', () => {
+    const total = projectAlbumLightboxState.items.length;
+    if (!total) return;
+    projectAlbumLightboxState.index = (projectAlbumLightboxState.index + 1) % total;
+    renderProjectAlbumLightbox();
+  });
+
+  root.addEventListener('click', (event) => {
+    if (event.target === root || event.target.closest('[data-album-close]')) {
+      closeProjectAlbumLightbox();
+    }
+  });
+
+  const clampZoom = (value) => Math.max(1, Math.min(4, value));
+  if (stage) {
+    let startX = 0;
+    let startY = 0;
+    let originX = 0;
+    let originY = 0;
+
+    stage.addEventListener('pointerdown', (event) => {
+      if (event.button !== 0) return;
+      projectAlbumLightboxState.isDragging = true;
+      startX = event.clientX;
+      startY = event.clientY;
+      originX = projectAlbumLightboxState.panX;
+      originY = projectAlbumLightboxState.panY;
+      stage.classList.add('is-dragging');
+      stage.setPointerCapture(event.pointerId);
+    });
+
+    stage.addEventListener('pointermove', (event) => {
+      if (!projectAlbumLightboxState.isDragging) return;
+      const dx = event.clientX - startX;
+      const dy = event.clientY - startY;
+      projectAlbumLightboxState.panX = originX + dx;
+      projectAlbumLightboxState.panY = originY + dy;
+      applyProjectAlbumTransform();
+    });
+
+    stage.addEventListener('pointerup', () => {
+      projectAlbumLightboxState.isDragging = false;
+      stage.classList.remove('is-dragging');
+    });
+
+    stage.addEventListener('pointercancel', () => {
+      projectAlbumLightboxState.isDragging = false;
+      stage.classList.remove('is-dragging');
+    });
+
+    stage.addEventListener('wheel', (event) => {
+      event.preventDefault();
+      const delta = event.deltaY < 0 ? 0.15 : -0.15;
+      projectAlbumLightboxState.zoom = clampZoom(projectAlbumLightboxState.zoom + delta);
+      applyProjectAlbumTransform();
+    }, { passive: false });
+
+    stage.addEventListener('dblclick', () => {
+      projectAlbumLightboxState.zoom = projectAlbumLightboxState.zoom > 1 ? 1 : 2;
+      if (projectAlbumLightboxState.zoom === 1) {
+        projectAlbumLightboxState.panX = 0;
+        projectAlbumLightboxState.panY = 0;
+      }
+      applyProjectAlbumTransform();
+    });
+  }
+
+  if (zoomIn) {
+    zoomIn.addEventListener('click', () => {
+      projectAlbumLightboxState.zoom = clampZoom(projectAlbumLightboxState.zoom + 0.2);
+      applyProjectAlbumTransform();
+    });
+  }
+  if (zoomOut) {
+    zoomOut.addEventListener('click', () => {
+      projectAlbumLightboxState.zoom = clampZoom(projectAlbumLightboxState.zoom - 0.2);
+      applyProjectAlbumTransform();
+    });
+  }
+  if (zoomReset) {
+    zoomReset.addEventListener('click', () => {
+      resetProjectAlbumTransform();
+    });
+  }
+
+  document.addEventListener('keydown', (event) => {
+    if (!projectAlbumLightboxState.root || projectAlbumLightboxState.root.hidden) return;
+    if (event.key === 'Escape') {
+      closeProjectAlbumLightbox();
+      return;
+    }
+    if (event.key === 'ArrowLeft') prev.click();
+    if (event.key === 'ArrowRight') next.click();
+  });
+
+  projectAlbumLightboxState.mounted = true;
+  projectAlbumLightboxState.root = root;
+  projectAlbumLightboxState.stage = stage;
+  projectAlbumLightboxState.image = root.querySelector('[data-album-image]');
+  projectAlbumLightboxState.caption = root.querySelector('[data-album-caption]');
+  projectAlbumLightboxState.counter = root.querySelector('[data-album-count]');
+
+  return root;
+}
+
+function openProjectAlbumLightbox(items = [], index = 0) {
+  if (!Array.isArray(items) || !items.length) return;
+  const root = ensureProjectAlbumLightbox();
+  projectAlbumLightboxState.items = items.filter((item) => item && item.src);
+  if (!projectAlbumLightboxState.items.length) return;
+  projectAlbumLightboxState.index = Math.min(
+    Math.max(0, Number.parseInt(index, 10) || 0),
+    projectAlbumLightboxState.items.length - 1
+  );
+  renderProjectAlbumLightbox();
+  root.hidden = false;
+  root.setAttribute('aria-hidden', 'false');
+  requestAnimationFrame(() => root.classList.add('open'));
+}
+window.openProjectAlbumLightbox = openProjectAlbumLightbox;
+
+function getProjectById(projectId) {
+  return allProjects.find((project) => project.id === projectId) || null;
+}
+
+function getPostBySlug(slug) {
+  return allPosts.find((post) => post.slug === slug) || null;
+}
+
+function getResourceBySlug(slug) {
+  return allResources.find((resource) => resource.slug === slug && !resource.external) || null;
+}
+
+function categoryToTag(category) {
+  if (!category || category === 'all') return 'all';
+  return String(category).toLowerCase().replace(/\s+/g, '-');
+}
+
+function tagToCategory(tag) {
+  if (!tag || tag === 'all') return 'all';
+  const normalized = String(tag).toLowerCase();
+  const match = ['all', 'Development', 'Video Editing', 'Life', 'Projects', 'Politics']
+    .find((category) => categoryToTag(category) === normalized);
+  return match || 'all';
+}
+
+function normalizeSort(sort) {
+  const supported = new Set(['newest', 'oldest', 'shortest', 'longest']);
+  return supported.has(sort) ? sort : 'newest';
+}
+
+function normalizeResourceSort(sort) {
+  const supported = new Set(['newest', 'oldest', 'title']);
+  return supported.has(sort) ? sort : 'newest';
+}
+
+function normalizeProjectSort(sort) {
+  const supported = new Set(['featured', 'title', 'status', 'type']);
+  return supported.has(sort) ? sort : 'featured';
+}
+
+function sortResources(resources, sortBy = 'newest') {
+  const sorted = resources.slice();
+  if (sortBy === 'oldest') {
+    sorted.sort((a, b) => new Date(a.date || 0) - new Date(b.date || 0));
+    return sorted;
+  }
+  if (sortBy === 'title') {
+    sorted.sort((a, b) => String(a.title || '').localeCompare(String(b.title || '')));
+    return sorted;
+  }
+  sorted.sort((a, b) => new Date(b.date || 0) - new Date(a.date || 0));
+  return sorted;
+}
+
+function sortProjectsList(projects, sortBy = 'featured') {
+  const sorted = projects.slice();
+  if (sortBy === 'title') {
+    sorted.sort((a, b) => String(a.title || '').localeCompare(String(b.title || '')));
+    return sorted;
+  }
+  if (sortBy === 'status') {
+    sorted.sort((a, b) => String(a.status || '').localeCompare(String(b.status || '')));
+    return sorted;
+  }
+  if (sortBy === 'type') {
+    sorted.sort((a, b) => String(a.type || '').localeCompare(String(b.type || '')));
+    return sorted;
+  }
+  return sorted;
+}
+
+function sortPosts(posts, sortBy = 'newest') {
+  const sorted = posts.slice();
+  if (sortBy === 'oldest') {
+    sorted.sort((a, b) => new Date(a.date) - new Date(b.date));
+    return sorted;
+  }
+  if (sortBy === 'shortest') {
+    sorted.sort((a, b) => (a.readTime - b.readTime) || (new Date(b.date) - new Date(a.date)));
+    return sorted;
+  }
+  if (sortBy === 'longest') {
+    sorted.sort((a, b) => (b.readTime - a.readTime) || (new Date(b.date) - new Date(a.date)));
+    return sorted;
+  }
+  sorted.sort((a, b) => new Date(b.date) - new Date(a.date));
+  return sorted;
+}
+
+function setHubViewParam(view, options = {}) {
+  const url = new URL(window.location.href);
+  const shouldReplace = options.replace !== false;
+
+  ['post', 'project', 'resource'].forEach((param) => {
+    url.searchParams.delete(param);
+  });
+  url.searchParams.set('view', view);
+
+  if (view === 'posts') {
+    url.searchParams.set('tag', categoryToTag(currentCategory));
+    url.searchParams.set('sort', currentSort);
+    url.searchParams.set('page', String(currentPage));
+  } else {
+    ['tag', 'sort', 'page'].forEach((param) => url.searchParams.delete(param));
+  }
+
+  history[shouldReplace ? 'replaceState' : 'pushState']({ view }, '', `${url.pathname}${url.search}`);
+}
+
+function updatePostsUrlState(options = {}) {
+  const url = new URL(window.location.href);
+  const shouldReplace = options.replace !== false;
+  if (url.searchParams.get('post') || url.searchParams.get('project') || url.searchParams.get('resource')) return;
+  url.searchParams.set('view', 'posts');
+  url.searchParams.set('tag', categoryToTag(currentCategory));
+  url.searchParams.set('sort', currentSort);
+  url.searchParams.set('page', String(currentPage));
+  history[shouldReplace ? 'replaceState' : 'pushState']({ view: 'posts' }, '', `${url.pathname}${url.search}`);
+}
+
+function normalizeHubView(view) {
+  const supportedViews = new Set(['home', 'projects', 'resources', 'posts', 'games']);
+  return supportedViews.has(view) ? view : 'home';
+}
+
+function updateHubActionLabels() {
+  const projectsBtn = document.getElementById('projects-view-all');
+  const resourcesBtn = document.getElementById('resources-view-all');
+  const postsBtn = document.getElementById('posts-view-all');
+  if (projectsBtn) {
+    projectsBtn.textContent = currentHubView === 'projects' ? 'Back to home' : 'View all projects';
+  }
+  if (resourcesBtn) {
+    resourcesBtn.textContent = currentHubView === 'resources' ? 'Back to home' : 'View all resources';
+  }
+  if (postsBtn) {
+    postsBtn.textContent = currentHubView === 'posts' ? 'Back to home' : 'View all posts';
+  }
+}
+
+function scrollHubViewIntoFocus(view) {
+  const scrollTarget = view === 'projects'
+    ? document.getElementById('projects-showcase')
+    : view === 'resources'
+      ? document.getElementById('resources-showcase')
+      : view === 'games'
+        ? document.getElementById('games-showcase')
+      : view === 'posts'
+        ? document.getElementById('posts-browser')
+        : document.querySelector('.blog-section');
+  if (!scrollTarget || typeof window.scrollToElementWithHeaderOffset !== 'function') return;
+  window.scrollToElementWithHeaderOffset(scrollTarget, view === 'posts' ? 12 : 8);
+}
+
+function setContentHubView(view = 'home', options = {}) {
+  const normalizedView = normalizeHubView(view);
+  currentHubView = normalizedView;
+  const useLoader = options.showLoader !== false;
+
+  if (useLoader && typeof window.showPageLoader === 'function') {
+    window.showPageLoader();
+  }
+
+  if (normalizedView !== 'resources') {
+    currentResourceTypeFilter = 'all';
+  }
+  setupHubActions();
+
+  const blogSection = document.querySelector('.blog-section');
+  if (blogSection) {
+    blogSection.dataset.hubView = normalizedView;
+  }
+
+  const featuredSection = document.getElementById('featured-section');
+  if (featuredSection) {
+    featuredSection.style.display = normalizedView === 'home' ? 'grid' : 'none';
+  }
+
+  setupProjectsShowcase({ preview: normalizedView === 'home' });
+  setupResourcesShowcase({ preview: normalizedView === 'home' });
+  renderPostsPreview();
+  setupToolsPreview();
+  setupGamesShowcase();
+  updateHubActionLabels();
+  setLeftRailContext(normalizedView);
+
+  if (normalizedView === 'posts') {
+    ensureBlogControlsReady();
+    const sortControl = document.getElementById('posts-sort');
+    if (sortControl) {
+      sortControl.value = currentSort;
+    }
+    filterPosts({ resetPage: false, updateUrl: false, suppressScroll: true });
+  }
+
+  if (!options.suppressNavSync && typeof window.setTopNavActive === 'function') {
+    const navTarget = normalizedView === 'projects'
+      ? 'nav-projects'
+      : normalizedView === 'resources'
+        ? 'nav-resources'
+        : normalizedView === 'games'
+          ? 'nav-games'
+          : normalizedView === 'posts'
+            ? 'nav-blog'
+            : '';
+    const navLabel = normalizedView === 'posts'
+      ? 'Posts'
+      : (normalizedView === 'projects'
+        ? 'Projects'
+        : (normalizedView === 'resources' ? 'Resources' : (normalizedView === 'games' ? 'Games' : 'Homepage')));
+    window.setTopNavActive(navTarget, { label: navLabel });
+  }
+
+  if (options.syncUrl !== false) {
+    if (normalizedView === 'posts') {
+      updatePostsUrlState({ replace: options.replaceState !== false });
+    } else {
+      setHubViewParam(normalizedView, { replace: options.replaceState !== false });
+    }
+  }
+
+  if (options.scrollToSection) {
+    scrollHubViewIntoFocus(normalizedView);
+  }
+
+  if (useLoader && typeof window.hidePageLoader === 'function') {
+    window.hidePageLoader(220);
+  }
+}
+
+function setupHubActions() {
+  if (hubActionsInitialized) return;
+
+  const projectsBtn = document.getElementById('projects-view-all');
+  const resourcesBtn = document.getElementById('resources-view-all');
+  const postsBtn = document.getElementById('posts-view-all');
+  const toolsBtn = document.getElementById('tools-view-all');
+
+  if (projectsBtn) {
+    projectsBtn.addEventListener('click', () => {
+      setContentHubView(currentHubView === 'projects' ? 'home' : 'projects', {
+        replaceState: false,
+        scrollToSection: true
+      });
+    });
+  }
+
+  if (resourcesBtn) {
+    resourcesBtn.addEventListener('click', () => {
+      setContentHubView(currentHubView === 'resources' ? 'home' : 'resources', {
+        replaceState: false,
+        scrollToSection: true
+      });
+    });
+  }
+
+  if (postsBtn) {
+    postsBtn.addEventListener('click', () => {
+      setContentHubView(currentHubView === 'posts' ? 'home' : 'posts', {
+        replaceState: false,
+        scrollToSection: true
+      });
+    });
+  }
+
+  if (toolsBtn) {
+    toolsBtn.addEventListener('click', () => {
+      if (typeof window.showToolsDashboardView === 'function') {
+        window.showToolsDashboardView();
+      }
+    });
+  }
+
+  hubActionsInitialized = true;
 }
 
 // Load all posts from markdown files
@@ -695,9 +1394,8 @@ async function loadPosts() {
   }
   
   const posts = [];
-  const manifest = await loadPostManifest();
   
-  for (const filename of manifest) {
+  for (const filename of POST_MANIFEST) {
     try {
       console.log(`Attempting to load: posts/${filename}`);
       const response = await fetch(`./posts/${filename}`);
@@ -714,31 +1412,19 @@ async function loadPosts() {
       
       // Derive slug from filename if not in frontmatter
       const slug = frontmatter.slug || filename.replace('.md', '');
-
+      
       // Calculate reading time
       const readTime = frontmatter.readTime || calculateReadingTime(body);
-
-      const tags = typeof parseTags === 'function' ? parseTags(frontmatter.tags) : [];
-      const series = frontmatter.series ? String(frontmatter.series).trim() : '';
-      const seriesPart = Number.parseInt(frontmatter.part, 10);
-      const seriesTotal = Number.parseInt(frontmatter.total, 10);
-      const author = frontmatter.author ? String(frontmatter.author).trim() : '';
       
       // Construct post object
-      const resolvedCover = sanitizeUrl(frontmatter.cover) || `assets/images/${slug}.png`;
       const post = {
         slug,
         title: frontmatter.title || 'Untitled',
         date: frontmatter.date || new Date().toISOString().split('T')[0],
         category: frontmatter.category || 'uncategorized',
         excerpt: frontmatter.excerpt || generateExcerpt(body),
-        cover: resolvedCover,
+        cover: frontmatter.cover || `assets/images/${slug}.jpg`,
         readTime,
-        tags,
-        series,
-        part: Number.isFinite(seriesPart) ? seriesPart : null,
-        total: Number.isFinite(seriesTotal) ? seriesTotal : null,
-        author,
         body,
         filename
       };
@@ -760,120 +1446,506 @@ async function loadPosts() {
   return posts;
 }
 
-function renderListEmptyState() {
-  const queryText = currentSearchQuery ? ` for "${escapeHtml(currentSearchQuery)}"` : '';
-  const categoryText = currentCategory !== 'all' ? ` in ${escapeHtml(formatCategory(currentCategory))}` : '';
-  const hint = currentSearchQuery || currentCategory !== 'all'
-    ? 'Try clearing the current filter or search query.'
-    : 'New posts will appear here when published.';
-  const clearButton = currentSearchQuery || currentCategory !== 'all'
-    ? '<button type="button" class="btn btn-compact empty-reset-btn" id="empty-reset-btn">Clear filters</button>'
-    : '';
+async function loadResources() {
+  if (allResources.length > 0) return allResources;
 
-  return `
-    <div class="empty-state-card" role="status" aria-live="polite">
-      <h3>No posts found${queryText}${categoryText}</h3>
-      <p>${hint}</p>
-      ${clearButton}
-    </div>
-  `;
+  const internalResources = [];
+
+  for (const filename of RESOURCE_MANIFEST) {
+    try {
+      const response = await fetch(`./resources/${filename}`);
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const content = await response.text();
+      const { frontmatter, body } = parseFrontmatter(content);
+      const slug = frontmatter.slug || filename.replace('.md', '');
+      const readTime = frontmatter.readTime || calculateReadingTime(body);
+
+      internalResources.push({
+        id: slug,
+        slug,
+        title: frontmatter.title || slug,
+        description: frontmatter.excerpt || generateExcerpt(body, 24),
+        summary: frontmatter.summary || generateExcerpt(body, 50),
+        date: frontmatter.date || new Date().toISOString().split('T')[0],
+        type: frontmatter.type || 'Tutorial',
+        icon: frontmatter.icon || 'fas fa-book-open',
+        cover: frontmatter.cover || '',
+        readTime,
+        downloads: parseDownloads(frontmatter.downloads),
+        steps: parseSteps(frontmatter, body),
+        body,
+        filename,
+        external: false
+      });
+    } catch (error) {
+      console.error(`Error loading resource ${filename}:`, error);
+    }
+  }
+
+  internalResources.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+  const externalResources = EXTERNAL_RESOURCES.map((resource) => ({
+    ...resource,
+    slug: resource.id,
+    summary: resource.description,
+    date: '',
+    readTime: '',
+    cover: '',
+    downloads: [],
+    steps: [],
+    external: true,
+    body: ''
+  }));
+
+  allResources = [...internalResources, ...externalResources].filter((resource) => {
+    const title = String(resource.title || '').trim();
+    if (!title) return false;
+    if (resource.external) return Boolean(resource.url);
+    return String(resource.body || '').trim().length > 0;
+  });
+  return allResources;
+}
+
+async function loadProjects() {
+  if (allProjects.length > 0) return allProjects;
+
+  const projects = [];
+
+  for (const filename of PROJECT_MANIFEST) {
+    try {
+      const response = await fetch(`./projects/${filename}`);
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const content = await response.text();
+      const { frontmatter, body } = parseFrontmatter(content);
+      const slug = frontmatter.slug || filename.replace('.md', '');
+      const description = frontmatter.description || frontmatter.excerpt || generateExcerpt(body, 24);
+      const summary = frontmatter.summary || generateExcerpt(body, 50);
+
+      projects.push({
+        id: frontmatter.id || slug,
+        slug,
+        title: frontmatter.title || slug,
+        description,
+        summary,
+        type: frontmatter.type || 'Project',
+        status: frontmatter.status || 'Active',
+        cover: frontmatter.cover || `assets/images/${slug}.png`,
+        logo: frontmatter.logo || frontmatter.cover || `assets/images/${slug}.png`,
+        tags: parseInlineList(frontmatter.tags),
+        relatedPosts: parseInlineList(frontmatter.relatedPosts),
+        album: parseJsonArray(frontmatter.album),
+        links: {
+          repo: frontmatter.repo || '',
+          live: frontmatter.live || '',
+          video: frontmatter.video || ''
+        },
+        date: frontmatter.date || ''
+      });
+    } catch (error) {
+      console.error(`Error loading project ${filename}:`, error);
+    }
+  }
+
+  allProjects = projects;
+  return allProjects;
+}
+
+function withImageFallback(imageEl, fallbackSrc) {
+  if (!imageEl) return;
+  imageEl.addEventListener('error', () => {
+    if (fallbackSrc && imageEl.src !== fallbackSrc) {
+      imageEl.src = fallbackSrc;
+      return;
+    }
+    imageEl.closest('.card-media-wrap')?.classList.add('no-media');
+  });
+}
+
+function createPostCardMarkup(post, options = {}) {
+  const compact = Boolean(options.compact);
+  const cover = post.cover || `assets/images/${post.slug}.png`;
+  const compactDate = formatCompactDate(post.date);
+  const category = formatCategory(post.category);
+  const readTime = `${post.readTime} min`;
+  const excerpt = clampWords(post.excerpt, compact ? 20 : 26);
+  return createMediaBackdropCard({
+    tag: 'button',
+    typeClass: 'resource-card resource-card-button post-as-resource-card',
+    size: 'md',
+    title: post.title,
+    description: excerpt,
+    cover,
+    chips: [category].filter(Boolean),
+    meta: [compactDate, readTime],
+    iconHtml: `<i class="${getPostCategoryIcon(post.category)}" aria-hidden="true"></i>`,
+    actionHtml: '<i class="fas fa-arrow-right" aria-hidden="true"></i>',
+    showExcerpt: true,
+    showMeta: true,
+    ctaText: compact ? '' : 'Read Post →',
+    dataAttrs: `role="listitem" data-post-slug="${post.slug}" aria-label="Open post"`
+  });
+}
+
+function attachPostCardHandlers(rootEl) {
+  if (!rootEl) return;
+  rootEl.querySelectorAll('[data-post-slug]').forEach((card) => {
+    card.addEventListener('click', () => {
+      const slug = card.getAttribute('data-post-slug');
+      if (slug) showSinglePost(slug);
+    });
+  });
+  rootEl.querySelectorAll('.media-card-image').forEach((imageEl) => {
+    withImageFallback(imageEl, 'assets/images/Markdowntest.png');
+  });
+  rootEl.querySelectorAll('.media-card-avatar').forEach((imageEl) => {
+    withImageFallback(imageEl, imageEl.getAttribute('data-fallback-src'));
+  });
+}
+
+function renderPostsPreview() {
+  const previewGrid = document.getElementById('posts-preview-grid');
+  if (!previewGrid) return;
+
+  const previewPosts = sortPosts(allPosts, 'newest').slice(0, homePreviewLimits.posts);
+  previewGrid.innerHTML = previewPosts.length
+    ? previewPosts.map((post) => createPostCardMarkup(post, { compact: true })).join('')
+    : '<p class="posts-empty">No posts yet.</p>';
+
+  attachPostCardHandlers(previewGrid);
 }
 
 // Render post cards in list view with pagination
 function renderPostsList(posts, page = 1) {
   const container = document.getElementById('posts-list');
-  
-  if (!container) {
-    console.error('posts-list container not found');
-    return;
-  }
-  
-  if (posts.length === 0) {
-    container.classList.add('posts-few');
-    container.innerHTML = renderListEmptyState();
-    const resetButton = document.getElementById('empty-reset-btn');
-    if (resetButton) {
-      resetButton.addEventListener('click', () => {
-        currentSearchQuery = '';
-        currentCategory = 'all';
-        const searchInput = document.getElementById('search-input');
-        const searchClear = document.getElementById('search-clear');
-        if (searchInput) searchInput.value = '';
-        if (searchClear) searchClear.style.display = 'none';
-        document.querySelectorAll('.filter-btn').forEach((btn) => {
-          btn.classList.toggle('active', btn.dataset.category === 'all');
-        });
-        filterPosts();
-        updateSearchResults();
-      });
-    }
-    document.getElementById('pagination').innerHTML = '';
-    return;
-  }
-  
-  // Calculate pagination
-  const totalPages = Math.ceil(posts.length / postsPerPage);
-  const startIndex = (page - 1) * postsPerPage;
-  const endIndex = startIndex + postsPerPage;
-  const postsToShow = posts.slice(startIndex, endIndex);
-  container.classList.toggle('posts-few', postsToShow.length < 2);
-  
-  container.innerHTML = postsToShow.map((post, index) => {
-    const coverUrl = encodeURI(sanitizeUrl(post.cover) || 'assets/Peak.png').replace(/\"/g, '%22');
-    const safeTitle = escapeHtml(post.title);
-    const safeExcerpt = escapeHtml(post.excerpt);
-    const safeCategory = escapeHtml(formatCategory(post.category));
-    const safeSlug = escapeHtml(post.slug);
-    const tags = Array.isArray(post.tags) ? post.tags : [];
-    const tagsHtml = tags.length
-      ? `<div class="post-tags">${tags.map(tag => `<span class="post-tag">${escapeHtml(tag)}</span>`).join('')}</div>`
-      : '';
-    return `
-      <article class="post-card" data-slug="${safeSlug}" style="background-image: url(&quot;${coverUrl}&quot;); animation-delay: ${index * 0.05}s;">
-        <div class="post-card-content">
-          <div class="post-meta">
-            <span>${formatDate(post.date)}</span>
-            <span aria-hidden="true">&middot;</span>
-            <span>${safeCategory}</span>
-            <span aria-hidden="true">&middot;</span>
-            <span>${post.readTime} min read</span>
-          </div>
-          <h3><a href="#" class="post-link" data-slug="${safeSlug}">${safeTitle}</a></h3>
-          <p class="post-excerpt">${safeExcerpt}</p>
-          ${tagsHtml}
-          <a href="#" class="read-more post-link" data-slug="${safeSlug}">Read post &rarr;</a>
-        </div>
-        <img src="${coverUrl}" alt="${safeTitle}" class="post-thumb" loading="lazy" decoding="async" onerror="this.style.display='none'">
-      </article>
-    `;
-  }).join('');
+  const pagination = document.getElementById('pagination');
 
-  bindPostCardClicks();
-  
-  // Setup featured post (only on first page)
-  if (allPosts.length > 0 && page === 1) {
-    setupFeaturedPost(allPosts[0]);
+  if (!container || !pagination) {
+    console.error('posts list containers not found');
+    return;
   }
-  
-  // Render pagination
-  renderPagination(totalPages, page);
-  
-  // Keep position stable on initial load; no auto-scroll here
+
+  if (posts.length === 0) {
+    container.innerHTML = '<p class="posts-empty">No posts found.</p>';
+    pagination.innerHTML = '';
+    return;
+  }
+
+  const totalPages = Math.max(1, Math.ceil(posts.length / postsPerPage));
+  const safePage = Math.min(Math.max(1, page), totalPages);
+  const startIndex = (safePage - 1) * postsPerPage;
+  const postsToShow = posts.slice(startIndex, startIndex + postsPerPage);
+
+  container.innerHTML = postsToShow.map((post) => createPostCardMarkup(post)).join('');
+  attachPostCardHandlers(container);
+
+  if (allPosts.length > 0 && currentPage === 1 && currentHubView === 'home') {
+    setupFeaturedPost(sortPosts(allPosts, 'newest')[0]);
+  }
+
+  renderPagination(totalPages, safePage);
+
+  if (!suppressPostsListScroll && currentHubView === 'posts') {
+    const searchBar = document.getElementById('blog-search-bar');
+    if (searchBar && typeof window.scrollToElementWithHeaderOffset === 'function') {
+      window.scrollToElementWithHeaderOffset(searchBar, 10);
+    }
+  }
 }
 
-function bindPostCardClicks() {
-  const container = document.getElementById('posts-list');
-  if (!container || container.dataset.bound === 'true') return;
-  container.addEventListener('click', (e) => {
-    const target = e.target.closest('[data-slug]');
-    if (!target || !container.contains(target)) return;
-    e.preventDefault();
-    const slug = target.dataset.slug;
-    if (slug) {
-      showSinglePost(slug);
-    }
+function createProjectCardMarkup(project) {
+  const iconHtml = project.logo
+    ? `<img class="media-card-avatar" src="${project.logo}" alt="${escapeHtml(project.title)} logo" data-fallback-src="${project.cover}">`
+    : `<i class="${getProjectTypeIcon(project.type)}" aria-hidden="true"></i>`;
+  const actionHtml = project.links?.repo
+    ? '<i class="fab fa-github" aria-hidden="true"></i>'
+    : project.links?.live
+      ? '<i class="fas fa-arrow-up-right-from-square" aria-hidden="true"></i>'
+      : '';
+  const stack = Array.isArray(project.tags) && project.tags.length ? project.tags[0] : '';
+  return createMediaBackdropCard({
+    tag: 'button',
+    typeClass: 'project-card',
+    size: 'md',
+    title: project.title,
+    description: project.description,
+    cover: project.cover,
+    chips: [project.type, project.status].filter(Boolean),
+    meta: [stack].filter(Boolean),
+    iconHtml,
+    actionHtml,
+    showExcerpt: Boolean(project.description),
+    showMeta: true,
+    ctaText: 'View Project →',
+    dataAttrs: `role="listitem" data-project-id="${project.id}" aria-label="Open project"`
   });
-  container.dataset.bound = 'true';
+}
+
+function getFilteredProjects() {
+  let items = allProjects.slice();
+  if (currentProjectFilter !== 'all') {
+    items = items.filter((project) => String(project.type || '').trim() === currentProjectFilter);
+  }
+  if (currentProjectSearch) {
+    const query = currentProjectSearch.toLowerCase();
+    items = items.filter((project) =>
+      `${project.title} ${project.description} ${(project.tags || []).join(' ')} ${project.type} ${project.status}`
+        .toLowerCase()
+        .includes(query)
+    );
+  }
+  return sortProjectsList(items, currentProjectSort);
+}
+
+function renderProjectsList(items, page = 1) {
+  const projectsGrid = document.getElementById('projects-grid');
+  const pagination = document.getElementById('projects-pagination');
+  if (!projectsGrid || !pagination) return;
+
+  if (!items.length) {
+    projectsGrid.innerHTML = '<p class="posts-empty">No projects yet.</p>';
+    pagination.innerHTML = '';
+    return;
+  }
+
+  const totalPages = Math.max(1, Math.ceil(items.length / projectsPerPage));
+  const safePage = Math.min(Math.max(1, page), totalPages);
+  const startIndex = (safePage - 1) * projectsPerPage;
+  const pageItems = items.slice(startIndex, startIndex + projectsPerPage);
+  projectsGrid.innerHTML = pageItems.map((project) => createProjectCardMarkup(project)).join('');
+
+  projectsGrid.querySelectorAll('.project-card').forEach((card) => {
+    card.addEventListener('click', () => {
+      const projectId = card.getAttribute('data-project-id');
+      if (projectId) showProjectShowcase(projectId);
+    });
+  });
+
+  projectsGrid.querySelectorAll('.media-card-image').forEach((imageEl) => {
+    withImageFallback(imageEl, 'assets/images/Markdowntest.png');
+  });
+
+  projectsGrid.querySelectorAll('.media-card-avatar').forEach((imageEl) => {
+    withImageFallback(imageEl, imageEl.getAttribute('data-fallback-src'));
+  });
+
+  renderPaginationControls(pagination, totalPages, safePage, (nextPage) => {
+    currentProjectPage = nextPage;
+    renderProjectsList(items, nextPage);
+  });
+}
+
+function setupProjectsShowcase(options = {}) {
+  const projectsGrid = document.getElementById('projects-grid');
+  if (!projectsGrid) return;
+  const pagination = document.getElementById('projects-pagination');
+
+  const preview = options.preview !== false;
+  if (preview) {
+    const items = allProjects.slice(0, homePreviewLimits.projects);
+    projectsGrid.innerHTML = items.length
+      ? items.map((project) => createProjectCardMarkup(project)).join('')
+      : '<p class="posts-empty">No projects yet.</p>';
+    if (pagination) pagination.innerHTML = '';
+    projectsGrid.querySelectorAll('.project-card').forEach((card) => {
+      card.addEventListener('click', () => {
+        const projectId = card.getAttribute('data-project-id');
+        if (projectId) showProjectShowcase(projectId);
+      });
+    });
+    projectsGrid.querySelectorAll('.media-card-image').forEach((imageEl) => {
+      withImageFallback(imageEl, 'assets/images/Markdowntest.png');
+    });
+    projectsGrid.querySelectorAll('.media-card-avatar').forEach((imageEl) => {
+      withImageFallback(imageEl, imageEl.getAttribute('data-fallback-src'));
+    });
+    return;
+  }
+
+  const items = getFilteredProjects();
+  currentProjectPage = Math.min(Math.max(1, currentProjectPage), Math.max(1, Math.ceil(items.length / projectsPerPage)));
+  renderProjectsList(items, currentProjectPage);
+}
+
+function createResourceCardMarkup(resource) {
+  const iconClass = resource.icon || getResourceTypeIcon(resource.type);
+  const iconHtml = `<i class="${iconClass}" aria-hidden="true"></i>`;
+  const meta = resource.external
+    ? [resource.type || 'Resource', 'External'].filter(Boolean)
+    : [resource.type || 'Resource'].filter(Boolean);
+
+  if (resource.external) {
+    return createMediaBackdropCard({
+      tag: 'a',
+      href: resource.url,
+      typeClass: 'resource-card',
+      size: 'md',
+      title: resource.title,
+      description: resource.description,
+      cover: resource.cover,
+      chips: [resource.type].filter(Boolean),
+      meta,
+      iconHtml,
+      actionHtml: '<i class="fas fa-arrow-up-right-from-square" aria-hidden="true"></i>',
+      showExcerpt: true,
+      showMeta: true,
+      ctaText: '',
+      dataAttrs: `role="listitem" aria-label="Open resource"`
+    });
+  }
+
+  return createMediaBackdropCard({
+    tag: 'button',
+    typeClass: 'resource-card resource-card-button',
+    size: 'md',
+    title: resource.title,
+    description: resource.description,
+    cover: resource.cover,
+    chips: [resource.type].filter(Boolean),
+    meta,
+    iconHtml,
+    actionHtml: '<i class="fas fa-arrow-up-right-from-square" aria-hidden="true"></i>',
+    showExcerpt: true,
+    showMeta: true,
+    ctaText: '',
+    dataAttrs: `role="listitem" data-resource-slug="${resource.slug}" aria-label="Open resource"`
+  });
+}
+
+function getFilteredResources() {
+  let items = allResources.slice();
+  if (currentResourceTypeFilter !== 'all') {
+    items = items.filter((resource) => String(resource.type || '').trim() === currentResourceTypeFilter);
+  }
+  if (currentResourceSearch) {
+    const query = currentResourceSearch.toLowerCase();
+    items = items.filter((resource) =>
+      `${resource.title} ${resource.description} ${resource.summary || ''} ${resource.type}`
+        .toLowerCase()
+        .includes(query)
+    );
+  }
+  return sortResources(items, currentResourceSort);
+}
+
+function renderResourcesList(items, page = 1) {
+  const resourcesGrid = document.getElementById('resources-grid');
+  const pagination = document.getElementById('resources-pagination');
+  if (!resourcesGrid || !pagination) return;
+
+  if (!items.length) {
+    resourcesGrid.innerHTML = '<p class="posts-empty">No resources available yet.</p>';
+    pagination.innerHTML = '';
+    return;
+  }
+
+  const totalPages = Math.max(1, Math.ceil(items.length / resourcesPerPage));
+  const safePage = Math.min(Math.max(1, page), totalPages);
+  const startIndex = (safePage - 1) * resourcesPerPage;
+  const pageItems = items.slice(startIndex, startIndex + resourcesPerPage);
+
+  resourcesGrid.innerHTML = pageItems.map((resource) => createResourceCardMarkup(resource)).join('');
+
+  resourcesGrid.querySelectorAll('.resource-card-button').forEach((button) => {
+    button.addEventListener('click', () => {
+      const slug = button.getAttribute('data-resource-slug');
+      if (slug) showResourcePage(slug);
+    });
+  });
+
+  resourcesGrid.querySelectorAll('.media-card-image').forEach((imageEl) => {
+    withImageFallback(imageEl, 'assets/images/Markdowntest.png');
+  });
+
+  renderPaginationControls(pagination, totalPages, safePage, (nextPage) => {
+    currentResourcePage = nextPage;
+    renderResourcesList(items, nextPage);
+  });
+}
+
+function setupResourcesShowcase(options = {}) {
+  const resourcesGrid = document.getElementById('resources-grid');
+  if (!resourcesGrid) return;
+  const pagination = document.getElementById('resources-pagination');
+
+  const preview = options.preview !== false;
+  if (preview) {
+    const resources = allResources.slice(0, homePreviewLimits.resources);
+    resourcesGrid.innerHTML = resources.length
+      ? resources.map((resource) => createResourceCardMarkup(resource)).join('')
+      : '<p class="posts-empty">No resources available yet.</p>';
+    if (pagination) pagination.innerHTML = '';
+    resourcesGrid.querySelectorAll('.resource-card-button').forEach((button) => {
+      button.addEventListener('click', () => {
+        const slug = button.getAttribute('data-resource-slug');
+        if (slug) showResourcePage(slug);
+      });
+    });
+    resourcesGrid.querySelectorAll('.media-card-image').forEach((imageEl) => {
+      withImageFallback(imageEl, 'assets/images/Markdowntest.png');
+    });
+    return;
+  }
+
+  const items = getFilteredResources();
+  currentResourcePage = Math.min(Math.max(1, currentResourcePage), Math.max(1, Math.ceil(items.length / resourcesPerPage)));
+  renderResourcesList(items, currentResourcePage);
+}
+
+function setupToolsPreview() {
+  const toolsGrid = document.getElementById('tools-preview-grid');
+  if (!toolsGrid) return;
+  const previewTools = TOOLS_PREVIEW.slice(0, homePreviewLimits.tools);
+  toolsGrid.innerHTML = previewTools.map((tool) => createMediaBackdropCard({
+    tag: 'button',
+    typeClass: 'tools-preview-card',
+    size: 'sm',
+    title: tool.title,
+    description: '',
+    cover: '',
+    chips: ['Tools'],
+    meta: [],
+    iconHtml: `<i class="fas ${tool.icon}" aria-hidden="true"></i>`,
+    actionHtml: '<i class="fas fa-arrow-up-right-from-square" aria-hidden="true"></i>',
+    showExcerpt: false,
+    showMeta: false,
+    ctaText: '',
+    dataAttrs: `role="listitem" data-tool-preview-id="${tool.id}" aria-label="Open tools workspace"`
+  })).join('');
+
+  toolsGrid.querySelectorAll('.tools-preview-card').forEach((button) => {
+    button.addEventListener('click', () => {
+      if (typeof window.showToolsDashboardView === 'function') {
+        window.showToolsDashboardView();
+      }
+    });
+  });
+}
+
+function setupGamesShowcase() {
+  const gamesGrid = document.getElementById('games-grid');
+  if (!gamesGrid) return;
+  gamesGrid.innerHTML = GAMES_LIST.map((game) => createMediaBackdropCard({
+    tag: 'article',
+    typeClass: 'resource-card games-card',
+    size: 'sm',
+    title: game.title,
+    description: game.description,
+    cover: game.cover || '',
+    chips: game.chips || ['Game'],
+    meta: game.meta || [],
+    iconHtml: `<i class="fas ${game.icon || 'fa-gamepad'}" aria-hidden="true"></i>`,
+    actionHtml: '',
+    showExcerpt: true,
+    showMeta: false,
+    ctaText: '',
+    dataAttrs: `role="listitem" aria-label="Game: ${escapeHtml(game.title)}"`
+  })).join('');
 }
 
 // Setup featured post section
@@ -897,322 +1969,704 @@ function setupFeaturedPost(post) {
   }
 }
 
-function buildPaginationSequence(totalPages, currentPage) {
-  if (totalPages <= 7) {
-    return Array.from({ length: totalPages }, (_, index) => index + 1);
+function renderPaginationControls(container, totalPages, currentPage, onChange) {
+  if (!container) {
+    console.error('pagination container not found');
+    return;
   }
 
-  let startPage = Math.max(2, currentPage - 1);
-  let endPage = Math.min(totalPages - 1, currentPage + 1);
-
-  if (currentPage <= 3) {
-    startPage = 2;
-    endPage = 4;
-  } else if (currentPage >= totalPages - 2) {
-    startPage = totalPages - 3;
-    endPage = totalPages - 1;
+  if (totalPages <= 1) {
+    container.innerHTML = '';
+    return;
   }
 
-  const sequence = [1];
-  if (startPage > 2) {
-    sequence.push('ellipsis-left');
+  const pages = [];
+  const startPage = Math.max(1, currentPage - 2);
+  const endPage = Math.min(totalPages, currentPage + 2);
+  if (startPage > 1) {
+    pages.push(1);
+    if (startPage > 2) pages.push('ellipsis-start');
+  }
+  for (let i = startPage; i <= endPage; i += 1) {
+    pages.push(i);
+  }
+  if (endPage < totalPages) {
+    if (endPage < totalPages - 1) pages.push('ellipsis-end');
+    pages.push(totalPages);
   }
 
-  for (let page = startPage; page <= endPage; page += 1) {
-    sequence.push(page);
-  }
+  container.innerHTML = `
+    <div class="pagination-controls" tabindex="0" aria-label="Pagination controls">
+      <button class="pagination-btn pagination-nav" type="button" data-page="${currentPage - 1}" ${currentPage === 1 ? 'disabled' : ''}>Prev</button>
+      ${pages.map((entry) => {
+        if (String(entry).startsWith('ellipsis')) {
+          return '<span class="pagination-ellipsis" aria-hidden="true">...</span>';
+        }
+        const pageNum = Number(entry);
+        return `<button class="pagination-btn${pageNum === currentPage ? ' active' : ''}" type="button" data-page="${pageNum}" aria-current="${pageNum === currentPage ? 'page' : 'false'}">${pageNum}</button>`;
+      }).join('')}
+      <button class="pagination-btn pagination-nav" type="button" data-page="${currentPage + 1}" ${currentPage === totalPages ? 'disabled' : ''}>Next</button>
+    </div>
+  `;
 
-  if (endPage < totalPages - 1) {
-    sequence.push('ellipsis-right');
-  }
-  sequence.push(totalPages);
-
-  return sequence;
-}
-
-function bindPaginationControls() {
-  const paginationContainer = document.getElementById('pagination');
-  if (!paginationContainer || paginationBound) return;
-
-  paginationContainer.addEventListener('click', (event) => {
-    const pageButton = event.target.closest('button[data-page]');
-    if (pageButton && paginationContainer.contains(pageButton)) {
-      const targetPage = Number.parseInt(pageButton.dataset.page, 10);
-      if (Number.isFinite(targetPage)) {
-        changePage(targetPage);
+  container.querySelectorAll('.pagination-btn[data-page]').forEach((button) => {
+    button.addEventListener('click', () => {
+      const targetPage = Number.parseInt(button.getAttribute('data-page') || '', 10);
+      if (Number.isInteger(targetPage)) {
+        onChange(targetPage);
       }
-      return;
-    }
-
-    const jumpButton = event.target.closest('button[data-page-jump]');
-    if (!jumpButton || !paginationContainer.contains(jumpButton)) return;
-    const pageInput = document.getElementById('page-input');
-    if (pageInput) {
-      jumpToPage(pageInput.value);
-    }
+    });
   });
 
-  paginationContainer.addEventListener('keydown', (event) => {
-    if (event.key !== 'Enter' && event.key !== ' ') return;
-    const trigger = event.target.closest('button[data-page], button[data-page-jump]');
-    if (!trigger || !paginationContainer.contains(trigger)) return;
-    event.preventDefault();
-    trigger.click();
-  });
-
-  paginationContainer.addEventListener('keydown', (event) => {
-    if (event.target.id !== 'page-input' || event.key !== 'Enter') return;
-    event.preventDefault();
-    jumpToPage(event.target.value);
-  });
-
-  paginationBound = true;
+  const controls = container.querySelector('.pagination-controls');
+  if (controls) {
+    controls.addEventListener('keydown', (event) => {
+      if (event.key === 'ArrowLeft' && currentPage > 1) {
+        event.preventDefault();
+        onChange(currentPage - 1);
+      }
+      if (event.key === 'ArrowRight' && currentPage < totalPages) {
+        event.preventDefault();
+        onChange(currentPage + 1);
+      }
+    });
+  }
 }
 
 // Render pagination controls
 function renderPagination(totalPages, currentPage) {
   const paginationContainer = document.getElementById('pagination');
-
-  if (!paginationContainer) {
-    console.error('pagination container not found');
-    return;
-  }
-
-  bindPaginationControls();
-
-  if (totalPages <= 1) {
-    paginationContainer.innerHTML = '';
-    return;
-  }
-
-  const digitCount = String(totalPages).length;
-  const pageBtnWidth = Math.max(2.6, digitCount + 0.8);
-  const previousDisabled = currentPage <= 1;
-  const nextDisabled = currentPage >= totalPages;
-
-  let paginationHTML = `<div class="pagination-controls" style="--page-btn-width: ${pageBtnWidth}ch">`;
-
-  paginationHTML += `
-    <button
-      type="button"
-      class="pagination-btn pagination-nav"
-      ${previousDisabled ? 'disabled aria-disabled="true"' : `data-page="${currentPage - 1}"`}
-      aria-label="Go to previous page"
-      title="Previous page"
-    >
-      <i class="fas fa-chevron-left" aria-hidden="true"></i>
-      <span class="sr-only">Previous page</span>
-    </button>
-  `;
-
-  paginationHTML += '<div class="pagination-pages" aria-label="Pagination pages">';
-  const pageSequence = buildPaginationSequence(totalPages, currentPage);
-
-  pageSequence.forEach((entry) => {
-    if (typeof entry === 'string') {
-      paginationHTML += '<span class="pagination-ellipsis" aria-hidden="true">...</span>';
-      return;
-    }
-
-    const isActive = entry === currentPage;
-    const activeClass = isActive ? ' active' : '';
-    const activeState = isActive ? ' aria-current="page"' : '';
-    paginationHTML += `
-      <button
-        type="button"
-        class="pagination-btn page-number${activeClass}"
-        data-page="${entry}"
-        aria-label="Go to page ${entry}"${activeState}
-      >${entry}</button>
-    `;
+  renderPaginationControls(paginationContainer, totalPages, currentPage, (nextPage) => {
+    changePage(nextPage);
   });
-  paginationHTML += '</div>';
-
-  paginationHTML += `
-    <button
-      type="button"
-      class="pagination-btn pagination-nav"
-      ${nextDisabled ? 'disabled aria-disabled="true"' : `data-page="${currentPage + 1}"`}
-      aria-label="Go to next page"
-      title="Next page"
-    >
-      <span class="sr-only">Next page</span>
-      <i class="fas fa-chevron-right" aria-hidden="true"></i>
-    </button>
-  `;
-
-  paginationHTML += `
-    <div class="page-jump">
-      <i class="fas fa-hashtag" aria-hidden="true"></i>
-      <label for="page-input" class="sr-only">Go to page</label>
-      <input type="number" id="page-input" min="1" max="${totalPages}" value="${currentPage}" inputmode="numeric">
-      <button type="button" class="pagination-btn pagination-jump-btn" data-page-jump aria-label="Jump to page">
-        <i class="fas fa-arrow-right" aria-hidden="true"></i>
-        <span class="sr-only">Jump</span>
-      </button>
-      <span class="page-total">/ ${totalPages}</span>
-    </div>
-  `;
-
-  paginationHTML += '</div>';
-  paginationContainer.innerHTML = paginationHTML;
 }
 
-function resetPostChrome() {
-  const stickyHeader = document.getElementById('post-sticky-header');
+function clearPostNavigation() {
+  const prevLink = document.getElementById('prev-post');
+  const nextLink = document.getElementById('next-post');
+  const stickyPrevBtn = document.getElementById('sticky-prev-post');
+  const stickyNextBtn = document.getElementById('sticky-next-post');
+
+  if (prevLink) {
+    prevLink.style.display = 'none';
+    prevLink.onclick = null;
+  }
+  if (nextLink) {
+    nextLink.style.display = 'none';
+    nextLink.onclick = null;
+  }
+  if (stickyPrevBtn) {
+    stickyPrevBtn.disabled = true;
+    stickyPrevBtn.title = 'Not available in project view';
+    stickyPrevBtn.onclick = null;
+  }
+  if (stickyNextBtn) {
+    stickyNextBtn.disabled = true;
+    stickyNextBtn.title = 'Not available in project view';
+    stickyNextBtn.onclick = null;
+  }
+}
+
+function renderProjectShowcase(projectId) {
+  const project = getProjectById(projectId);
+  const postContent = document.getElementById('post-content');
   const breadcrumb = document.getElementById('breadcrumb');
-  const tocSidebar = document.getElementById('toc-sidebar');
-  if (stickyHeader) {
-    stickyHeader.setAttribute('aria-hidden', 'true');
+  const breadcrumbPost = document.getElementById('breadcrumb-post');
+  const commentsSection = document.getElementById('comments-section');
+
+  if (!project || !postContent) {
+    if (postContent) {
+      postContent.innerHTML = '<p>Project not found.</p>';
+    }
+    return;
   }
-  if (breadcrumb) {
-    breadcrumb.style.display = 'none';
+
+  const relatedPosts = project.relatedPosts
+    .map((slug) => getPostBySlug(slug))
+    .filter(Boolean);
+  const albumItems = Array.isArray(project.album)
+    ? project.album.filter((item) => item && item.src)
+    : [];
+
+  const linkButtons = [];
+  if (project.links.repo) {
+    linkButtons.push(`<a class="btn btn-compact" href="${project.links.repo}" target="_blank" rel="noopener noreferrer"><i class="fab fa-github" aria-hidden="true"></i> Repo</a>`);
   }
-  if (tocSidebar) {
-    tocSidebar.classList.remove('open');
-    tocSidebar.setAttribute('aria-hidden', 'true');
+  if (project.links.live) {
+    linkButtons.push(`<a class="btn btn-compact" href="${project.links.live}" target="_blank" rel="noopener noreferrer"><i class="fas fa-arrow-up-right-from-square" aria-hidden="true"></i> Live</a>`);
   }
-  hideTopPostNav();
+  if (project.links.video) {
+    linkButtons.push(`<a class="btn btn-compact" href="${project.links.video}" target="_blank" rel="noopener noreferrer"><i class="fas fa-play" aria-hidden="true"></i> Video</a>`);
+  }
+
+  postContent.innerHTML = `
+    <article class="project-profile">
+      <header class="project-profile-hero" data-cover-src="${project.cover}">
+        <div class="project-profile-veil"></div>
+        <div class="project-profile-headline">
+          <img class="project-profile-logo" src="${project.logo}" alt="${project.title} logo" data-fallback-src="${project.cover}" data-no-viewer="true">
+          <div class="project-profile-meta">
+            <span class="project-chip">${project.type}</span>
+            <span class="project-chip status">${project.status}</span>
+          </div>
+          <h1>${project.title}</h1>
+          <p>${project.summary}</p>
+          <div class="project-profile-actions">
+            ${linkButtons.join('')}
+          </div>
+        </div>
+      </header>
+
+      <section id="project-scope" class="project-profile-block">
+        <h2>Scope</h2>
+        <div class="project-tag-list">
+          ${project.tags.map((tag) => `<span class="project-tag">${tag}</span>`).join('')}
+        </div>
+      </section>
+
+      ${albumItems.length
+        ? `
+          <section id="project-album" class="project-profile-block">
+            <h2>Picture Album</h2>
+            <div class="project-album-grid">
+              ${albumItems.map((item, index) => `
+                <button class="project-album-item" type="button" data-album-index="${index}" aria-label="Open album image ${index + 1}">
+                  <img src="${item.src}" alt="${escapeHtml(item.alt || item.caption || `Project image ${index + 1}`)}" loading="lazy" decoding="async">
+                  <span>${escapeHtml(item.caption || `Image ${index + 1}`)}</span>
+                </button>
+              `).join('')}
+            </div>
+          </section>
+        `
+        : ''
+      }
+
+      <section id="project-related" class="project-profile-block">
+        <h2>Related Posts</h2>
+        <div class="project-related-list">
+          ${relatedPosts.length
+            ? relatedPosts.map((post) => `
+              <button class="project-related-item" type="button" data-related-post="${post.slug}" aria-label="Open related post ${post.title}">
+                <img src="${post.cover}" alt="${post.title}" onerror="this.style.display='none'" data-no-viewer="true">
+                <div>
+                  <h3>${post.title}</h3>
+                  <p>${post.excerpt}</p>
+                </div>
+              </button>
+            `).join('')
+            : '<p class="project-empty">No related posts yet.</p>'
+          }
+        </div>
+      </section>
+    </article>
+  `;
+
+  postContent.querySelectorAll('.project-related-item').forEach((item) => {
+    item.addEventListener('click', () => {
+      const slug = item.getAttribute('data-related-post');
+      if (slug) showSinglePost(slug);
+    });
+  });
+
+  postContent.querySelectorAll('.project-album-item').forEach((item) => {
+    item.addEventListener('click', () => {
+      const index = Number.parseInt(item.getAttribute('data-album-index') || '0', 10);
+      openProjectAlbumLightbox(albumItems, index);
+    });
+  });
+  postContent.querySelectorAll('.project-album-item img').forEach((imageEl) => {
+    withImageFallback(imageEl, project.cover);
+  });
+
+  const projectLogo = postContent.querySelector('.project-profile-logo');
+  const projectHero = postContent.querySelector('.project-profile-hero');
+  if (projectHero) {
+    const coverSrc = projectHero.getAttribute('data-cover-src');
+    if (coverSrc) {
+      projectHero.style.backgroundImage = `url("${coverSrc}")`;
+    }
+  }
+  if (projectLogo) {
+    projectLogo.addEventListener('error', () => {
+      const fallback = projectLogo.getAttribute('data-fallback-src');
+      if (fallback && projectLogo.src !== fallback) {
+        projectLogo.src = fallback;
+      }
+    });
+  }
+
+  if (breadcrumb && breadcrumbPost) {
+    breadcrumbPost.textContent = project.title;
+    breadcrumb.style.display = 'flex';
+    const crumb = breadcrumb.querySelector('.breadcrumb-item');
+    if (crumb) crumb.textContent = 'Projects';
+  }
+
+  if (commentsSection) {
+    commentsSection.style.display = 'none';
+  }
+
+  const tocNav = document.getElementById('toc-nav');
+  if (tocNav) {
+    const tocItems = [
+      { id: 'project-scope', label: 'Scope' },
+      albumItems.length ? { id: 'project-album', label: 'Picture Album' } : null,
+      { id: 'project-related', label: 'Related Posts' }
+    ].filter(Boolean);
+    tocNav.innerHTML = `
+      <div class="toc-list">
+        ${tocItems.map((item) => `
+          <div class="toc-item toc-level-2">
+            <a href="javascript:void(0);" class="toc-link" onclick="smoothScrollTo('${item.id}'); return false;">${item.label}</a>
+          </div>
+        `).join('')}
+      </div>
+    `;
+  }
+
+  if (typeof window.registerViewerImages === 'function') {
+    window.registerViewerImages(postContent);
+  }
+  if (typeof window.setReactionContext === 'function') {
+    window.setReactionContext('');
+  }
+
+  clearPostNavigation();
+  setupTOC();
+  if (typeof window.setShareContext === 'function') {
+    window.setShareContext({
+      title: `Check out project "${project.title}" on Nomu's site`,
+      url: `${window.location.origin}${window.location.pathname}?project=${project.id}`
+    });
+  } else {
+    window.__pendingShareContext = {
+      title: `Check out project "${project.title}" on Nomu's site`,
+      url: `${window.location.origin}${window.location.pathname}?project=${project.id}`
+    };
+  }
 }
+
+function showProjectShowcase(projectId, options = {}) {
+  closeProjectAlbumLightbox();
+  const project = getProjectById(projectId);
+  if (!project) return false;
+
+  const pageLoader = document.getElementById('page-loader');
+  const heroSection = document.getElementById('hero');
+  const blogSection = document.querySelector('.blog-section');
+  const singleView = document.getElementById('single-post-view');
+  const featuredSection = document.getElementById('featured-section');
+
+  if (pageLoader) {
+    pageLoader.classList.remove('hidden');
+  }
+  if (typeof window.setTopNavActive === 'function') {
+    window.setTopNavActive('nav-projects');
+  }
+  setRailMode('hidden');
+  closeRailDrawer();
+
+  setTimeout(() => {
+    if (heroSection) heroSection.style.display = 'none';
+    if (blogSection) blogSection.style.display = 'none';
+    if (singleView) singleView.style.display = 'block';
+    if (featuredSection) featuredSection.style.display = 'none';
+    renderProjectShowcase(projectId);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    if (pageLoader) {
+      pageLoader.classList.add('hidden');
+    }
+  }, 260);
+
+  if (options.pushState !== false) {
+    history.pushState({ project: projectId }, '', `?project=${encodeURIComponent(projectId)}`);
+  }
+  return true;
+}
+window.showProjectShowcase = showProjectShowcase;
+
+function renderResourcePage(resourceSlug) {
+  const resource = getResourceBySlug(resourceSlug);
+  const postContent = document.getElementById('post-content');
+  const breadcrumb = document.getElementById('breadcrumb');
+  const breadcrumbPost = document.getElementById('breadcrumb-post');
+  const commentsSection = document.getElementById('comments-section');
+
+  if (!resource || !postContent) {
+    if (postContent) {
+      postContent.innerHTML = '<p>Resource not found.</p>';
+    }
+    return;
+  }
+
+  const htmlContent = parseMarkdown(resource.body || '');
+  const processedHtml = addHeadingIds(htmlContent);
+  const tocHtml = generateTOCFromProcessed(processedHtml);
+  const downloads = Array.isArray(resource.downloads) ? resource.downloads.filter((item) => item && item.url) : [];
+  const steps = Array.isArray(resource.steps) ? resource.steps.filter(Boolean) : [];
+  const resourceMeta = [
+    resource.date ? formatDate(resource.date) : '',
+    resource.type || '',
+    resource.readTime ? `${resource.readTime} min read` : ''
+  ].filter(Boolean);
+
+  postContent.innerHTML = `
+    <article class="resource-profile">
+      <header class="post-header resource-profile-header">
+        <div class="post-header-content resource-profile-copy">
+          <h1>${resource.title}</h1>
+          ${resourceMeta.length
+            ? `<div class="post-meta">${resourceMeta.map((item, i) => `${i ? '<span class="meta-sep">&bull;</span>' : ''}<span>${item}</span>`).join('')}</div>`
+            : ''
+          }
+          ${resource.description ? `<p class="post-excerpt">${resource.description}</p>` : ''}
+          ${steps.length || downloads.length
+            ? `
+              <div class="resource-profile-helper-meta">
+                ${steps.length ? `<span><i class="fas fa-list-ol" aria-hidden="true"></i> ${steps.length} step${steps.length === 1 ? '' : 's'}</span>` : ''}
+                ${downloads.length ? `<span><i class="fas fa-download" aria-hidden="true"></i> ${downloads.length} download${downloads.length === 1 ? '' : 's'}</span>` : ''}
+              </div>
+            `
+            : ''
+          }
+        </div>
+        ${resource.cover ? `<img src="${resource.cover}" alt="${resource.title}" class="post-cover" data-viewer="true">` : ''}
+      </header>
+      ${downloads.length
+        ? `
+          <section class="resource-profile-block">
+            <h2>Quick Downloads</h2>
+            <div class="resource-download-list">
+              ${downloads.map((item) => `
+                <a class="resource-download-link" href="${item.url}" target="_blank" rel="noopener noreferrer">
+                  <span>${escapeHtml(item.label)}</span>
+                  <i class="fas fa-arrow-up-right-from-square" aria-hidden="true"></i>
+                </a>
+              `).join('')}
+            </div>
+          </section>
+        `
+        : ''
+      }
+      ${steps.length
+        ? `
+          <section class="resource-profile-block">
+            <h2>Step by Step</h2>
+            <ol class="resource-step-list">
+              ${steps.map((step) => `<li>${escapeHtml(step)}</li>`).join('')}
+            </ol>
+          </section>
+        `
+        : ''
+      }
+      <section class="resource-profile-block resource-profile-body">
+        <h2>Reference</h2>
+        <div class="post-body">
+          ${processedHtml}
+        </div>
+      </section>
+    </article>
+  `;
+
+  const tocNav = document.getElementById('toc-nav');
+  if (tocNav) {
+    tocNav.innerHTML = tocHtml;
+  }
+
+  if (breadcrumb && breadcrumbPost) {
+    breadcrumbPost.textContent = resource.title;
+    breadcrumb.style.display = 'flex';
+    const crumb = breadcrumb.querySelector('.breadcrumb-item');
+    if (crumb) crumb.textContent = 'Resources';
+  }
+
+  if (commentsSection) {
+    commentsSection.style.display = 'none';
+  }
+
+  if (typeof window.registerViewerImages === 'function') {
+    window.registerViewerImages(postContent);
+  }
+  if (typeof window.setReactionContext === 'function') {
+    window.setReactionContext('');
+  }
+
+  clearPostNavigation();
+  setupTOC();
+
+  if (typeof window.setShareContext === 'function') {
+    window.setShareContext({
+      title: `Check out "${resource.title}" on Nomu's resources`,
+      url: `${window.location.origin}${window.location.pathname}?resource=${resource.slug}`
+    });
+  } else {
+    window.__pendingShareContext = {
+      title: `Check out "${resource.title}" on Nomu's resources`,
+      url: `${window.location.origin}${window.location.pathname}?resource=${resource.slug}`
+    };
+  }
+}
+
+function showResourcePage(resourceSlug, options = {}) {
+  closeProjectAlbumLightbox();
+  const resource = getResourceBySlug(resourceSlug);
+  if (!resource) return false;
+
+  const pageLoader = document.getElementById('page-loader');
+  const heroSection = document.getElementById('hero');
+  const blogSection = document.querySelector('.blog-section');
+  const singleView = document.getElementById('single-post-view');
+  const featuredSection = document.getElementById('featured-section');
+
+  if (pageLoader) {
+    pageLoader.classList.remove('hidden');
+  }
+  if (typeof window.setTopNavActive === 'function') {
+    window.setTopNavActive('nav-resources');
+  }
+  setRailMode('hidden');
+  closeRailDrawer();
+
+  setTimeout(() => {
+    if (heroSection) heroSection.style.display = 'none';
+    if (blogSection) blogSection.style.display = 'none';
+    if (singleView) singleView.style.display = 'block';
+    if (featuredSection) featuredSection.style.display = 'none';
+    renderResourcePage(resourceSlug);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    if (pageLoader) {
+      pageLoader.classList.add('hidden');
+    }
+  }, 260);
+
+  if (options.pushState !== false) {
+    history.pushState({ resource: resourceSlug }, '', `?resource=${encodeURIComponent(resourceSlug)}`);
+  }
+  return true;
+}
+window.showResourcePage = showResourcePage;
 
 // Show single post view
 function showSinglePost(slug, options = {}) {
-  if (!slug) return;
-  if (options.fromRoute) {
-    return openPostView(slug, options);
+  closeProjectAlbumLightbox();
+  const pageLoader = document.getElementById('page-loader');
+  const heroSection = document.getElementById('hero');
+  const blogSection = document.querySelector('.blog-section');
+  const singleView = document.getElementById('single-post-view');
+  const featuredSection = document.getElementById('featured-section');
+  
+  // Show loading screen
+  if (pageLoader) {
+    pageLoader.classList.remove('hidden');
   }
-
-  navigateToRoute({ view: 'post', slug }, {
-    replace: options.replace,
-    keepScroll: options.keepScroll,
-    scrollBehavior: options.scrollBehavior || 'smooth'
-  });
+  setRailMode('single');
+  closeRailDrawer();
+  
+  setTimeout(() => {
+    if (heroSection) heroSection.style.display = 'none';
+    blogSection.style.display = 'none';
+    singleView.style.display = 'block';
+    if (featuredSection) {
+      featuredSection.style.display = 'none';
+    }
+    
+    renderSinglePost(slug);
+    
+    // Scroll to top
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    
+    // Hide loading screen
+    if (pageLoader) {
+      pageLoader.classList.add('hidden');
+    }
+  }, 300);
+  
+  // Update URL without reloading
+  if (options.pushState !== false) {
+    history.pushState({ post: slug }, '', `?post=${slug}`);
+  }
 }
 
 // Hide single post view and show blog list
 function hideSinglePost(options = {}) {
-  resetPostChrome();
-  currentPostSlug = '';
-
-  if (options.fromRoute) {
-    showBlogListView(options.scrollTarget || '', {
-      keepScroll: options.keepScroll,
-      scrollBehavior: options.scrollBehavior || 'smooth'
-    });
-    return;
+  closeProjectAlbumLightbox();
+  const pageLoader = document.getElementById('page-loader');
+  const heroSection = document.getElementById('hero');
+  const blogSection = document.querySelector('.blog-section');
+  const singleView = document.getElementById('single-post-view');
+  const featuredSection = document.getElementById('featured-section');
+  
+  // Show loading screen
+  if (pageLoader) {
+    pageLoader.classList.remove('hidden');
   }
+  
+  setTimeout(() => {
+    setRailMode('hub');
+    if (heroSection) heroSection.style.display = 'block';
+    if (blogSection) blogSection.style.display = 'block';
+    if (singleView) singleView.style.display = 'none';
+    if (featuredSection && currentHubView === 'home') {
+      featuredSection.style.display = 'grid';
+      setupFeaturedPost(sortPosts(allPosts, 'newest')[0] || null);
+    }
+    
+    // Hide TOC sidebar
+    const tocSidebar = document.getElementById('toc-sidebar');
+    if (tocSidebar) {
+      tocSidebar.classList.remove('open');
+    }
+    closeRailDrawer();
+    
+    setContentHubView(currentHubView, {
+      syncUrl: options.updateUrl !== false,
+      replaceState: false,
+      suppressNavSync: false,
+      showLoader: false
+    });
+    setLeftRailContext(currentHubView);
 
-  navigateToRoute({ view: 'blog' }, {
-    replace: options.replace,
-    keepScroll: options.keepScroll,
-    scrollTarget: options.scrollTarget || '',
-    scrollBehavior: options.scrollBehavior || 'smooth'
-  });
+    if (typeof window.setShareContext === 'function') {
+      window.setShareContext({
+        title: document.title,
+        url: `${window.location.origin}${window.location.pathname}${window.location.search}`
+      });
+    }
+    
+    // Scroll to top
+    if (!options.preserveScroll) {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+    
+    // Hide loading screen
+    if (pageLoader) {
+      pageLoader.classList.add('hidden');
+    }
+  }, 300);
 }
 
 // Change page
-function changePage(page) {
-  const totalPages = Math.ceil(filteredPosts.length / postsPerPage);
-  if (page < 1 || page > totalPages || page === currentPage) {
-    return;
+function changePage(page, options = {}) {
+  const totalPages = Math.max(1, Math.ceil(filteredPosts.length / postsPerPage));
+  const targetPage = Number.parseInt(page, 10);
+  if (!Number.isInteger(targetPage)) return;
+
+  const safePage = Math.min(Math.max(1, targetPage), totalPages);
+  currentPage = safePage;
+  suppressPostsListScroll = Boolean(options.suppressScroll);
+
+  try {
+    renderPostsList(filteredPosts, currentPage);
+  } finally {
+    suppressPostsListScroll = false;
   }
 
-  currentPage = page;
-  renderPostsList(filteredPosts, currentPage);
-  
-  // Update page input if it exists
-  const pageInput = document.getElementById('page-input');
-  if (pageInput) {
-    pageInput.value = page;
+  if (currentHubView === 'posts' && options.updateUrl !== false) {
+    updatePostsUrlState({ replace: options.replaceState !== false });
+  }
+}
+
+function changeProjectPage(page) {
+  const items = getFilteredProjects();
+  const totalPages = Math.max(1, Math.ceil(items.length / projectsPerPage));
+  const targetPage = Number.parseInt(page, 10);
+  if (!Number.isInteger(targetPage)) return;
+  currentProjectPage = Math.min(Math.max(1, targetPage), totalPages);
+  renderProjectsList(items, currentProjectPage);
+}
+
+function changeResourcePage(page) {
+  const items = getFilteredResources();
+  const totalPages = Math.max(1, Math.ceil(items.length / resourcesPerPage));
+  const targetPage = Number.parseInt(page, 10);
+  if (!Number.isInteger(targetPage)) return;
+  currentResourcePage = Math.min(Math.max(1, targetPage), totalPages);
+  renderResourcesList(items, currentResourcePage);
+}
+
+function goToNextPage() {
+  if (currentHubView === 'posts') {
+    changePage(currentPage + 1);
+    return;
+  }
+  if (currentHubView === 'projects') {
+    changeProjectPage(currentProjectPage + 1);
+    return;
+  }
+  if (currentHubView === 'resources') {
+    changeResourcePage(currentResourcePage + 1);
+  }
+}
+
+function goToPrevPage() {
+  if (currentHubView === 'posts') {
+    changePage(currentPage - 1);
+    return;
+  }
+  if (currentHubView === 'projects') {
+    changeProjectPage(currentProjectPage - 1);
+    return;
+  }
+  if (currentHubView === 'resources') {
+    changeResourcePage(currentResourcePage - 1);
   }
 }
 
 // Jump to specific page from input
 function jumpToPage(pageNum) {
   const page = Number.parseInt(pageNum, 10);
-  const totalPages = Math.ceil(filteredPosts.length / postsPerPage);
-  
-  if (!Number.isNaN(page) && page >= 1 && page <= totalPages) {
-    changePage(page);
-  } else {
-    // Reset to current page if invalid
-    const pageInput = document.getElementById('page-input');
-    if (pageInput) {
-      pageInput.value = currentPage;
-    }
+  const totalPages = Math.max(1, Math.ceil(filteredPosts.length / postsPerPage));
+
+  if (page >= 1 && page <= totalPages) {
+    changePage(page, { replaceState: false });
   }
 }
 
-// Filter posts based on category and search query (with full-text search)
-function filterPosts() {
-  let posts = allPosts;
-  
-  // Filter by category
+// Filter posts based on category, search query and sort
+function filterPosts(options = {}) {
+  let posts = allPosts.slice();
+
   if (currentCategory !== 'all') {
-    posts = posts.filter(post => post.category === currentCategory);
+    posts = posts.filter((post) => post.category === currentCategory);
   }
-  
-  // Filter by search query (full-text search)
+
   if (currentSearchQuery) {
     const query = currentSearchQuery.toLowerCase();
-    posts = posts.filter(post => {
+    posts = posts.filter((post) => {
       const title = post.title.toLowerCase();
       const excerpt = post.excerpt.toLowerCase();
       const body = post.body.toLowerCase();
       const category = post.category.toLowerCase();
-      
+
       return title.includes(query) ||
-             excerpt.includes(query) ||
-             body.includes(query) ||
-             category.includes(query);
+        excerpt.includes(query) ||
+        body.includes(query) ||
+        category.includes(query);
     });
   }
-  
+
+  posts = sortPosts(posts, currentSort);
   filteredPosts = posts;
-  currentPage = 1; // Reset to first page when filtering
-  renderPostsList(posts, currentPage);
-}
 
-function setSuggestionsVisibility(isVisible, input) {
-  const suggestions = document.getElementById('search-suggestions');
-  if (!suggestions) return;
-  suggestions.classList.toggle('visible', isVisible);
-  suggestions.setAttribute('aria-hidden', isVisible ? 'false' : 'true');
-  if (input) {
-    input.setAttribute('aria-expanded', isVisible ? 'true' : 'false');
+  const shouldResetPage = options.resetPage !== false;
+  const totalPages = Math.max(1, Math.ceil(filteredPosts.length / postsPerPage));
+  if (shouldResetPage) {
+    currentPage = 1;
+  } else {
+    currentPage = Math.min(Math.max(1, currentPage), totalPages);
   }
-}
 
-function resetActiveSuggestion(input) {
-  activeSuggestionIndex = -1;
-  if (input) {
-    input.removeAttribute('aria-activedescendant');
+  suppressPostsListScroll = Boolean(options.suppressScroll);
+  try {
+    renderPostsList(filteredPosts, currentPage);
+  } finally {
+    suppressPostsListScroll = false;
   }
-  const suggestions = document.getElementById('search-suggestions');
-  if (!suggestions) return;
-  suggestions.querySelectorAll('.search-suggestion-item').forEach((item) => {
-    item.setAttribute('aria-selected', 'false');
-    item.classList.remove('active');
-  });
-}
 
-function updateActiveSuggestion(input) {
-  const suggestions = document.getElementById('search-suggestions');
-  if (!suggestions) return;
-  const items = Array.from(suggestions.querySelectorAll('.search-suggestion-item'));
-  items.forEach((item, index) => {
-    const id = `search-suggestion-${index}`;
-    item.id = id;
-    const isActive = index === activeSuggestionIndex;
-    item.setAttribute('aria-selected', isActive ? 'true' : 'false');
-    item.classList.toggle('active', isActive);
-  });
-  if (input) {
-    if (activeSuggestionIndex >= 0 && items[activeSuggestionIndex]) {
-      input.setAttribute('aria-activedescendant', items[activeSuggestionIndex].id);
-    } else {
-      input.removeAttribute('aria-activedescendant');
-    }
+  updateSearchResults();
+
+  if (currentHubView === 'posts' && options.updateUrl !== false) {
+    updatePostsUrlState({ replace: options.replaceState !== false });
   }
 }
 
@@ -1221,51 +2675,48 @@ function setupSearch() {
   const searchInput = document.getElementById('search-input');
   const searchWrapper = document.getElementById('search-wrapper');
   const searchClearBtn = document.getElementById('search-clear');
-  const resultsInfo = document.getElementById('search-results-info');
   const suggestions = document.getElementById('search-suggestions');
-  
-  if (!searchInput) {
-    console.error('search-input not found');
+
+  if (!searchInput || !searchWrapper || !searchClearBtn || !suggestions) {
+    console.error('search controls not found');
     return;
   }
-  if (searchBound || searchInput.dataset.bound === 'true') {
-    return;
-  }
-  
+
   loadSearchHistory();
-  
-  // Input handler for search
-  searchInput.addEventListener('input', (e) => {
-    currentSearchQuery = e.target.value.trim();
-    
+  searchClearBtn.hidden = true;
+
+  const applySearch = () => {
     if (currentSearchQuery) {
       searchWrapper.classList.add('active');
-      searchClearBtn.style.display = 'block';
+      searchClearBtn.hidden = false;
       showSearchSuggestions(currentSearchQuery);
     } else {
       searchWrapper.classList.remove('active');
-      searchClearBtn.style.display = 'none';
-      setSuggestionsVisibility(false, searchInput);
-      resetActiveSuggestion(searchInput);
+      searchClearBtn.hidden = true;
+      suggestions.classList.remove('visible');
     }
-    
-    filterPosts();
-    updateSearchResults();
+
+    filterPosts({ resetPage: true, replaceState: true });
+  };
+
+  const debouncedSearch = typeof debounce === 'function'
+    ? debounce(applySearch, 300)
+    : applySearch;
+
+  searchInput.addEventListener('input', (event) => {
+    currentSearchQuery = event.target.value.trim();
+    debouncedSearch();
   });
-  
-  // Clear button handler
+
   searchClearBtn.addEventListener('click', () => {
     searchInput.value = '';
     currentSearchQuery = '';
     searchWrapper.classList.remove('active');
-    searchClearBtn.style.display = 'none';
-    setSuggestionsVisibility(false, searchInput);
-    resetActiveSuggestion(searchInput);
-    filterPosts();
-    updateSearchResults();
+    searchClearBtn.hidden = true;
+    suggestions.classList.remove('visible');
+    filterPosts({ resetPage: true, replaceState: true });
   });
-  
-  // Prevent closing suggestions on input click
+
   searchInput.addEventListener('focus', () => {
     if (currentSearchQuery) {
       showSearchSuggestions(currentSearchQuery);
@@ -1274,169 +2725,104 @@ function setupSearch() {
     }
   });
 
-  searchInput.addEventListener('keydown', (e) => {
-    const items = Array.from(suggestions.querySelectorAll('.search-suggestion-item'));
-    if (e.key === 'ArrowDown') {
-      e.preventDefault();
-      if (!items.length) {
-        if (currentSearchQuery) {
-          showSearchSuggestions(currentSearchQuery);
-        } else {
-          showSearchHistory();
-        }
-        return;
-      }
-      activeSuggestionIndex = (activeSuggestionIndex + 1) % items.length;
-      updateActiveSuggestion(searchInput);
-      return;
-    }
-    if (e.key === 'ArrowUp') {
-      e.preventDefault();
-      if (!items.length) return;
-      activeSuggestionIndex = (activeSuggestionIndex - 1 + items.length) % items.length;
-      updateActiveSuggestion(searchInput);
-      return;
-    }
-    if (e.key === 'Enter') {
-      if (activeSuggestionIndex >= 0 && items[activeSuggestionIndex]) {
-        e.preventDefault();
-        items[activeSuggestionIndex].click();
-      }
-      return;
-    }
-    if (e.key === 'Escape') {
-      setSuggestionsVisibility(false, searchInput);
-      resetActiveSuggestion(searchInput);
+  document.addEventListener('click', (event) => {
+    if (!searchWrapper.contains(event.target) && !suggestions.contains(event.target)) {
+      suggestions.classList.remove('visible');
     }
   });
-  
-  // Hide suggestions when clicking outside
-  document.addEventListener('click', (e) => {
-    if (!searchWrapper.contains(e.target) && !suggestions.contains(e.target)) {
-      setSuggestionsVisibility(false, searchInput);
-      resetActiveSuggestion(searchInput);
-    }
-  });
+}
 
-  searchInput.dataset.bound = 'true';
-  searchBound = true;
+function bindSuggestionActions(suggestions) {
+  suggestions.querySelectorAll('.search-suggestion-item[data-query]').forEach((item) => {
+    item.addEventListener('click', () => {
+      const query = item.getAttribute('data-query');
+      if (query) selectSearchSuggestion(query);
+    });
+  });
 }
 
 // Show search suggestions dropdown
 function showSearchSuggestions(query) {
   const suggestions = document.getElementById('search-suggestions');
-  if (!suggestions) return;
-  const searchInput = document.getElementById('search-input');
-  resetActiveSuggestion(searchInput);
-  const query_lower = query.toLowerCase();
-  
-  // Get unique suggestions from posts and history
-  const matchedPosts = allPosts.filter(post =>
-    post.title.toLowerCase().includes(query_lower) ||
-    post.category.toLowerCase().includes(query_lower)
-  ).slice(0, 5);
-  
-  const matchedHistory = searchHistory.filter(h =>
-    h.toLowerCase().includes(query_lower) && h !== query
-  ).slice(0, 3);
-  
-  const items = [];
-  matchedPosts.forEach(post => {
-    items.push({ label: post.title, query: post.title, isHistory: false });
-  });
-  matchedHistory.forEach(item => {
-    items.push({ label: item, query: item, isHistory: true });
-  });
+  const queryLower = query.toLowerCase();
 
-  renderSearchSuggestions(items);
+  const matchedPosts = allPosts.filter((post) =>
+    post.title.toLowerCase().includes(queryLower) ||
+    post.category.toLowerCase().includes(queryLower)
+  ).slice(0, 5);
+
+  const matchedHistory = searchHistory.filter((item) =>
+    item.toLowerCase().includes(queryLower) && item !== query
+  ).slice(0, 3);
+
+  const postMarkup = matchedPosts.map((post) => (
+    `<button type="button" class="search-suggestion-item" data-query="${escapeHtml(post.title)}">${escapeHtml(post.title)}</button>`
+  )).join('');
+
+  const historyMarkup = matchedHistory.map((item) => (
+    `<button type="button" class="search-suggestion-item history" data-query="${escapeHtml(item)}"><i class="fas fa-history" aria-hidden="true"></i>${escapeHtml(item)}</button>`
+  )).join('');
+
+  const html = `${postMarkup}${historyMarkup}`;
+  if (!html) {
+    suggestions.classList.remove('visible');
+    return;
+  }
+
+  suggestions.innerHTML = html;
+  bindSuggestionActions(suggestions);
+  suggestions.classList.add('visible');
 }
 
 // Show search history dropdown
 function showSearchHistory() {
   const suggestions = document.getElementById('search-suggestions');
-  if (!suggestions) return;
-  const searchInput = document.getElementById('search-input');
-  resetActiveSuggestion(searchInput);
-  
+
   if (searchHistory.length === 0) {
-    setSuggestionsVisibility(false, searchInput);
+    suggestions.classList.remove('visible');
     return;
   }
-  
-  const items = searchHistory.slice(0, 5).map(item => ({
-    label: item,
-    query: item,
-    isHistory: true
-  }));
-  renderSearchSuggestions(items);
-}
 
-function renderSearchSuggestions(items) {
-  const suggestions = document.getElementById('search-suggestions');
-  if (!suggestions) return;
-  const searchInput = document.getElementById('search-input');
+  suggestions.innerHTML = searchHistory.slice(0, 5).map((item) => (
+    `<button type="button" class="search-suggestion-item history" data-query="${escapeHtml(item)}"><i class="fas fa-history" aria-hidden="true"></i>${escapeHtml(item)}</button>`
+  )).join('');
 
-  suggestions.innerHTML = '';
-
-  items.forEach(item => {
-    const button = document.createElement('button');
-    button.type = 'button';
-    button.className = 'search-suggestion-item';
-    button.setAttribute('role', 'option');
-    button.setAttribute('aria-selected', 'false');
-    button.setAttribute('tabindex', '-1');
-    button.dataset.query = item.query;
-    if (item.isHistory) {
-      const icon = document.createElement('i');
-      icon.className = 'fas fa-history';
-      icon.setAttribute('aria-hidden', 'true');
-      button.appendChild(icon);
-      button.appendChild(document.createTextNode(` ${item.label}`));
-      button.style.opacity = '0.7';
-    } else {
-      button.textContent = item.label;
-    }
-    button.addEventListener('click', () => selectSearchSuggestion(item.query));
-    suggestions.appendChild(button);
-  });
-
-  if (items.length > 0) {
-    setSuggestionsVisibility(true, searchInput);
-  } else {
-    setSuggestionsVisibility(false, searchInput);
-  }
-  updateActiveSuggestion(searchInput);
+  bindSuggestionActions(suggestions);
+  suggestions.classList.add('visible');
 }
 
 // Select a suggestion
 function selectSearchSuggestion(query) {
   const searchInput = document.getElementById('search-input');
+  const suggestions = document.getElementById('search-suggestions');
+  const searchClearBtn = document.getElementById('search-clear');
+  const searchWrapper = document.getElementById('search-wrapper');
+
+  if (!searchInput || !suggestions || !searchClearBtn || !searchWrapper) return;
+
   searchInput.value = query;
   currentSearchQuery = query;
-  
-  // Add to history
-  searchHistory = searchHistory.filter(h => h !== query);
+
+  searchHistory = searchHistory.filter((item) => item !== query);
   searchHistory.unshift(query);
   saveSearchHistory();
-  
-  filterPosts();
-  updateSearchResults();
-  const suggestions = document.getElementById('search-suggestions');
-  if (suggestions) {
-    setSuggestionsVisibility(false, searchInput);
-    resetActiveSuggestion(searchInput);
-  }
-  searchInput.focus();
+
+  searchWrapper.classList.add('active');
+  searchClearBtn.hidden = false;
+
+  filterPosts({ resetPage: true, replaceState: false });
+  suggestions.classList.remove('visible');
 }
 
 // Update search results display
 function updateSearchResults() {
   const resultsInfo = document.getElementById('search-results-info');
-  
+  if (!resultsInfo) return;
+
   if (currentSearchQuery) {
     const count = filteredPosts.length;
     const text = count === 1 ? 'result' : 'results';
-    resultsInfo.textContent = `Found ${count} ${text} for "${currentSearchQuery}"`;
+    resultsInfo.innerHTML = `Found <strong>${count}</strong> ${text} for "<strong>${escapeHtml(currentSearchQuery)}</strong>"`;
     resultsInfo.classList.add('visible');
   } else {
     resultsInfo.classList.remove('visible');
@@ -1446,139 +2832,214 @@ function updateSearchResults() {
 
 // Setup category filters
 function setupFilters() {
-  const filterContainer = document.querySelector('.category-filters');
   const filterButtons = document.querySelectorAll('.filter-btn');
-  if (!filterContainer || filtersBound || filterContainer.dataset.bound === 'true') return;
-  
-  filterButtons.forEach(btn => {
+
+  filterButtons.forEach((btn) => {
+    btn.setAttribute('aria-pressed', btn.classList.contains('active') ? 'true' : 'false');
     btn.addEventListener('click', () => {
-      // Update active state
-      filterButtons.forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      
-      // Update current category
-      currentCategory = btn.dataset.category;
-      
-      // Filter posts
-      filterPosts();
-      
-      // Scroll to search bar area immediately and consistently
-      const searchBar = document.querySelector('.search-bar');
-      if (searchBar) {
-        searchBar.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      }
+      applyCategoryFilter(btn.dataset.category, {
+        resetPage: true,
+        suppressAutoScroll: false,
+        replaceState: false
+      });
     });
   });
-  filterContainer.dataset.bound = 'true';
-  filtersBound = true;
 }
 
-function buildSeriesBlock(post) {
-  if (!post || !post.series) return '';
-  const seriesPosts = allPosts
-    .filter((candidate) => candidate.series && candidate.series === post.series)
-    .sort((a, b) => {
-      if (Number.isFinite(a.part) && Number.isFinite(b.part)) {
-        return a.part - b.part;
-      }
-      return new Date(a.date) - new Date(b.date);
-    });
-
-  if (seriesPosts.length === 0) return '';
-
-  const activeIndex = seriesPosts.findIndex((item) => item.slug === post.slug);
-  const previousPart = activeIndex > 0 ? seriesPosts[activeIndex - 1] : null;
-  const nextPart = activeIndex >= 0 && activeIndex < seriesPosts.length - 1 ? seriesPosts[activeIndex + 1] : null;
-  const fallbackPart = Number.isFinite(post.part) ? post.part : (activeIndex >= 0 ? activeIndex + 1 : 1);
-  const total = Number.isFinite(post.total) ? post.total : seriesPosts.length;
-
-  const navLinks = `
-    <div class="series-nav-links">
-      ${previousPart ? `<a href="#" class="post-jump-link series-nav-link" data-slug="${escapeHtml(previousPart.slug)}">&larr; ${escapeHtml(previousPart.title)}</a>` : '<span class="series-nav-link muted">Start of series</span>'}
-      ${nextPart ? `<a href="#" class="post-jump-link series-nav-link" data-slug="${escapeHtml(nextPart.slug)}">${escapeHtml(nextPart.title)} &rarr;</a>` : '<span class="series-nav-link muted">End of series</span>'}
-    </div>
-  `;
-
-  const listItems = seriesPosts.map((item) => {
-    const isActive = item.slug === post.slug;
-    const labelPart = Number.isFinite(item.part) ? `Part ${item.part}` : 'Part';
-    return `
-      <a href="#" class="post-jump-link series-link${isActive ? ' active' : ''}" data-slug="${escapeHtml(item.slug)}">
-        <span>${labelPart}</span>
-        <strong>${escapeHtml(item.title)}</strong>
-      </a>
-    `;
-  }).join('');
-
-  return `
-    <section class="series-nav" aria-label="Series navigation">
-      <p class="series-heading">${escapeHtml(post.series)} <span>Part ${fallbackPart} of ${total}</span></p>
-      ${navLinks}
-      <div class="series-list">${listItems}</div>
-    </section>
-  `;
-}
-
-function buildRelatedPostsBlock(post) {
-  if (!post) return '';
-  const currentTags = Array.isArray(post.tags) ? post.tags : [];
-
-  const scored = allPosts
-    .filter((candidate) => candidate.slug !== post.slug)
-    .map((candidate) => {
-      const candidateTags = Array.isArray(candidate.tags) ? candidate.tags : [];
-      const sharedTags = candidateTags.filter((tag) => currentTags.includes(tag)).length;
-      const sameCategory = candidate.category === post.category ? 1 : 0;
-      const score = (sameCategory * 3) + (sharedTags * 2);
-      return { candidate, score };
-    })
-    .sort((a, b) => {
-      if (b.score !== a.score) return b.score - a.score;
-      return new Date(b.candidate.date) - new Date(a.candidate.date);
-    });
-
-  const primary = scored.filter((entry) => entry.score > 0).slice(0, 3);
-  const fallbackNeeded = 3 - primary.length;
-  const fallback = fallbackNeeded > 0
-    ? scored.filter((entry) => entry.score === 0).slice(0, fallbackNeeded)
-    : [];
-
-  const relatedPosts = primary.concat(fallback).map((entry) => entry.candidate);
-  if (relatedPosts.length === 0) return '';
-
-  const cards = relatedPosts.map((item) => `
-    <article class="related-card">
-      <p class="related-meta">${escapeHtml(formatCategory(item.category))} &middot; ${item.readTime} min</p>
-      <h4><a href="#" class="post-jump-link" data-slug="${escapeHtml(item.slug)}">${escapeHtml(item.title)}</a></h4>
-      <p>${escapeHtml(item.excerpt || '')}</p>
-    </article>
-  `).join('');
-
-  return `
-    <section class="related-posts" aria-label="Related posts">
-      <h3>Related posts</h3>
-      <div class="related-grid">
-        ${cards}
-      </div>
-    </section>
-  `;
-}
-
-function bindPostJumpLinks() {
-  const container = document.getElementById('single-post-view');
-  if (!container) return;
-  const links = container.querySelectorAll('.post-jump-link');
-  links.forEach((link) => {
-    if (link.dataset.bound === 'true') return;
-    link.addEventListener('click', (e) => {
-      e.preventDefault();
-      const slug = link.dataset.slug;
-      if (slug) {
-        showSinglePost(slug);
-      }
-    });
-    link.dataset.bound = 'true';
+function setupSortControl() {
+  const sortSelect = document.getElementById('posts-sort');
+  if (!sortSelect) return;
+  sortSelect.value = currentSort;
+  sortSelect.addEventListener('change', (event) => {
+    currentSort = normalizeSort(event.target.value);
+    sortSelect.value = currentSort;
+    filterPosts({ resetPage: true, replaceState: false });
   });
+}
+
+function setupProjectSearch() {
+  const input = document.getElementById('projects-search-input');
+  const clear = document.getElementById('projects-search-clear');
+  if (!input || !clear) return;
+
+  const runSearch = debounce(() => {
+    currentProjectSearch = input.value.trim();
+    currentProjectPage = 1;
+    setupProjectsShowcase({ preview: false });
+    if (typeof window.setLeftRailContext === 'function') {
+      setLeftRailContext('projects');
+    }
+    clear.hidden = !currentProjectSearch;
+  }, 200);
+
+  input.addEventListener('input', runSearch);
+  clear.addEventListener('click', () => {
+    input.value = '';
+    currentProjectSearch = '';
+    currentProjectPage = 1;
+    clear.hidden = true;
+    setupProjectsShowcase({ preview: false });
+  });
+}
+
+function setupResourceSearch() {
+  const input = document.getElementById('resources-search-input');
+  const clear = document.getElementById('resources-search-clear');
+  if (!input || !clear) return;
+
+  const runSearch = debounce(() => {
+    currentResourceSearch = input.value.trim();
+    currentResourcePage = 1;
+    setupResourcesShowcase({ preview: false });
+    if (typeof window.setLeftRailContext === 'function') {
+      setLeftRailContext('resources');
+    }
+    clear.hidden = !currentResourceSearch;
+  }, 200);
+
+  input.addEventListener('input', runSearch);
+  clear.addEventListener('click', () => {
+    input.value = '';
+    currentResourceSearch = '';
+    currentResourcePage = 1;
+    clear.hidden = true;
+    setupResourcesShowcase({ preview: false });
+  });
+}
+
+function applyCategoryFilter(category = 'all', options = {}) {
+  const filterButtons = document.querySelectorAll('.filter-btn');
+  if (!filterButtons.length) return;
+  const clearSearch = Boolean(options.clearSearch);
+  const suppressAutoScroll = Boolean(options.suppressAutoScroll);
+
+  if (clearSearch) {
+    currentSearchQuery = '';
+    const searchInput = document.getElementById('search-input');
+    const searchClearBtn = document.getElementById('search-clear');
+    const searchWrapper = document.getElementById('search-wrapper');
+    const suggestions = document.getElementById('search-suggestions');
+    const resultsInfo = document.getElementById('search-results-info');
+    if (searchInput) searchInput.value = '';
+    if (searchClearBtn) searchClearBtn.hidden = true;
+    if (searchWrapper) searchWrapper.classList.remove('active');
+    if (suggestions) suggestions.classList.remove('visible');
+    if (resultsInfo) {
+      resultsInfo.classList.remove('visible');
+      resultsInfo.innerHTML = '';
+    }
+  }
+
+  const normalized = category || 'all';
+  const targetButton = document.querySelector(`.filter-btn[data-category="${normalized}"]`) ||
+    document.querySelector('.filter-btn[data-category="all"]');
+
+  filterButtons.forEach((btn) => {
+    const isActive = btn === targetButton;
+    btn.classList.toggle('active', isActive);
+    btn.setAttribute('aria-pressed', isActive ? 'true' : 'false');
+  });
+
+  currentCategory = targetButton ? targetButton.dataset.category : 'all';
+
+  filterPosts({
+    resetPage: options.resetPage !== false,
+    suppressScroll: suppressAutoScroll,
+    replaceState: options.replaceState,
+    updateUrl: options.updateUrl
+  });
+
+  if (!suppressAutoScroll && currentHubView === 'posts') {
+    const searchBar = document.getElementById('blog-search-bar');
+    if (searchBar && typeof window.scrollToElementWithHeaderOffset === 'function') {
+      window.scrollToElementWithHeaderOffset(searchBar, 12);
+    }
+  }
+
+  if (currentHubView === 'posts') {
+    setLeftRailContext('posts');
+  }
+}
+
+function ensureBlogControlsReady() {
+  if (blogControlsInitialized) return;
+  setupSearch();
+  setupFilters();
+  setupSortControl();
+  setupProjectSearch();
+  setupResourceSearch();
+  blogControlsInitialized = true;
+}
+
+window.applyCategoryFilter = applyCategoryFilter;
+window.ensureBlogControlsReady = ensureBlogControlsReady;
+window.setContentHubView = setContentHubView;
+window.setLeftRailContext = setLeftRailContext;
+window.navigatePagination = { next: goToNextPage, prev: goToPrevPage };
+window.getGlobalSearchData = () => ({
+  posts: allPosts,
+  projects: allProjects,
+  resources: allResources
+});
+function setupPostNavigation(slug) {
+  const currentIndex = allPosts.findIndex((post) => post.slug === slug);
+  const prevPost = currentIndex >= 0 && currentIndex < allPosts.length - 1 ? allPosts[currentIndex + 1] : null;
+  const nextPost = currentIndex > 0 ? allPosts[currentIndex - 1] : null;
+
+  const prevLink = document.getElementById('prev-post');
+  const nextLink = document.getElementById('next-post');
+  const stickyPrevBtn = document.getElementById('sticky-prev-post');
+  const stickyNextBtn = document.getElementById('sticky-next-post');
+
+  if (prevLink) {
+    const prevTitle = prevLink.querySelector('.nav-title');
+    if (prevPost && prevTitle) {
+      prevTitle.textContent = prevPost.title;
+      prevLink.style.display = '';
+      prevLink.onclick = (e) => {
+        e.preventDefault();
+        showSinglePost(prevPost.slug);
+      };
+    } else {
+      prevLink.style.display = 'none';
+      prevLink.onclick = null;
+    }
+  }
+
+  if (nextLink) {
+    const nextTitle = nextLink.querySelector('.nav-title');
+    if (nextPost && nextTitle) {
+      nextTitle.textContent = nextPost.title;
+      nextLink.style.display = '';
+      nextLink.onclick = (e) => {
+        e.preventDefault();
+        showSinglePost(nextPost.slug);
+      };
+    } else {
+      nextLink.style.display = 'none';
+      nextLink.onclick = null;
+    }
+  }
+
+  if (stickyPrevBtn) {
+    stickyPrevBtn.disabled = !prevPost;
+    stickyPrevBtn.setAttribute(
+      'aria-label',
+      prevPost ? `Previous post: ${prevPost.title}` : 'Previous post unavailable'
+    );
+    stickyPrevBtn.title = prevPost ? prevPost.title : 'No previous post';
+    stickyPrevBtn.onclick = prevPost ? () => showSinglePost(prevPost.slug) : null;
+  }
+
+  if (stickyNextBtn) {
+    stickyNextBtn.disabled = !nextPost;
+    stickyNextBtn.setAttribute(
+      'aria-label',
+      nextPost ? `Next post: ${nextPost.title}` : 'Next post unavailable'
+    );
+    stickyNextBtn.title = nextPost ? nextPost.title : 'No next post';
+    stickyNextBtn.onclick = nextPost ? () => showSinglePost(nextPost.slug) : null;
+  }
 }
 
 // Render single post view
@@ -1610,53 +3071,31 @@ async function renderSinglePost(slug) {
   if (breadcrumb && breadcrumbPost) {
     breadcrumbPost.textContent = post.title;
     breadcrumb.style.display = 'flex';
+    const crumb = breadcrumb.querySelector('.breadcrumb-item');
+    if (crumb) crumb.textContent = 'Posts';
   }
   
   // Render post header and body
   const postContent = document.getElementById('post-content');
-  const safeTitle = escapeHtml(post.title);
-  const safeExcerpt = escapeHtml(post.excerpt);
-  const safeCategory = escapeHtml(formatCategory(post.category));
-  const coverUrl = encodeURI(sanitizeUrl(post.cover) || 'assets/Peak.png');
-  const tags = Array.isArray(post.tags) ? post.tags : [];
-  const tagsHtml = tags.length
-    ? `<div class="post-tags">${tags.map(tag => `<span class="post-tag">${escapeHtml(tag)}</span>`).join('')}</div>`
-    : '';
-  const seriesBlock = buildSeriesBlock(post);
-  const relatedPostsBlock = buildRelatedPostsBlock(post);
   postContent.innerHTML = `
     <div class="post-header">
       <div class="post-header-content">
-        <h1>${safeTitle}</h1>
+        <h1>${post.title}</h1>
         <div class="post-meta">
           <span>${formatDate(post.date)}</span>
-          <span aria-hidden="true">&middot;</span>
-          <span>${safeCategory}</span>
-          <span aria-hidden="true">&middot;</span>
+          <span>â€¢</span>
+          <span>${formatCategory(post.category)}</span>
+          <span>â€¢</span>
           <span>${post.readTime} min read</span>
         </div>
-        ${tagsHtml}
-        ${post.excerpt ? `<p class="post-excerpt">${safeExcerpt}</p>` : ''}
+        ${post.excerpt ? `<p class="post-excerpt">${post.excerpt}</p>` : ''}
       </div>
-      <img src="${coverUrl}" alt="${safeTitle}" class="post-cover" loading="lazy" decoding="async" onerror="this.style.display='none'">
+      <img src="${post.cover}" alt="${post.title}" class="post-cover" data-viewer="true" onerror="this.style.display='none'">
     </div>
     <div class="post-body">
       ${processedHtml}
     </div>
-    ${seriesBlock}
-    ${relatedPostsBlock}
   `;
-
-  updatePageMeta(`${post.title} | Nomu's Blog`, post.excerpt || DEFAULT_PAGE_META.description);
-  updateSocialMeta(post);
-  currentPostSlug = post.slug;
-
-  const stickyHeader = document.getElementById('post-sticky-header');
-  const stickyTitle = document.getElementById('post-sticky-title');
-  if (stickyHeader && stickyTitle) {
-    stickyTitle.textContent = post.title;
-    stickyHeader.setAttribute('aria-hidden', 'false');
-  }
   
   // Make headers clickable
   const postBody = document.querySelector('.post-body');
@@ -1682,21 +3121,19 @@ async function renderSinglePost(slug) {
   
   // Setup share buttons
   setupShareButtons(post);
-
-  // Setup reactions
-  setupReactions(post);
-
-  // Bind series links
-  bindPostJumpLinks();
   
   // Setup back to top button
   setupBackToTop();
-  
+
   // Setup TOC toggle functionality
   setupTOC();
 
-  // Setup image zoom viewer for post images
-  setupImageViewerForPost();
+  if (typeof window.registerViewerImages === 'function') {
+    window.registerViewerImages(postContent);
+  }
+  if (typeof window.setReactionContext === 'function') {
+    window.setReactionContext(post.slug);
+  }
   
   // Highlight code blocks
   if (typeof hljs !== 'undefined') {
@@ -1710,7 +3147,7 @@ async function renderSinglePost(slug) {
   if (commentsSection) {
     commentsSection.style.display = 'block';
   }
-  setupCommentForm(slug, post.title);
+  setupCommentForm(slug);
 }
 
 // Setup TOC toggle functionality
@@ -1718,248 +3155,37 @@ function setupTOC() {
   const tocToggle = document.getElementById('toc-toggle');
   const tocSidebar = document.getElementById('toc-sidebar');
   const tocClose = document.getElementById('toc-close');
-  const singleView = document.getElementById('single-post-view');
-
-  if (!tocSidebar) return;
-
-  const shouldShow = singleView && singleView.style.display !== 'none';
-  const tocRail = tocSidebar.closest('.side-rail-left');
-  if (tocRail) {
-    tocRail.style.display = shouldShow ? 'flex' : 'none';
-  }
-  tocSidebar.style.display = shouldShow ? 'block' : 'none';
-  if (!shouldShow) {
-    tocSidebar.classList.remove('open');
-    tocSidebar.setAttribute('aria-hidden', 'true');
-  } else {
-    tocSidebar.classList.add('open');
-    tocSidebar.setAttribute('aria-hidden', 'false');
-  }
-
-  if (!tocToggle) return;
-
-  const isWide = window.matchMedia('(min-width: 1024px)').matches;
-  tocToggle.style.display = shouldShow && !isWide ? 'block' : 'none';
-  tocToggle.setAttribute('aria-hidden', shouldShow && !isWide ? 'false' : 'true');
-
-  if (tocToggle.dataset.bound === 'true') return;
-  tocToggle.dataset.bound = 'true';
-
-  // Toggle TOC on both mobile and desktop
-  tocToggle.addEventListener('click', () => {
-    if (isWide) return;
-    const isOpen = tocSidebar.classList.toggle('open');
-    tocSidebar.setAttribute('aria-hidden', isOpen ? 'false' : 'true');
-    tocToggle.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
-  });
-
-  // Close TOC when clicking close button
-  if (tocClose) {
-    tocClose.addEventListener('click', () => {
-      if (isWide) return;
-      tocSidebar.classList.remove('open');
-      tocSidebar.setAttribute('aria-hidden', 'true');
-      tocToggle.setAttribute('aria-expanded', 'false');
-    });
-  }
-
-  // Close TOC when clicking outside (only on mobile or when TOC is open)
-  document.addEventListener('click', (e) => {
-    if (isWide) return;
-    if (!tocSidebar.contains(e.target) &&
-        !tocToggle.contains(e.target) &&
-        tocSidebar.classList.contains('open')) {
-      tocSidebar.classList.remove('open');
-      tocSidebar.setAttribute('aria-hidden', 'true');
-      tocToggle.setAttribute('aria-expanded', 'false');
-    }
-  });
-}
-
-// Setup image viewer for post images
-let imageViewerInitialized = false;
-let openImageViewerFn = null;
-let imageViewerGlobalBound = false;
-
-function setupImageViewerForPost() {
-  const postBody = document.querySelector('.post-body');
-  if (!postBody) return;
-
-  const viewer = ensureImageViewer();
-  if (!viewer) return;
-
-  const images = postBody.querySelectorAll('img');
-  images.forEach((img) => {
-    if (img.dataset.zoomableBound === 'true') return;
-    img.dataset.zoomableBound = 'true';
-    img.style.cursor = 'zoom-in';
-    img.addEventListener('click', (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      if (typeof openImageViewerFn === 'function') {
-        openImageViewerFn(img.src, img.alt || '');
+  
+  if (tocToggle) {
+    if (tocSidebar) {
+      // We're on a single post page with TOC
+      tocToggle.style.display = 'block';
+      
+      // Toggle TOC on both mobile and desktop
+      tocToggle.addEventListener('click', () => {
+        tocSidebar.classList.toggle('open');
+      });
+      
+      // Close TOC when clicking close button
+      if (tocClose) {
+        tocClose.addEventListener('click', () => {
+          tocSidebar.classList.remove('open');
+        });
       }
-    });
-  });
-}
-
-function setupImageViewerGlobal() {
-  if (imageViewerGlobalBound) return;
-  imageViewerGlobalBound = true;
-
-  document.addEventListener('click', (e) => {
-    const target = e.target;
-    if (!target) return;
-    const img = target.closest('.post-body img, .post-header img');
-    if (!img) return;
-
-    const viewer = ensureImageViewer();
-    if (!viewer) return;
-
-    e.preventDefault();
-    e.stopPropagation();
-
-    if (typeof openImageViewerFn === 'function') {
-      openImageViewerFn(img.src, img.alt || '');
+      
+      // Close TOC when clicking outside (only on mobile or when TOC is open)
+      document.addEventListener('click', (e) => {
+        if (!tocSidebar.contains(e.target) && 
+            !tocToggle.contains(e.target) &&
+            tocSidebar.classList.contains('open')) {
+          tocSidebar.classList.remove('open');
+        }
+      });
+    } else {
+      // We're not on a single post page, hide TOC button
+      tocToggle.style.display = 'none';
     }
-  });
-}
-
-function ensureImageViewer() {
-  const viewer = document.getElementById('image-viewer');
-  if (!viewer) {
-    console.warn('Image viewer container not found.');
-    return null;
   }
-
-  if (imageViewerInitialized) return viewer;
-  imageViewerInitialized = true;
-
-  const stage = document.getElementById('image-viewer-stage');
-  const img = document.getElementById('image-viewer-img');
-  const closeBtn = document.getElementById('image-viewer-close');
-  const zoomInBtn = document.getElementById('image-zoom-in');
-  const zoomOutBtn = document.getElementById('image-zoom-out');
-  const zoomResetBtn = document.getElementById('image-zoom-reset');
-
-  if (!stage || !img || !closeBtn || !zoomInBtn || !zoomOutBtn || !zoomResetBtn) {
-    console.warn('Image viewer controls missing.');
-    return viewer;
-  }
-
-  const state = {
-    scale: 1,
-    minScale: 1,
-    maxScale: 5,
-    translateX: 0,
-    translateY: 0,
-    isPanning: false,
-    startX: 0,
-    startY: 0,
-    startTranslateX: 0,
-    startTranslateY: 0
-  };
-
-  function applyTransform() {
-    img.style.transform = `translate(${state.translateX}px, ${state.translateY}px) scale(${state.scale})`;
-  }
-
-  function clampScale(value) {
-    return Math.min(state.maxScale, Math.max(state.minScale, value));
-  }
-
-  function resetView() {
-    state.scale = 1;
-    state.translateX = 0;
-    state.translateY = 0;
-    applyTransform();
-  }
-
-  function openViewer(src, alt) {
-    img.src = src;
-    img.alt = alt || '';
-    resetView();
-    viewer.classList.add('open');
-    viewer.setAttribute('aria-hidden', 'false');
-    document.body.classList.add('image-viewer-open');
-  }
-
-  function closeViewer() {
-    viewer.classList.remove('open');
-    viewer.setAttribute('aria-hidden', 'true');
-    document.body.classList.remove('image-viewer-open');
-  }
-
-  function zoomBy(factor) {
-    state.scale = clampScale(state.scale * factor);
-    applyTransform();
-  }
-
-  // Expose to local/global scope for other functions
-  openImageViewerFn = openViewer;
-  window.openImageViewer = openViewer;
-
-  // Close when clicking outside the image
-  viewer.addEventListener('click', (e) => {
-    if (e.target === viewer) {
-      closeViewer();
-    }
-  });
-
-  closeBtn.addEventListener('click', closeViewer);
-  zoomInBtn.addEventListener('click', () => zoomBy(1.2));
-  zoomOutBtn.addEventListener('click', () => zoomBy(0.85));
-  zoomResetBtn.addEventListener('click', resetView);
-
-  // Wheel zoom
-  stage.addEventListener('wheel', (e) => {
-    if (!viewer.classList.contains('open')) return;
-    e.preventDefault();
-    const factor = e.deltaY > 0 ? 0.9 : 1.1;
-    zoomBy(factor);
-  }, { passive: false });
-
-  // Drag to pan
-  stage.addEventListener('pointerdown', (e) => {
-    if (!viewer.classList.contains('open')) return;
-    state.isPanning = true;
-    stage.classList.add('grabbing');
-    state.startX = e.clientX;
-    state.startY = e.clientY;
-    state.startTranslateX = state.translateX;
-    state.startTranslateY = state.translateY;
-    stage.setPointerCapture(e.pointerId);
-  });
-
-  stage.addEventListener('pointermove', (e) => {
-    if (!state.isPanning) return;
-    const dx = e.clientX - state.startX;
-    const dy = e.clientY - state.startY;
-    state.translateX = state.startTranslateX + dx;
-    state.translateY = state.startTranslateY + dy;
-    applyTransform();
-  });
-
-  stage.addEventListener('pointerup', (e) => {
-    state.isPanning = false;
-    stage.classList.remove('grabbing');
-    stage.releasePointerCapture(e.pointerId);
-  });
-
-  stage.addEventListener('pointercancel', (e) => {
-    state.isPanning = false;
-    stage.classList.remove('grabbing');
-    stage.releasePointerCapture(e.pointerId);
-  });
-
-  // Close on Escape
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && viewer.classList.contains('open')) {
-      closeViewer();
-    }
-  });
-
-  return viewer;
 }
 
 // Add IDs to headings for TOC navigation
@@ -2068,10 +3294,11 @@ function smoothScrollTo(id) {
     
     // Close mobile TOC after clicking
     if (window.innerWidth <= 768) {
-      const tocSidebar = document.getElementById('toc-sidebar');
-      if (tocSidebar) {
-        tocSidebar.classList.remove('open');
-      }
+    const tocSidebar = document.getElementById('toc-sidebar');
+    if (tocSidebar) {
+      tocSidebar.classList.remove('open');
+    }
+    closeRailDrawer();
     }
   } else {
     console.warn(`Element with id "${id}" not found`);
@@ -2079,87 +3306,16 @@ function smoothScrollTo(id) {
 }
 
 // Setup comment form
-function setupCommentForm(postSlug, postTitle) {
+function setupCommentForm(postSlug) {
   if (typeof initializeComments === 'function') {
-    initializeComments(postSlug, postTitle);
+    initializeComments(postSlug);
   } else {
     console.warn('Comments system not loaded.');
   }
-}
 
-function setupPostNavigation(slug) {
-  const prevLink = document.getElementById('prev-post');
-  const nextLink = document.getElementById('next-post');
-  if (!prevLink || !nextLink) return;
-  currentPostSlug = slug;
-
-  const currentIndex = allPosts.findIndex(post => post.slug === slug);
-  if (currentIndex === -1) {
-    prevLink.style.display = 'none';
-    nextLink.style.display = 'none';
-    return;
+  if (typeof refreshComments === 'function') {
+    refreshComments(postSlug);
   }
-
-  const prevPost = allPosts[currentIndex + 1];
-  const nextPost = allPosts[currentIndex - 1];
-
-  const applyNav = (linkEl, post) => {
-    if (!post) {
-      linkEl.style.display = 'none';
-      linkEl.onclick = null;
-      linkEl.removeAttribute('title');
-      linkEl.removeAttribute('aria-label');
-      return;
-    }
-    const titleEl = linkEl.querySelector('.nav-title');
-    if (titleEl) {
-      titleEl.textContent = post.title;
-    }
-    linkEl.setAttribute('title', post.title);
-    const direction = linkEl.id === 'prev-post' ? 'previous' : 'next';
-    linkEl.setAttribute('aria-label', `Open ${direction} post: ${post.title}`);
-    linkEl.style.display = 'inline-grid';
-    linkEl.onclick = (e) => {
-      e.preventDefault();
-      showSinglePost(post.slug);
-    };
-  };
-
-  applyNav(prevLink, prevPost);
-  applyNav(nextLink, nextPost);
-}
-
-function isTypingTarget(target) {
-  if (!target) return false;
-  const tag = target.tagName ? target.tagName.toLowerCase() : '';
-  if (target.isContentEditable) return true;
-  return tag === 'input' || tag === 'textarea' || tag === 'select' || tag === 'button';
-}
-
-function setupKeyboardPostNavigation() {
-  if (keyboardNavBound) return;
-  keyboardNavBound = true;
-
-  document.addEventListener('keydown', (event) => {
-    if (event.defaultPrevented || event.altKey || event.ctrlKey || event.metaKey) return;
-    if (isTypingTarget(event.target)) return;
-    if (!document.body.classList.contains('post-view') || !currentPostSlug) return;
-
-    const currentIndex = allPosts.findIndex((post) => post.slug === currentPostSlug);
-    if (currentIndex === -1) return;
-
-    if (event.key === 'ArrowLeft') {
-      const prevPost = allPosts[currentIndex + 1];
-      if (!prevPost) return;
-      event.preventDefault();
-      showSinglePost(prevPost.slug);
-    } else if (event.key === 'ArrowRight') {
-      const nextPost = allPosts[currentIndex - 1];
-      if (!nextPost) return;
-      event.preventDefault();
-      showSinglePost(nextPost.slug);
-    }
-  });
 }
 
 // Load and display comments
@@ -2169,166 +3325,16 @@ function loadComments(postSlug) {
   }
 }
 
-function getReactionState(slug) {
-  const countsKey = `reactions_${slug}`;
-  const mineKey = `reactions_${slug}_mine`;
-  let counts = {};
-  let mine = [];
-  try {
-    counts = JSON.parse(localStorage.getItem(countsKey) || '{}');
-  } catch (e) {
-    counts = {};
-  }
-  try {
-    mine = JSON.parse(localStorage.getItem(mineKey) || '[]');
-  } catch (e) {
-    mine = [];
-  }
-  const normalized = {
-    like: 0,
-    fire: 0,
-    idea: 0,
-    ...counts
-  };
-  return { counts: normalized, mine: Array.isArray(mine) ? mine : [] };
-}
-
-function saveReactionState(slug, state) {
-  localStorage.setItem(`reactions_${slug}`, JSON.stringify(state.counts));
-  localStorage.setItem(`reactions_${slug}_mine`, JSON.stringify(state.mine));
-}
-
-function renderReactions(slug) {
-  const container = document.getElementById('reactions');
-  if (!container) return;
-  const { counts, mine } = getReactionState(slug);
-  container.querySelectorAll('.reaction-btn').forEach((btn) => {
-    const key = btn.dataset.reaction;
-    const countEl = container.querySelector(`[data-count-for="${key}"]`);
-    const count = counts[key] || 0;
-    if (countEl) countEl.textContent = count;
-    const isActive = mine.includes(key);
-    btn.classList.toggle('active', isActive);
-    btn.setAttribute('aria-pressed', isActive ? 'true' : 'false');
-  });
-}
-
-function setupReactions(post) {
-  const container = document.getElementById('reactions');
-  if (!container || !post) return;
-  container.dataset.slug = post.slug;
-  renderReactions(post.slug);
-
-  if (container.dataset.bound === 'true') return;
-  container.addEventListener('click', (e) => {
-    const button = e.target.closest('.reaction-btn');
-    if (!button) return;
-    const slug = container.dataset.slug;
-    const key = button.dataset.reaction;
-    const state = getReactionState(slug);
-    const index = state.mine.indexOf(key);
-    if (index >= 0) {
-      state.mine.splice(index, 1);
-      state.counts[key] = Math.max(0, (state.counts[key] || 0) - 1);
-    } else {
-      state.mine.push(key);
-      state.counts[key] = (state.counts[key] || 0) + 1;
-    }
-    saveReactionState(slug, state);
-    renderReactions(slug);
-  });
-  container.dataset.bound = 'true';
-}
-
 // Setup share buttons
 function setupShareButtons(post) {
-  const postUrl = buildPostPermalink(post.slug);
-  const postTitle = post.title;
-  const nativeShare = document.getElementById('share-native');
-  const twitterShare = document.getElementById('share-twitter');
-  const discordShare = document.getElementById('share-discord');
-  const copyShare = document.getElementById('share-copy');
-  
-  if (nativeShare) {
-    if (navigator.share) {
-      nativeShare.style.display = 'inline-flex';
-      nativeShare.onclick = async (e) => {
-        e.preventDefault();
-        try {
-          await navigator.share({
-            title: postTitle,
-            text: `Check out "${postTitle}" on Nomu's blog`,
-            url: postUrl
-          });
-        } catch (err) {
-          console.warn('Native share failed:', err);
-        }
-      };
-    } else {
-      nativeShare.style.display = 'none';
-    }
-  }
+  const postUrl = `${window.location.origin}${window.location.pathname}?post=${post.slug}`;
+  const postTitle = `Check out "${post.title}" on Nomu's blog`;
+  const shareContext = { title: postTitle, url: postUrl };
 
-  if (twitterShare) {
-    const twitterText = `Check out "${postTitle}" on Nomu's blog`;
-    const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(twitterText)}&url=${encodeURIComponent(postUrl)}`;
-    twitterShare.href = twitterUrl;
-    twitterShare.target = '_blank';
-    twitterShare.rel = 'noopener noreferrer';
-    twitterShare.onclick = null; // Ensure click goes through
-  }
-  
-  const showCopySuccess = (button, message) => {
-    if (!button) return;
-    const icon = button.querySelector('i');
-    const originalClass = icon ? icon.className : '';
-    if (icon) {
-      icon.className = 'fas fa-check';
-    }
-    button.classList.add('copied');
-    button.style.borderColor = 'var(--accent)';
-    setTimeout(() => {
-      if (icon && originalClass) {
-        icon.className = originalClass;
-      }
-      button.classList.remove('copied');
-      button.style.borderColor = '';
-    }, 2000);
-    if (typeof showToast === 'function') {
-      showToast(message || 'Copied');
-    }
-  };
-
-  const copyTextFn = typeof copyText === 'function'
-    ? copyText
-    : (text) => navigator.clipboard.writeText(text).then(() => true).catch(() => false);
-
-  if (discordShare) {
-    // For Discord, copy the link to clipboard
-    discordShare.onclick = (e) => {
-      e.preventDefault();
-      const shareText = `Check out "${postTitle}": ${postUrl}`;
-      copyTextFn(shareText).then((ok) => {
-        if (ok) {
-          showCopySuccess(discordShare, 'Link copied!');
-        } else {
-          if (typeof showToast === 'function') showToast('Could not copy link.');
-        }
-      });
-    };
-  }
-  
-  if (copyShare) {
-    copyShare.onclick = (e) => {
-      e.preventDefault();
-      copyTextFn(postUrl).then((ok) => {
-        if (ok) {
-          showCopySuccess(copyShare, 'Post link copied');
-        } else {
-          if (typeof showToast === 'function') showToast('Could not copy link.');
-        }
-      });
-    };
+  if (typeof window.setShareContext === 'function') {
+    window.setShareContext(shareContext);
+  } else {
+    window.__pendingShareContext = shareContext;
   }
 }
 
@@ -2336,8 +3342,7 @@ function setupShareButtons(post) {
 function setupBackToTop() {
   const backToTopBtn = document.getElementById('back-to-top');
   
-  if (!backToTopBtn || backToTopBtn.dataset.bound === 'true') return;
-  backToTopBtn.dataset.bound = 'true';
+  if (!backToTopBtn) return;
   
   // Show/hide button on scroll
   window.addEventListener('scroll', () => {
@@ -2360,7 +3365,6 @@ function setupBackToTop() {
 // Setup back to posts functionality
 function setupBackToPosts() {
   const backLink = document.getElementById('back-to-posts');
-  const stickyBack = document.getElementById('post-sticky-back');
   
   if (backLink) {
     backLink.addEventListener('click', (e) => {
@@ -2368,50 +3372,162 @@ function setupBackToPosts() {
       hideSinglePost();
     });
   }
+}
 
-  if (stickyBack) {
-    stickyBack.addEventListener('click', () => {
-      hideSinglePost();
+function syncPostsStateFromUrl() {
+  currentCategory = tagToCategory(getQueryParam('tag'));
+  currentSort = normalizeSort(getQueryParam('sort') || currentSort);
+  const pageFromUrl = Number.parseInt(getQueryParam('page') || '1', 10);
+  currentPage = Number.isInteger(pageFromUrl) && pageFromUrl > 0 ? pageFromUrl : 1;
+}
+
+function renderHubRoute(view, options = {}) {
+  const requestedView = normalizeHubView(view || 'home');
+
+  if (requestedView === 'posts') {
+    ensureBlogControlsReady();
+    syncPostsStateFromUrl();
+    const sortSelect = document.getElementById('posts-sort');
+    if (sortSelect) sortSelect.value = currentSort;
+    setContentHubView('posts', {
+      syncUrl: options.syncUrl,
+      replaceState: options.replaceState,
+      scrollToSection: options.scrollToSection,
+      suppressNavSync: options.suppressNavSync
     });
+    applyCategoryFilter(currentCategory, {
+      clearSearch: options.clearSearch !== false,
+      suppressAutoScroll: true,
+      resetPage: false,
+      updateUrl: options.syncUrl,
+      replaceState: options.replaceState
+    });
+    return;
   }
+
+  setContentHubView(requestedView, {
+    syncUrl: options.syncUrl,
+    replaceState: options.replaceState,
+    scrollToSection: options.scrollToSection,
+    suppressNavSync: options.suppressNavSync
+  });
 }
 
 // Initialize page
-async function initPage() {
+async function initPage(postSlug, projectId = null, resourceSlug = null) {
+  console.log('initPage called with postSlug:', postSlug, 'projectId:', projectId, 'resourceSlug:', resourceSlug);
+
   const pageLoader = document.getElementById('page-loader');
   if (pageLoader) {
     pageLoader.classList.remove('hidden');
   }
 
-  try {
-    await loadPosts();
+  await loadPosts();
+  await loadResources();
+  await loadProjects();
 
-    setupBackToPosts();
-    setupTOC();
-    setupBackToTop();
-    setupImageViewerGlobal();
-    setupSearch();
-    setupFilters();
-    setupKeyboardPostNavigation();
-    setupInfoLinks();
-    setupHashRouter();
+  setupHubActions();
+  renderPostsPreview();
+  setupProjectsShowcase({ preview: true });
+  setupResourcesShowcase({ preview: true });
+  setupToolsPreview();
+  setupGamesShowcase();
+  ensureLeftRailEvents();
 
-    renderPostsList(allPosts, currentPage);
+  setupBackToPosts();
+  setupTOC();
+  setupBackToTop();
 
-    const initialRoute = resolveInitialRoute();
-    const initialHash = buildHashForRoute(initialRoute);
-    history.replaceState({}, '', `${window.location.pathname}${initialHash}`);
-    await applyRoute(initialRoute, {
-      initial: true,
-      keepScroll: true,
-      scrollBehavior: 'auto'
-    });
-  } catch (error) {
-    console.error('initPage failed:', error);
-  } finally {
+  const heroSection = document.getElementById('hero');
+  const blogSection = document.querySelector('.blog-section');
+  const singleView = document.getElementById('single-post-view');
+  const requestedView = normalizeHubView(getQueryParam('view') || 'home');
+
+  if (projectId || resourceSlug || postSlug) {
+    currentHubView = normalizeHubView(getQueryParam('view') || (projectId ? 'projects' : (resourceSlug ? 'resources' : 'posts')));
+  }
+
+  if (projectId) {
+    if (heroSection) heroSection.style.display = 'none';
+    if (blogSection) blogSection.style.display = 'none';
+    if (singleView) singleView.style.display = 'block';
+    const openedProject = showProjectShowcase(projectId, { pushState: false });
+    if (!openedProject) {
+      if (heroSection) heroSection.style.display = 'block';
+      if (blogSection) blogSection.style.display = 'block';
+      if (singleView) singleView.style.display = 'none';
+      renderHubRoute(requestedView, { syncUrl: false, replaceState: true, clearSearch: true });
+    }
+  } else if (resourceSlug) {
+    if (heroSection) heroSection.style.display = 'none';
+    if (blogSection) blogSection.style.display = 'none';
+    if (singleView) singleView.style.display = 'block';
+    const openedResource = showResourcePage(resourceSlug, { pushState: false });
+    if (!openedResource) {
+      if (heroSection) heroSection.style.display = 'block';
+      if (blogSection) blogSection.style.display = 'block';
+      if (singleView) singleView.style.display = 'none';
+      renderHubRoute('resources', { syncUrl: false, replaceState: true, clearSearch: true });
+    }
+  } else if (postSlug) {
+    if (heroSection) heroSection.style.display = 'none';
+    if (blogSection) blogSection.style.display = 'none';
+    if (singleView) singleView.style.display = 'block';
+    showSinglePost(postSlug, { pushState: false });
+  } else {
+    setRailMode('hub');
+    if (heroSection) heroSection.style.display = 'block';
+    if (blogSection) blogSection.style.display = 'block';
+    if (singleView) singleView.style.display = 'none';
+    renderHubRoute(requestedView, { syncUrl: false, replaceState: true, clearSearch: true });
+  }
+
+  setTimeout(() => {
     if (pageLoader) {
       pageLoader.classList.add('hidden');
     }
-  }
-}
+  }, 320);
 
+  window.addEventListener('popstate', () => {
+    const newPostSlug = getQueryParam('post');
+    const newProjectId = getQueryParam('project');
+    const newResourceSlug = getQueryParam('resource');
+    const routeView = normalizeHubView(getQueryParam('view') || 'home');
+
+    if (newProjectId) {
+      currentHubView = 'projects';
+      const openedProject = showProjectShowcase(newProjectId, { pushState: false });
+      if (!openedProject) {
+        renderHubRoute('projects', { syncUrl: false, replaceState: true, clearSearch: true });
+      }
+      return;
+    }
+
+    if (newResourceSlug) {
+      currentHubView = 'resources';
+      const openedResource = showResourcePage(newResourceSlug, { pushState: false });
+      if (!openedResource) {
+        renderHubRoute('resources', { syncUrl: false, replaceState: true, clearSearch: true });
+      }
+      return;
+    }
+
+    if (newPostSlug) {
+      currentHubView = 'posts';
+      showSinglePost(newPostSlug, { pushState: false });
+      return;
+    }
+
+    const toolsDashboard = document.getElementById('tools-dashboard');
+    const featuredSection = document.getElementById('featured-section');
+    const contactSection = document.querySelector('.contact');
+    if (toolsDashboard) toolsDashboard.style.display = 'none';
+    setRailMode('hub');
+    if (blogSection) blogSection.style.display = 'block';
+    if (singleView) singleView.style.display = 'none';
+    if (contactSection) contactSection.style.display = 'block';
+    if (featuredSection && routeView !== 'home') featuredSection.style.display = 'none';
+
+    renderHubRoute(routeView, { syncUrl: false, replaceState: true, clearSearch: true });
+  });
+}

@@ -1,0 +1,49 @@
+﻿name: Generate RSS
+
+on:
+  push:
+    branches:
+      - main
+      - master
+      - gh-pages
+
+jobs:
+  generate-rss:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Resolve site URL
+        id: site
+        shell: bash
+        run: |
+          OWNER="${{ github.repository_owner }}"
+          REPO="${{ github.event.repository.name }}"
+          if [ "$REPO" = "${OWNER}.github.io" ]; then
+            URL="https://${OWNER}.github.io"
+          else
+            URL="https://${OWNER}.github.io/${REPO}"
+          fi
+          echo "site_url=$URL" >> "$GITHUB_OUTPUT"
+
+      - name: Build post index, post pages, and RSS
+        env:
+          SITE_URL: ${{ steps.site.outputs.site_url }}
+        run: |
+          node scripts/build-post-index.js
+          node scripts/build-post-pages.js
+          node scripts/build-feed.js
+
+      - name: Commit RSS artifacts
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: 'chore: regenerate feed and post metadata'
+          file_pattern: 'feed.xml posts/index.json post/**'
+
