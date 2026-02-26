@@ -1,0 +1,62 @@
+﻿name: Generate Sitemap
+
+on:
+  push:
+    branches:
+      - main
+      - master
+      - gh-pages
+
+jobs:
+  generate-sitemap:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Resolve site URL
+        id: site
+        shell: bash
+        run: |
+          OWNER="${{ github.repository_owner }}"
+          REPO="${{ github.event.repository.name }}"
+          if [ "$REPO" = "${OWNER}.github.io" ]; then
+            URL="https://${OWNER}.github.io"
+          else
+            URL="https://${OWNER}.github.io/${REPO}"
+          fi
+          echo "site_url=$URL" >> "$GITHUB_OUTPUT"
+
+      - name: Build post index and pages
+        env:
+          SITE_URL: ${{ steps.site.outputs.site_url }}
+        run: |
+          node scripts/build-post-index.js
+          node scripts/build-post-pages.js
+
+      - name: Generate sitemap.xml
+        uses: cicirello/generate-sitemap@v1
+        with:
+          base-url-path: ${{ steps.site.outputs.site_url }}
+          path-to-root: .
+          include-pdf: false
+
+      - name: Generate robots.txt
+        env:
+          SITE_URL: ${{ steps.site.outputs.site_url }}
+        run: node scripts/build-robots.js
+
+      - name: Commit sitemap artifacts
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: 'chore: regenerate sitemap and robots'
+          file_pattern: 'sitemap.xml robots.txt posts/index.json post/**'
+

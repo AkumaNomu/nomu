@@ -5,12 +5,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="description" content="Nomu's blog - thoughts on development, life, and more">
   <meta name="theme-color" content="#0a0a0a">
-  <title>Nomu's Blog</title>
+  <title>Nomu's</title>
   
   <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700&family=Fira+Code:wght@400;500&family=Telegraf:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&family=Lexend:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   
   <!-- Icons & Styles -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
@@ -27,27 +27,132 @@
   <div class="page-loader" id="page-loader">
     <div class="loader-spinner"></div>
   </div>
+  <div class="mobile-blocker" id="mobile-blocker" role="dialog" aria-live="assertive" aria-modal="true" aria-label="Desktop only notice">
+    <div class="mobile-blocker-card">
+      <div class="mobile-icon" aria-hidden="true"><i class="fas fa-desktop"></i></div>
+      <h2>Desktop only (for now)</h2>
+      <p>Mobile view is temporarily disabled while we fix it. Please open this site on a PC for the full experience.</p>
+    </div>
+  </div>
+  <div class="ambient-patterns" aria-hidden="true"></div>
 
   <!-- Header -->
   <header class="site-header">
     <div class="container">
       <div class="header-content">
         <div class="logo-container">
-          <a href="javascript:void(0);" onclick="if(document.getElementById('single-post-view').style.display !== 'none') { hideSinglePost(); } else { smoothScrollTo('posts-list'); } return false;" class="logo nav-link active">Nomu</a>
+          <a href="javascript:void(0);" onclick="if(document.getElementById('single-post-view').style.display !== 'none') { hideSinglePost(); } else if (typeof showBlogSectionView === 'function') { showBlogSectionView('all', { hubView: 'home', scrollTo: 'home', navTarget: '' }); } return false;" class="logo nav-link">Nomu</a>
         </div>
         <nav class="main-nav">
-          <!-- TOC Toggle Button -->
-          <button id="toc-toggle" class="toc-toggle-btn" aria-label="Toggle Table of Contents">
-            <i class="fas fa-list"></i>
-          </button>
-          <!-- Options Button -->
-          <button id="options-toggle" class="options-btn" aria-label="Open options">
-            <i class="fas fa-cog"></i>
-          </button>
+          <button id="nav-projects" class="nav-btn nav-link" type="button">Projects</button>
+          <button id="nav-resources" class="nav-btn nav-link" type="button">Resources</button>
+          <button id="nav-games" class="nav-btn nav-link" type="button">Games</button>
+          <button id="nav-blog" class="nav-btn nav-link" type="button">Blog</button>
+          <button id="nav-tools" class="nav-btn nav-link" type="button">Tools</button>
+          <span id="nav-state-indicator" class="nav-state-indicator" aria-live="polite">Blog</span>
+          <div class="nav-simple-ui-wrap" data-tooltip="Simplifies UI for smoother scrolling.">
+            <button id="simple-ui-toggle" class="simple-ui-toggle nav-simple-ui-toggle" data-compact="true" type="button" role="switch" aria-checked="false" aria-label="Toggle simple UI"></button>
+          </div>
         </nav>
       </div>
     </div>
   </header>
+
+  <!-- Sticky post bar (visible in single post view) -->
+  <div id="post-sticky-bar" class="post-sticky-bar" aria-hidden="true">
+    <div class="container post-sticky-content">
+      <div class="post-sticky-actions">
+        <a href="#" id="back-to-posts-sticky" class="back-link" aria-label="Back to posts" onclick="hideSinglePost(); return false;">
+          <i class="fas fa-arrow-left back-icon" style="font-size: 16px;"></i>
+        </a>
+        <button id="back-to-top-sticky" class="back-to-top" aria-label="Back to top">
+          <i class="fas fa-chevron-up"></i>
+        </button>
+      </div>
+      <div id="sticky-post-title" class="post-sticky-title">Post Title</div>
+      <div class="post-sticky-reactions">
+        <button id="sticky-like" class="sticky-react" aria-label="Like post">
+          <i class="fas fa-heart"></i>
+          <span class="sticky-react-count" data-reaction-count="like">0</span>
+        </button>
+        <button id="sticky-dislike" class="sticky-react" aria-label="Dislike post">
+          <i class="fas fa-thumbs-down"></i>
+          <span class="sticky-react-count" data-reaction-count="dislike">0</span>
+        </button>
+        <button id="sticky-copy" class="sticky-react" aria-label="Share post link">
+          <i class="fas fa-share-nodes"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+  <div id="sticky-post-nav" class="sticky-post-nav" aria-hidden="true">
+    <div class="container sticky-post-nav-content">
+      <button id="sticky-prev-post" class="sticky-post-nav-btn" type="button" aria-label="Previous post">
+        <i class="fas fa-arrow-left" aria-hidden="true"></i>
+        <span class="sticky-post-nav-label">Previous</span>
+      </button>
+      <button id="sticky-next-post" class="sticky-post-nav-btn" type="button" aria-label="Next post">
+        <span class="sticky-post-nav-label">Next</span>
+        <i class="fas fa-arrow-right" aria-hidden="true"></i>
+      </button>
+    </div>
+  </div>
+
+  <!-- Right widgets -->
+  <aside class="right-widgets" aria-label="Quick controls">
+    <section class="right-widget volume" aria-label="Volume">
+      <div id="music-volume-box" class="music-volume-box">
+        <label class="sr-only" for="options-volume-slider">Music volume</label>
+        <input id="options-volume-slider" class="music-volume" type="range" min="0" max="100" step="1" value="10" aria-label="Music volume">
+      </div>
+    </section>
+    <section class="right-widget music" aria-labelledby="music-heading">
+      <h4 id="music-heading">MUSIC</h4>
+      <div id="music-cover" class="music-cover-card" role="img" aria-label="Current track cover art">
+        <button id="music-center-toggle" class="music-center-toggle" type="button" aria-label="Play or pause music"></button>
+        <button id="music-skip-prev" class="music-nav-btn music-nav-prev" type="button" aria-label="Previous track">
+          <i class="fas fa-backward-step" aria-hidden="true"></i>
+        </button>
+        <button id="music-skip-next" class="music-nav-btn music-nav-next" type="button" aria-label="Next track">
+          <i class="fas fa-forward-step" aria-hidden="true"></i>
+        </button>
+        <div class="music-cover-overlay">
+          <span id="music-title" class="music-cover-title">Loading track...</span>
+        </div>
+      </div>
+      <label class="sr-only" for="music-progress-compact">Seek track position</label>
+      <input id="music-progress-compact" class="music-progress-compact" type="range" min="0" max="100" step="0.1" value="0" aria-label="Seek track position">
+    </section>
+    <section class="right-widget theme" aria-label="Theme presets">
+      <div class="theme-controls">
+        <div class="theme-selector" role="group" aria-label="Theme presets">
+          <button class="theme-btn active" type="button" data-theme="default" aria-label="Default theme" title="Default theme">
+            <span class="theme-preview default-preview" aria-hidden="true"></span>
+          </button>
+          <button class="theme-btn" type="button" data-theme="blue" aria-label="Blue theme" title="Blue theme">
+            <span class="theme-preview blue-preview" aria-hidden="true"></span>
+          </button>
+          <button class="theme-btn" type="button" data-theme="purple" aria-label="Purple theme" title="Purple theme">
+            <span class="theme-preview purple-preview" aria-hidden="true"></span>
+          </button>
+          <button class="theme-btn" type="button" data-theme="green" aria-label="Green theme" title="Green theme">
+            <span class="theme-preview green-preview" aria-hidden="true"></span>
+          </button>
+          <button class="theme-btn" type="button" data-theme="red" aria-label="Red theme" title="Red theme">
+            <span class="theme-preview red-preview" aria-hidden="true"></span>
+          </button>
+        </div>
+      </div>
+    </section>
+    <section class="right-widget shortcuts" aria-label="Keyboard shortcuts">
+      <h4>SHORTCUTS</h4>
+      <ul class="shortcut-hint-list">
+        <li><kbd>Ctrl/Cmd + K</kbd><span>Command palette</span></li>
+        <li><kbd>Ctrl/Cmd + L</kbd><span>Global search</span></li>
+        <li><kbd>Alt + 1..5</kbd><span>Switch sections</span></li>
+      </ul>
+    </section>
+  </aside>
 
   <!-- Main Content -->
   <main class="container">
@@ -78,57 +183,194 @@
       </div>
     </section>
 
-    <!-- Blog Section -->
-    <section class="blog-section">
-      <h2>Posts</h2>
-      
-      <!-- Search Bar -->
-      <div class="search-bar">
-        <div class="search-wrapper" id="search-wrapper">
-          <input type="text" id="search-input" placeholder="Search posts...">
-          <button id="search-clear" class="search-clear-btn" title="Clear search" style="display: none;">
-            <i class="fas fa-times"></i>
+    <div id="workspace-shell" class="workspace-shell">
+      <button id="left-rail-toggle" class="left-rail-toggle btn btn-ghost" type="button" aria-controls="left-rail" aria-expanded="false">
+        <i class="fas fa-bars" aria-hidden="true"></i>
+        <span>Context</span>
+      </button>
+      <div id="left-rail-backdrop" class="left-rail-backdrop" hidden></div>
+      <aside id="left-rail" class="left-rail glass-card glass-card--compact" aria-label="Page context rail">
+        <div class="left-rail-head">
+          <p class="left-rail-title">Quick Jump</p>
+          <button id="left-rail-close" class="left-rail-close btn btn-ghost" data-left-rail-close type="button" aria-label="Close context rail">
+            <i class="fas fa-xmark" aria-hidden="true"></i>
           </button>
         </div>
-        <div id="search-results-info" class="search-results-info"></div>
-        <div id="search-suggestions" class="search-suggestions"></div>
+        <div id="left-rail-content" class="left-rail-content" aria-live="polite"></div>
+      </aside>
+
+      <div class="workspace-content">
+    <!-- Blog Section -->
+    <section class="blog-section" data-hub-view="home">
+      <div class="content-hub-header section-header">
+        <h2>Content Hub</h2>
+        <p>See projects, resources, and posts in one place.</p>
       </div>
 
-      <!-- Category Filters -->
-      <div class="category-filters" role="group" aria-label="Filter posts by category">
-        <button class="filter-btn active" data-category="all">All</button>
-        <button class="filter-btn" data-category="Development">Development</button>
-        <button class="filter-btn" data-category="Video Editing">Video Editing</button>
-        <button class="filter-btn" data-category="Life">Life</button>
-        <button class="filter-btn" data-category="Projects">Projects</button>
-        <button class="filter-btn" data-category="Politics">Politics</button>
-      </div>
+      <section id="projects-showcase" class="projects-showcase" aria-label="Projects">
+        <div class="projects-showcase-head section-header">
+          <div>
+            <h3>Projects</h3>
+            <p>An index of all projects and their current status.</p>
+          </div>
+          <button id="projects-view-all" class="showcase-view-btn btn btn-secondary" type="button">View all projects</button>
+        </div>
+        <div class="search-bar hub-search-bar" id="projects-search-bar">
+          <div class="search-wrapper">
+            <input type="text" id="projects-search-input" placeholder="Search projects...">
+            <button id="projects-search-clear" class="search-clear-btn" title="Clear search">
+              <i class="fas fa-times"></i>
+            </button>
+          </div>
+        </div>
+        <div id="projects-grid" class="projects-grid" role="list"></div>
+        <div id="projects-pagination" class="pagination"></div>
+      </section>
 
-      <!-- Posts List -->
-      <div id="posts-list" class="posts-list">
-        <!-- Posts will be loaded here by JS -->
-      </div>
+      <section id="resources-showcase" class="projects-showcase resources-showcase" aria-label="Useful resources and tutorials">
+        <div class="projects-showcase-head section-header">
+          <div>
+            <h3>Resources</h3>
+            <p>Useful tutorials, resources, and references worth bookmarking.</p>
+          </div>
+          <button id="resources-view-all" class="showcase-view-btn btn btn-secondary" type="button">View all resources</button>
+        </div>
+        <div class="search-bar hub-search-bar" id="resources-search-bar">
+          <div class="search-wrapper">
+            <input type="text" id="resources-search-input" placeholder="Search resources...">
+            <button id="resources-search-clear" class="search-clear-btn" title="Clear search">
+              <i class="fas fa-times"></i>
+            </button>
+          </div>
+        </div>
+        <div id="resources-grid" class="resources-grid" role="list"></div>
+        <div id="resources-pagination" class="pagination"></div>
+      </section>
 
-      <!-- Pagination -->
-      <div id="pagination" class="pagination">
-        <!-- Pagination controls will be added here -->
+      <section id="posts-showcase" class="projects-showcase posts-showcase" aria-label="Post previews">
+        <div class="projects-showcase-head section-header">
+          <div>
+            <h3>Latest Posts</h3>
+            <p>Quick preview of the newest writing.</p>
+          </div>
+          <button id="posts-view-all" class="showcase-view-btn btn btn-secondary" type="button">View all posts</button>
+        </div>
+        <div id="posts-preview-grid" class="posts-preview-grid" role="list"></div>
+      </section>
+
+      <section id="tools-showcase" class="projects-showcase tools-showcase" aria-label="Tool previews">
+        <div class="projects-showcase-head section-header">
+          <div>
+            <h3>Tools</h3>
+            <p>Quick utility shortcuts from the full workspace.</p>
+          </div>
+          <button id="tools-view-all" class="showcase-view-btn btn btn-secondary" type="button">Open full tools</button>
+        </div>
+        <div id="tools-preview-grid" class="tools-preview-grid" role="list"></div>
+      </section>
+
+      <section id="games-showcase" class="projects-showcase games-showcase" aria-label="Games">
+        <div class="projects-showcase-head section-header">
+          <div>
+            <h3>Games</h3>
+            <p>Group favorites for warm-ups and character play.</p>
+          </div>
+        </div>
+        <div id="games-grid" class="games-grid" role="list"></div>
+      </section>
+      
+      <section id="posts-browser" class="posts-browser">
+        <!-- Search Bar -->
+        <div id="blog-search-bar" class="search-bar">
+          <div class="search-wrapper" id="search-wrapper">
+            <input type="text" id="search-input" placeholder="Search posts...">
+            <button id="search-clear" class="search-clear-btn" title="Clear search">
+              <i class="fas fa-times"></i>
+            </button>
+          </div>
+          <div id="search-results-info" class="search-results-info"></div>
+          <div id="search-suggestions" class="search-suggestions"></div>
+        </div>
+
+        <div class="posts-toolbar-row">
+          <div class="category-filters" role="group" aria-label="Filter posts by category">
+            <button class="filter-btn chip active" data-category="all">All</button>
+            <button class="filter-btn chip" data-category="Development">Development</button>
+            <button class="filter-btn chip" data-category="Video Editing">Video Editing</button>
+            <button class="filter-btn chip" data-category="Life">Life</button>
+            <button class="filter-btn chip" data-category="Projects">Projects</button>
+            <button class="filter-btn chip" data-category="Politics">Politics</button>
+          </div>
+
+          <label class="posts-sort-control" for="posts-sort">
+            <span>Sort</span>
+            <select id="posts-sort">
+              <option value="newest" selected>Newest</option>
+              <option value="oldest">Oldest</option>
+              <option value="shortest">Shortest read</option>
+              <option value="longest">Longest read</option>
+            </select>
+          </label>
+        </div>
+
+        <!-- Posts List -->
+        <div id="posts-list" class="posts-list">
+          <!-- Posts will be loaded here by JS -->
+        </div>
+
+        <!-- Pagination -->
+        <div id="pagination" class="pagination">
+          <!-- Pagination controls will be added here -->
+        </div>
+      </section>
+    </section>
+
+    <section id="tools-dashboard" class="tools-dashboard">
+      <div class="tools-header">
+        <div class="tools-header-main">
+          <h2>Utility Workspace</h2>
+          <p>All tools in one sidebar with instant single-tool focus.</p>
+        </div>
+        <div class="tools-toolbar" role="group" aria-label="Tool controls">
+          <div class="search-bar tools-search-bar" id="tools-search-bar">
+            <div class="search-wrapper">
+              <input id="tools-search-input" type="search" placeholder="Search tools">
+              <button id="tools-search-clear" class="search-clear-btn" title="Clear search">
+                <i class="fas fa-times"></i>
+              </button>
+            </div>
+          </div>
+          <button id="tools-favorites-filter" class="tools-toolbar-btn" type="button" aria-pressed="false">
+            <i class="fas fa-star" aria-hidden="true"></i>
+            <span>Favorites</span>
+          </button>
+        </div>
+        <div id="tools-tab-pills" class="tools-tab-pills" role="group" aria-label="Tool categories"></div>
+      </div>
+      <div id="tools-tabs" class="tools-tabs" aria-label="All tools"></div>
+      <div id="tools-favorites-row" class="tools-favorites-row" aria-live="polite"></div>
+      <div class="tools-panel-wrap">
+        <section id="tools-panel" class="tools-panel" role="tabpanel" aria-live="polite"></section>
       </div>
     </section>
 
     <!-- Single Post View -->
     <div id="single-post-view" style="display: none;">
       <!-- Table of Contents -->
-      <aside id="toc-sidebar" class="toc-sidebar">
-        
+      <aside id="toc-sidebar" class="toc-sidebar left-rail left-rail--toc glass-card glass-card--compact">
+        <div class="left-rail-head">
+          <p class="left-rail-title">Table of Contents</p>
+          <button class="left-rail-close btn btn-ghost" data-left-rail-close type="button" aria-label="Close table of contents">
+            <i class="fas fa-xmark" aria-hidden="true"></i>
+          </button>
+        </div>
         <nav id="toc-nav" class="toc-nav">
           <!-- TOC will be generated here -->
         </nav>
       </aside>
       
       <div class="post-container">
-        <a href="#" id="back-to-posts" class="back-link" aria-label="Back to posts">
-          <i class="fas fa-arrow-left back-icon" style="font-size: 16px;"></i>
-        </a>
+        <!-- Back button moved to sticky bar -->
         
         <!-- Breadcrumb Navigation -->
         <nav id="breadcrumb" class="breadcrumb" style="display: none;">
@@ -152,20 +394,6 @@
             <span class="nav-title"></span>
           </a>
         </nav>
-
-        <!-- Share Buttons -->
-        <div class="share-buttons" id="share-buttons">
-          <label>Share Post:</label>
-          <a href="#" id="share-twitter" class="share-btn" title="Share on Twitter/X">
-            <i class="fab fa-twitter"></i> Twitter/X
-          </a>
-          <a href="#" id="share-discord" class="share-btn" title="Share on Discord">
-            <i class="fab fa-discord"></i> Discord
-          </a>
-          <button id="share-copy" class="share-btn" title="Copy link to clipboard">
-            <i class="fas fa-link"></i> Copy Link
-          </button>
-        </div>
 
         <!-- Animated Visualizer -->
         <div class="visualizer-container">
@@ -207,6 +435,8 @@
         </section>
       </div>
     </div>
+    </div>
+    </div>
 
  <!-- Contact Section -->
 <section class="contact">  
@@ -214,45 +444,54 @@
     <!-- Contact Links Card (Left) -->
     <div class="contact-card">
       <h3 style="user-select: none;">Connect With Me</h3>
-
-      <ul class="contact-links">
-        <li>
-          <span class="social-label" style="user-select: none;">
-            <i class="fab fa-discord"></i> Discord
-          </span>
-          <a href="https://discord.com/users/orewanomu" target="_blank" rel="noreferrer">
-            orewanomu
-          </a>
-        </li>
-        <li>
-          <span class="social-label" style="user-select: none;">
-            <i class="fab fa-github"></i> GitHub
-          </span>
-          <a href="https://github.com/akumanomu" target="_blank" rel="noreferrer">
-            akumanomu
-          </a>
-        </li>
-        <li>
-          <span class="social-label" style="user-select: none;">
-            <i class="fab fa-instagram"></i> Instagram
-          </span>
-          <a href="https://instagram.com/akumanomu" target="_blank" rel="noreferrer">
-            akumanomu
-          </a>
-        </li>
-        <li>
-          <span class="social-label" style="user-select: none;">
-            <i class="fas fa-envelope"></i> Email
-          </span>
-          <a
-            href="mailto:akumanomu@proton.me?subject=Hi%20from%20your%20site"
-            target="_blank"
-            rel="noreferrer"
-          >
-            akumanomu@proton.me
-          </a>
-        </li>
-      </ul>
+      <div class="contact-split">
+        <ul class="contact-links">
+          <li>
+            <span class="social-label" style="user-select: none;">
+              <i class="fab fa-discord"></i> Discord
+            </span>
+            <a href="https://discord.com/users/orewanomu" target="_blank" rel="noreferrer">
+              orewanomu
+            </a>
+          </li>
+          <li>
+            <span class="social-label" style="user-select: none;">
+              <i class="fab fa-github"></i> GitHub
+            </span>
+            <a href="https://github.com/akumanomu" target="_blank" rel="noreferrer">
+              akumanomu
+            </a>
+          </li>
+          <li>
+            <span class="social-label" style="user-select: none;">
+              <i class="fab fa-instagram"></i> Instagram
+            </span>
+            <a href="https://instagram.com/akumanomu" target="_blank" rel="noreferrer">
+              akumanomu
+            </a>
+          </li>
+          <li>
+            <span class="social-label" style="user-select: none;">
+              <i class="fas fa-envelope"></i> Email
+            </span>
+            <a
+              href="mailto:akumanomu@proton.me?subject=Hi%20from%20your%20site"
+              target="_blank"
+              rel="noreferrer"
+            >
+              akumanomu@proton.me
+            </a>
+          </li>
+        </ul>
+        <div class="contact-divider" role="presentation"></div>
+        <div class="contact-about">
+          <img class="contact-about-avatar" src="assets/Peak.png" alt="Nomu portrait" loading="lazy" decoding="async">
+          <p class="contact-about-text">
+            Builder focused on minimal, high-clarity tools and content systems. I like clean interfaces, thoughtful
+            interaction, and shipping small improvements that compound over time.
+          </p>
+        </div>
+      </div>
     </div>
   </div>
 </section>
@@ -260,10 +499,7 @@
 
   </main>
 
-  <!-- Back to Top Button -->
-  <button id="back-to-top" class="back-to-top" aria-label="Back to top">
-    <i class="fas fa-chevron-up"></i>
-  </button>
+  <!-- Back to Top Button moved to sticky bar -->
 
   <!-- Footer -->
   <footer class="site-footer">
@@ -279,113 +515,111 @@
  
   </div>
 
-  <!-- Music consent modal -->
-  <div class="music-modal" id="music-modal">
-    <div class="music-modal-content">
-      <h3>Background music?</h3>
-      <p>Want some chill music while you browse? You can change this anytime in Settings.</p>
-      <div class="music-modal-actions">
-        <button id="music-yes" class="btn">Yes, play</button>
-        <button id="music-no" class="btn btn-ghost">No, thanks</button>
-      </div>
-      <div class="music-modal-actions music-modal-options">
-        <button id="simple-ui-toggle-modal" class="btn btn-ghost simple-ui-toggle" type="button" aria-pressed="false">
-          Simple UI: Off
+  <!-- Global Search Modal -->
+  <div id="global-search" class="global-search" hidden>
+    <div class="global-search-backdrop" data-global-search-close></div>
+    <div class="global-search-dialog" role="dialog" aria-modal="true" aria-labelledby="global-search-title">
+      <div class="global-search-head">
+        <h3 id="global-search-title">Global Search</h3>
+        <button type="button" class="global-search-close" data-global-search-close aria-label="Close">
+          <i class="fas fa-xmark" aria-hidden="true"></i>
         </button>
       </div>
+      <input id="global-search-input" class="global-search-input" type="search" placeholder="Search posts, projects, resources, tools..." aria-label="Global search">
+      <p class="global-search-hint">Enter to open • Esc to close.</p>
+      <ul id="global-search-results" class="global-search-results" role="listbox"></ul>
     </div>
   </div>
 
-  <!-- Options Popup Modal -->
-  <div class="options-modal" id="options-modal">
-    <div class="options-modal-content">
-      <div class="options-header">
-        <h3>Options</h3>
-        <button id="options-close" class="options-close-btn" aria-label="Close options">
-          <i class="fas fa-times"></i>
-        </button>
-      </div>
-      
-      <div class="options-grid">
-        <div class="options-section">
-          <h4>Music Player</h4>
-          <div class="music-controls-box">
-            <div class="music-info-box" id="music-info-box">
-              <p id="music-title">Loading...</p>
-              <p id="music-duration" class="music-duration">--:-- / --:--</p>
-              <input type="range" id="music-progress" class="music-progress-bar" min="0" max="100" value="0">
-            </div>
-            <div class="music-buttons">
-              <div class="music-button-row">
-                <button id="music-skip-prev" class="btn btn-compact" title="Previous Track">
-                  <i class="fas fa-step-backward"></i>
-                </button>
-                <button id="options-music-toggle" class="btn btn-compact" title="Toggle Music" style="flex: 1;">
-                  <i class="fas fa-play"></i> Play
-                </button>
-                <button id="music-skip-next" class="btn btn-compact" title="Next Track">
-                  <i class="fas fa-step-forward"></i>
-                </button>
-              </div>
-              <label class="volume-label">
-                <i class="fas fa-volume-up"></i> Volume
-              </label>
-              <input type="range" id="options-volume-slider" min="0" max="1" step="0.01" value="0.1" class="volume-slider-options" title="Music Volume">
-            </div>
-            <div class="playlist-selector" id="playlist-selector">
-              <label style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 0.5rem; display: block;">Playlist</label>
-            </div>
-          </div>
-        </div>
 
-        <div class="options-section">
-          <h4>Theme</h4>
-          <div class="theme-selector">
-            <button class="theme-btn active" data-theme="default" title="Default (Dark)">
-              <span class="theme-preview default-preview"></span>
-              Default
-            </button>
-            <button class="theme-btn" data-theme="blue" title="Blue Theme">
-              <span class="theme-preview blue-preview"></span>
-              Blue
-            </button>
-            <button class="theme-btn" data-theme="purple" title="Purple Theme">
-              <span class="theme-preview purple-preview"></span>
-              Purple
-            </button>
-            <button class="theme-btn" data-theme="green" title="Green Theme">
-              <span class="theme-preview green-preview"></span>
-              Green
-            </button>
-            <button class="theme-btn" data-theme="red" title="Red Theme">
-              <span class="theme-preview red-preview"></span>
-              Red
-            </button>
-          </div>
-        </div>
 
-        <div class="options-section">
-          <h4>Performance</h4>
-          <p class="options-note">Use a simplified UI for smoother scrolling on low-power devices.</p>
-          <button id="simple-ui-toggle" class="btn btn-ghost simple-ui-toggle" type="button" aria-pressed="false">
-            Simple UI: Off
-          </button>
-        </div>
-      </div>
-    </div>
-  </div>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/markdown-it/13.0.1/markdown-it.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/markdown-it-footnote/3.0.3/markdown-it-footnote.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/markdown-it-katex@2.0.3/dist/markdown-it-katex.min.js"></script>
   <script src="js/utils.js"></script>
+  <script src="js/tools-dashboard.js"></script>
   <script src="js/markdown-parser.js"></script>
   <script src="js/comments.js"></script>
   <script src="js/blog-loader.js"></script>
   <script>
     // Initialize the page
     const postSlug = getQueryParam('post');
-    initPage(postSlug);
+    const projectId = getQueryParam('project');
+    const resourceSlug = getQueryParam('resource');
+    initPage(postSlug, projectId, resourceSlug);
+
+    // Sticky post bar sync + visibility
+    const stickyBar = document.getElementById('post-sticky-bar');
+    const stickyPostNav = document.getElementById('sticky-post-nav');
+    const stickyTitle = document.getElementById('sticky-post-title');
+    const breadcrumbTitle = document.getElementById('breadcrumb-post');
+    const singlePostView = document.getElementById('single-post-view');
+
+    function updateStickyBar() {
+      const isSingle = singlePostView && singlePostView.style.display !== 'none';
+      stickyBar.style.display = isSingle ? 'block' : 'none';
+      stickyBar.setAttribute('aria-hidden', isSingle ? 'false' : 'true');
+      if (stickyPostNav) {
+        stickyPostNav.style.display = isSingle ? 'block' : 'none';
+        stickyPostNav.setAttribute('aria-hidden', isSingle ? 'false' : 'true');
+      }
+      if (breadcrumbTitle && stickyTitle) {
+        stickyTitle.textContent = breadcrumbTitle.textContent || 'Post';
+      }
+    }
+
+    const stickyObserver = new MutationObserver(updateStickyBar);
+    if (breadcrumbTitle) {
+      stickyObserver.observe(breadcrumbTitle, { childList: true, subtree: true, characterData: true });
+    }
+    if (singlePostView) {
+      stickyObserver.observe(singlePostView, { attributes: true, attributeFilter: ['style', 'class'] });
+    }
+    updateStickyBar();
+
+    // Sticky bar reveal on scroll + back to top
+    const stickyBackToTop = document.getElementById('back-to-top-sticky');
+    function handleStickyVisibility() {
+      const isSingle = singlePostView && singlePostView.style.display !== 'none';
+      const shouldShow = isSingle && window.scrollY > 180;
+      stickyBar.classList.toggle('visible', shouldShow);
+      if (stickyPostNav) {
+        stickyPostNav.classList.toggle('visible', shouldShow);
+      }
+    }
+    window.addEventListener('scroll', handleStickyVisibility, { passive: true });
+    window.addEventListener('resize', handleStickyVisibility);
+    handleStickyVisibility();
+
+    if (stickyBackToTop) {
+      stickyBackToTop.addEventListener('click', () => {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      });
+    }
+
+    // Toast popup helper
+    function showToast(message) {
+      let toast = document.getElementById('toast');
+      if (!toast) {
+        toast = document.createElement('div');
+        toast.id = 'toast';
+        toast.className = 'toast';
+        document.body.appendChild(toast);
+      }
+      toast.textContent = message;
+      toast.classList.remove('show');
+      void toast.offsetWidth;
+      toast.classList.add('show');
+      clearTimeout(window.__toastTimer);
+      window.__toastTimer = setTimeout(() => {
+        toast.classList.remove('show');
+      }, 2200);
+    }
+    window.showToast = showToast;
+    if (typeof window.setupPostReactions === 'function') {
+      window.setupPostReactions();
+    }
   </script>
 </body>
 </html>
