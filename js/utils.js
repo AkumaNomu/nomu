@@ -1596,7 +1596,6 @@ function applyTheme(theme) {
 document.addEventListener('DOMContentLoaded', () => {
   setupOptionsModal();
   initializeEasterEggs();
-  setupReadingProgress();
 });
 
 // Easter Eggs and Hidden Features
@@ -1686,14 +1685,26 @@ function setupReadingProgress() {
   
   if (!progressBar) return;
 
+  let ticking = false;
+
   window.addEventListener('scroll', () => {
-    const windowHeight = window.innerHeight;
-    const documentHeight = document.documentElement.scrollHeight;
-    const scrollTop = window.scrollY;
-    
-    // Calculate progress (0 to 100)
-    const scrollPercent = (scrollTop / (documentHeight - windowHeight)) * 100;
-    
-    progressBar.style.width = Math.min(scrollPercent, 100) + '%';
+    if (!ticking) {
+      window.requestAnimationFrame(() => {
+        const windowHeight = window.innerHeight;
+        const documentHeight = document.documentElement.scrollHeight;
+        const scrollTop = window.scrollY;
+
+        // Calculate progress (0 to 100)
+        const scrollableHeight = documentHeight - windowHeight;
+        const scrollPercent = scrollableHeight > 0
+          ? (scrollTop / scrollableHeight) * 100
+          : 0;
+
+        progressBar.style.width = Math.min(Math.max(scrollPercent, 0), 100) + '%';
+        ticking = false;
+      });
+
+      ticking = true;
+    }
   });
 }
