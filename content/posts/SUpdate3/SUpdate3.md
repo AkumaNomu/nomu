@@ -4,7 +4,7 @@ date: 2026-02-03
 category: Development
 author: Nomu
 excerpt: A complete visual and functional refresh.
-cover: assets/images/SUpdate3.png
+cover: content/posts/SUpdate3/SUpdate3.png
 ---
 
 # Looks

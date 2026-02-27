@@ -4,7 +4,7 @@ date: 2026-02-08
 category: Life
 author: Nomu
 excerpt: Looking into studying in China
-cover: assets/images/PlanChina.png
+cover: content/posts/PlanChina/PlanChina.png
 ---
 
 # Agency scam?

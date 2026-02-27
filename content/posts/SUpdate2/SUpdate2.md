@@ -4,7 +4,7 @@ date: 2026-01-04
 category: Development
 author: Nomu
 excerpt: Merged the blog page with the home page, added pagination to avoid having a very long page, and added background music for reading, also a table of contents for easier navigation! 
-cover: assets/images/SUpdate2.png
+cover: content/posts/SUpdate2/SUpdate2.png
 ---
 
 # Music
@@ -34,4 +34,5 @@ Thought it would be nice to add a table of contents to enhance the reading exper
 # Smooth Scrolling
 
 Speaking of scrolling, I just made the autoscrolling smoother! 
+
 

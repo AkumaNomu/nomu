@@ -1,28 +1,6 @@
-﻿// blog-loader.js - Blog Loader & Logic
-// NO MODULE EXPORTS - Using global scope for compatibility
+﻿// Blog Loader & Logic
 // Requires: utils.js, markdown-parser.js to be loaded first
 
-const POST_MANIFEST = [
-  'Markdowntest.md',
-  'NomuSite.md',
-  'MAIV1.md',
-  'SUpdate1.md',
-  'Pornban.md',
-  'SUpdate2.md',
-  'SUpdate3.md',
-  'PlanChina.md'
-];
-
-const RESOURCE_MANIFEST = [
-  'StarterTutorial.md',
-  'ToolingWorkflow.md'
-];
-
-const PROJECT_MANIFEST = [
-  'mai-engine.md',
-  'nomu-site.md',
-  'micro-code-2.0.md',
-];
 
 let allPosts = [];
 let filteredPosts = [];
@@ -47,8 +25,8 @@ let hubActionsInitialized = false;
 let suppressPostsListScroll = false;
 let leftRailEventsBound = false;
 let leftRailContext = 'home';
-const postsPerPage = 6;
-const projectsPerPage = 6;
+const postsPerPage = 4;
+const projectsPerPage = 4;
 const resourcesPerPage = 6;
 const LEFT_RAIL_BREAKPOINT = 1024;
 const homePreviewLimits = {
@@ -58,33 +36,40 @@ const homePreviewLimits = {
   tools: 4
 };
 
+const TOOLS_PREVIEW = [];
+
+// Content config (loaded from content/content.json)
+let POST_MANIFEST = [];
+let RESOURCE_MANIFEST = [];
+let PROJECT_MANIFEST = [];
+
+// External resources can be supplied elsewhere; default to empty to avoid ReferenceError.
+const EXTERNAL_RESOURCES = Array.isArray(window.EXTERNAL_RESOURCES)
+  ? window.EXTERNAL_RESOURCES
+  : [];
+
+// Icon config (keep local defaults so blog-loader.js can run standalone).
 const POST_CATEGORY_ICONS = {
   all: 'fas fa-layer-group',
-  Development: 'fas fa-code',
+  Work: 'fas fa-briefcase',
   Life: 'fas fa-leaf',
-  Projects: 'fas fa-diagram-project',
-  Politics: 'fas fa-landmark'
+  Politics: 'fas fa-landmark',
+  Philosophy: 'fas fa-brain'
 };
 
 const RESOURCE_TYPE_ICONS = {
   all: 'fas fa-layer-group',
   Tutorial: 'fas fa-graduation-cap',
   Guide: 'fas fa-compass',
-  Reference: 'fas fa-book-open',
-  Docs: 'fas fa-file-lines'
+  Docs: 'fas fa-book-open'
 };
 
 const PROJECT_TYPE_ICONS = {
   all: 'fas fa-layer-group',
   Coding: 'fas fa-code',
-  Website: 'fas fa-globe',
-  Research: 'fas fa-flask',
-  'Video Editing': 'fas fa-film'
+  Research: 'fas fa-search',
+  Media: 'fas fa-photo-video'
 };
-
-const EXTERNAL_RESOURCES = [];
-
-const TOOLS_PREVIEW = [];
 
 const GAMES_LIST = [
   {
@@ -102,6 +87,187 @@ const GAMES_LIST = [
     chips: ['3 rounds', 'Characters']
   }
 ];
+
+let contentManifestPromise = null;
+
+function normalizeManifestUrl(path) {
+  const raw = String(path || '').trim();
+  if (!raw) return '';
+  if (/^https?:\/\//i.test(raw)) return raw;
+  if (raw.startsWith('./') || raw.startsWith('/')) return raw;
+  return `./${raw}`;
+}
+
+function getManifestBasename(path) {
+  const raw = String(path || '').trim();
+  if (!raw) return '';
+  const normalized = raw.replace(/\\/g, '/');
+  const parts = normalized.split('/');
+  return parts[parts.length - 1] || '';
+}
+
+function encodeFetchUrl(url) {
+  const raw = String(url || '');
+  if (!raw) return '';
+  if (/^https?:\/\//i.test(raw)) return raw;
+
+  const hasDotPrefix = raw.startsWith('./');
+  const base = hasDotPrefix ? raw.slice(2) : raw;
+  const encoded = base
+    .split('/')
+    .map((segment) => encodeURIComponent(segment))
+    .join('/');
+  return hasDotPrefix ? `./${encoded}` : encoded;
+}
+
+function stripMdExtension(value = '') {
+  return String(value || '').replace(/\.md$/i, '');
+}
+
+function slugifyName(value = '') {
+  const raw = String(value || '').trim();
+  if (!raw) return '';
+  const noPossessive = raw.replace(/'s\b/gi, '');
+  return noPossessive
+    .toLowerCase()
+    .replace(/[^a-z0-9.]+/gi, '-')
+    .replace(/-+/g, '-')
+    .replace(/^-|-$/g, '');
+}
+
+function titleFromSlug(value = '') {
+  const raw = String(value || '').trim();
+  if (!raw) return '';
+  if (!/[-_]/.test(raw)) return raw;
+  return raw
+    .replace(/[_-]+/g, ' ')
+    .replace(/\b\w/g, (ch) => ch.toUpperCase());
+}
+
+function buildPostCandidates(entry) {
+  const name = stripMdExtension(entry);
+  if (!name) return [];
+  const slug = slugifyName(name);
+  const folderCandidates = [name, slug].filter(Boolean);
+  const fileCandidates = [name, slug].filter(Boolean);
+  const urls = [];
+  folderCandidates.forEach((folder) => {
+    fileCandidates.forEach((file) => {
+      urls.push(`./content/posts/${folder}/${file}.md`);
+    });
+  });
+  urls.push(`./content/posts/${name}.md`);
+  if (slug && slug !== name) {
+    urls.push(`./content/posts/${slug}.md`);
+  }
+  return urls;
+}
+
+function buildProjectCandidates(entry) {
+  const name = stripMdExtension(entry);
+  if (!name) return [];
+  const slug = slugifyName(name);
+  const titleGuess = titleFromSlug(name);
+  const folderCandidates = [name, titleGuess, slug].filter(Boolean);
+  const fileCandidates = [slug, name].filter(Boolean);
+  const urls = [];
+  folderCandidates.forEach((folder) => {
+    fileCandidates.forEach((file) => {
+      urls.push(`./content/projects/${folder}/${file}.md`);
+    });
+  });
+  return urls;
+}
+
+function buildResourceCandidates(entry) {
+  const name = stripMdExtension(entry);
+  if (!name) return [];
+  const slug = slugifyName(name);
+  const titleGuess = titleFromSlug(name);
+  const folderCandidates = [name, titleGuess, slug].filter(Boolean);
+  const fileCandidates = [slug, name].filter(Boolean);
+  const roots = ['Guides', 'Tutorials', 'Docs'];
+  const urls = [];
+  roots.forEach((root) => {
+    folderCandidates.forEach((folder) => {
+      fileCandidates.forEach((file) => {
+        urls.push(`./content/resources/${root}/${folder}/${file}.md`);
+      });
+    });
+    fileCandidates.forEach((file) => {
+      urls.push(`./content/resources/${root}/${file}.md`);
+    });
+  });
+  return urls;
+}
+
+async function fetchFirstOk(urls = []) {
+  let lastError = null;
+  for (const url of urls) {
+    const encoded = encodeFetchUrl(normalizeManifestUrl(url));
+    try {
+      const response = await fetch(encoded);
+      if (response.ok) {
+        return { response, url: encoded };
+      }
+      lastError = new Error(`HTTP ${response.status} for ${encoded}`);
+    } catch (error) {
+      lastError = error;
+    }
+  }
+  throw lastError || new Error('No fetch candidates succeeded');
+}
+
+function deriveCoverFromMd(mdUrl = '') {
+  return String(mdUrl || '').replace(/\.md$/i, '.png');
+}
+
+function resolveItemCover(item = {}) {
+  if (!item) return '';
+  const direct = item.cover || '';
+  if (direct) return direct;
+  const source = item.sourceUrl || item.sourcePath || '';
+  return deriveCoverFromMd(source) || '';
+}
+
+async function ensureContentManifestLoaded() {
+  if (contentManifestPromise) return contentManifestPromise;
+
+  contentManifestPromise = (async () => {
+    const manifestUrls = ['./content/content.json', './content.json'];
+    try {
+      let payload = null;
+      let lastError = null;
+      for (const url of manifestUrls) {
+        try {
+          const response = await fetch(url, { cache: 'no-store' });
+          if (!response.ok) {
+            throw new Error(`HTTP ${response.status}`);
+          }
+          payload = await response.json();
+          if (payload) break;
+        } catch (error) {
+          lastError = error;
+        }
+      }
+      if (!payload) {
+        throw lastError || new Error('No manifest URLs responded');
+      }
+
+      POST_MANIFEST = Array.isArray(payload.POST_MANIFEST) ? payload.POST_MANIFEST.slice() : [];
+      RESOURCE_MANIFEST = Array.isArray(payload.RESOURCE_MANIFEST) ? payload.RESOURCE_MANIFEST.slice() : [];
+      PROJECT_MANIFEST = Array.isArray(payload.PROJECT_MANIFEST) ? payload.PROJECT_MANIFEST.slice() : [];
+    } catch (error) {
+      console.error('Failed to load content manifest:', error);
+      console.error('Tried manifest URLs:', manifestUrls);
+      POST_MANIFEST = Array.isArray(POST_MANIFEST) ? POST_MANIFEST : [];
+      RESOURCE_MANIFEST = Array.isArray(RESOURCE_MANIFEST) ? RESOURCE_MANIFEST : [];
+      PROJECT_MANIFEST = Array.isArray(PROJECT_MANIFEST) ? PROJECT_MANIFEST : [];
+    }
+  })();
+
+  return contentManifestPromise;
+}
 
 // Load search history from localStorage
 function loadSearchHistory() {
@@ -1336,23 +1502,27 @@ async function loadPosts() {
   
   const posts = [];
   
-  for (const filename of POST_MANIFEST) {
+  await ensureContentManifestLoaded();
+
+  for (const manifestEntry of POST_MANIFEST) {
     try {
-      console.log(`Attempting to load: posts/${filename}`);
-      const response = await fetch(`./posts/${filename}`);
-      
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
+      const entry = String(manifestEntry || '').trim();
+      const explicitPath = entry.includes('/') || entry.toLowerCase().endsWith('.md');
+      const candidates = explicitPath
+        ? [entry]
+        : buildPostCandidates(entry);
+      const { response, url: resolvedUrl } = await fetchFirstOk(candidates);
+      const filename = getManifestBasename(resolvedUrl || entry);
+      console.log(`Attempting to load: ${resolvedUrl}`);
       
       const content = await response.text();
-      console.log(`Loaded ${filename}, length: ${content.length}`);
+      console.log(`Loaded ${filename || resolvedUrl}, length: ${content.length}`);
       
       const { frontmatter, body } = parseFrontmatter(content);
       console.log(`Parsed frontmatter:`, frontmatter);
       
       // Derive slug from filename if not in frontmatter
-      const slug = frontmatter.slug || filename.replace('.md', '');
+      const slug = frontmatter.slug || filename.replace(/\.md$/i, '');
       
       // Calculate reading time
       const readTime = frontmatter.readTime || calculateReadingTime(body);
@@ -1364,16 +1534,18 @@ async function loadPosts() {
         date: frontmatter.date || new Date().toISOString().split('T')[0],
         category: frontmatter.category || 'uncategorized',
         excerpt: frontmatter.excerpt || generateExcerpt(body),
-        cover: frontmatter.cover || `assets/images/${slug}.jpg`,
+        cover: frontmatter.cover || deriveCoverFromMd(resolvedUrl) || '',
         readTime,
         body,
-        filename
+        filename: filename || '',
+        sourcePath: String(manifestEntry || ''),
+        sourceUrl: resolvedUrl
       };
       
       posts.push(post);
       console.log(`Successfully loaded post:`, post.title);
     } catch (error) {
-      console.error(`Error loading post ${filename}:`, error);
+      console.error(`Error loading post ${String(manifestEntry || '')}:`, error);
     }
   }
   
@@ -1392,16 +1564,21 @@ async function loadResources() {
 
   const internalResources = [];
 
-  for (const filename of RESOURCE_MANIFEST) {
+  await ensureContentManifestLoaded();
+
+  for (const manifestEntry of RESOURCE_MANIFEST) {
     try {
-      const response = await fetch(`./resources/${filename}`);
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
+      const entry = String(manifestEntry || '').trim();
+      const explicitPath = entry.includes('/') || entry.toLowerCase().endsWith('.md');
+      const candidates = explicitPath
+        ? [entry]
+        : buildResourceCandidates(entry);
+      const { response, url: resolvedUrl } = await fetchFirstOk(candidates);
+      const filename = getManifestBasename(resolvedUrl || entry);
 
       const content = await response.text();
       const { frontmatter, body } = parseFrontmatter(content);
-      const slug = frontmatter.slug || filename.replace('.md', '');
+      const slug = frontmatter.slug || filename.replace(/\.md$/i, '');
       const readTime = frontmatter.readTime || calculateReadingTime(body);
 
       internalResources.push({
@@ -1413,16 +1590,18 @@ async function loadResources() {
         date: frontmatter.date || new Date().toISOString().split('T')[0],
         type: frontmatter.type || 'Tutorial',
         icon: frontmatter.icon || 'fas fa-book-open',
-        cover: frontmatter.cover || '',
+        cover: frontmatter.cover || deriveCoverFromMd(resolvedUrl) || '',
         readTime,
         downloads: parseDownloads(frontmatter.downloads),
         steps: parseSteps(frontmatter, body),
         body,
-        filename,
+        filename: filename || '',
+        sourcePath: String(manifestEntry || ''),
+        sourceUrl: resolvedUrl,
         external: false
       });
     } catch (error) {
-      console.error(`Error loading resource ${filename}:`, error);
+      console.error(`Error loading resource ${String(manifestEntry || '')}:`, error);
     }
   }
 
@@ -1455,16 +1634,21 @@ async function loadProjects() {
 
   const projects = [];
 
-  for (const filename of PROJECT_MANIFEST) {
+  await ensureContentManifestLoaded();
+
+  for (const manifestEntry of PROJECT_MANIFEST) {
     try {
-      const response = await fetch(`./projects/${filename}`);
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
+      const entry = String(manifestEntry || '').trim();
+      const explicitPath = entry.includes('/') || entry.toLowerCase().endsWith('.md');
+      const candidates = explicitPath
+        ? [entry]
+        : buildProjectCandidates(entry);
+      const { response, url: resolvedUrl } = await fetchFirstOk(candidates);
+      const filename = getManifestBasename(resolvedUrl || entry);
 
       const content = await response.text();
       const { frontmatter, body } = parseFrontmatter(content);
-      const slug = frontmatter.slug || filename.replace('.md', '');
+      const slug = frontmatter.slug || filename.replace(/\.md$/i, '');
       const description = frontmatter.description || frontmatter.excerpt || generateExcerpt(body, 24);
       const summary = frontmatter.summary || generateExcerpt(body, 50);
 
@@ -1476,8 +1660,8 @@ async function loadProjects() {
         summary,
         type: frontmatter.type || 'Project',
         status: frontmatter.status || 'Active',
-        cover: frontmatter.cover || `assets/images/${slug}.png`,
-        logo: frontmatter.logo || frontmatter.cover || `assets/images/${slug}.png`,
+        cover: frontmatter.cover || deriveCoverFromMd(resolvedUrl) || '',
+        logo: frontmatter.logo || frontmatter.cover || deriveCoverFromMd(resolvedUrl) || '',
         tags: parseInlineList(frontmatter.tags),
         relatedPosts: parseInlineList(frontmatter.relatedPosts),
         album: parseJsonArray(frontmatter.album),
@@ -1486,10 +1670,13 @@ async function loadProjects() {
           live: frontmatter.live || '',
           video: frontmatter.video || ''
         },
-        date: frontmatter.date || ''
+        date: frontmatter.date || '',
+        filename: filename || '',
+        sourcePath: String(manifestEntry || ''),
+        sourceUrl: resolvedUrl
       });
     } catch (error) {
-      console.error(`Error loading project ${filename}:`, error);
+      console.error(`Error loading project ${String(manifestEntry || '')}:`, error);
     }
   }
 
@@ -1510,7 +1697,7 @@ function withImageFallback(imageEl, fallbackSrc) {
 
 function createPostCardMarkup(post, options = {}) {
   const compact = Boolean(options.compact);
-  const cover = post.cover || `assets/images/${post.slug}.png`;
+  const cover = resolveItemCover(post);
   const compactDate = formatCompactDate(post.date);
   const category = formatCategory(post.category);
   const readTime = `${post.readTime} min`;
@@ -1542,7 +1729,7 @@ function attachPostCardHandlers(rootEl) {
     });
   });
   rootEl.querySelectorAll('.media-card-image').forEach((imageEl) => {
-    withImageFallback(imageEl, 'assets/images/Markdowntest.png');
+    withImageFallback(imageEl, imageEl.getAttribute('data-fallback-src') || '');
   });
   rootEl.querySelectorAll('.media-card-avatar').forEach((imageEl) => {
     withImageFallback(imageEl, imageEl.getAttribute('data-fallback-src'));
@@ -1600,8 +1787,10 @@ function renderPostsList(posts, page = 1) {
 }
 
 function createProjectCardMarkup(project) {
-  const iconHtml = project.logo
-    ? `<img class="media-card-avatar" src="${project.logo}" alt="${escapeHtml(project.title)} logo" data-fallback-src="${project.cover}">`
+  const resolvedCover = resolveItemCover(project);
+  const resolvedLogo = project.logo || resolvedCover;
+  const iconHtml = resolvedLogo
+    ? `<img class="media-card-avatar" src="${resolvedLogo}" alt="${escapeHtml(project.title)} logo" data-fallback-src="${resolvedCover}">`
     : `<i class="${getProjectTypeIcon(project.type)}" aria-hidden="true"></i>`;
   const actionHtml = project.links?.repo
     ? '<i class="fab fa-github" aria-hidden="true"></i>'
@@ -1615,7 +1804,7 @@ function createProjectCardMarkup(project) {
     size: 'md',
     title: project.title,
     description: project.description,
-    cover: project.cover,
+    cover: resolvedCover,
     chips: [project.type, project.status].filter(Boolean),
     meta: [stack].filter(Boolean),
     iconHtml,
@@ -1668,7 +1857,7 @@ function renderProjectsList(items, page = 1) {
   });
 
   projectsGrid.querySelectorAll('.media-card-image').forEach((imageEl) => {
-    withImageFallback(imageEl, 'assets/images/Markdowntest.png');
+    withImageFallback(imageEl, imageEl.getAttribute('data-fallback-src') || '');
   });
 
   projectsGrid.querySelectorAll('.media-card-avatar').forEach((imageEl) => {
@@ -1700,7 +1889,7 @@ function setupProjectsShowcase(options = {}) {
       });
     });
     projectsGrid.querySelectorAll('.media-card-image').forEach((imageEl) => {
-      withImageFallback(imageEl, 'assets/images/Markdowntest.png');
+      withImageFallback(imageEl, imageEl.getAttribute('data-fallback-src') || '');
     });
     projectsGrid.querySelectorAll('.media-card-avatar').forEach((imageEl) => {
       withImageFallback(imageEl, imageEl.getAttribute('data-fallback-src'));
@@ -1716,6 +1905,7 @@ function setupProjectsShowcase(options = {}) {
 function createResourceCardMarkup(resource) {
   const iconClass = resource.icon || getResourceTypeIcon(resource.type);
   const iconHtml = `<i class="${iconClass}" aria-hidden="true"></i>`;
+  const resolvedCover = resolveItemCover(resource);
   const meta = resource.external
     ? [resource.type || 'Resource', 'External'].filter(Boolean)
     : [resource.type || 'Resource'].filter(Boolean);
@@ -1728,7 +1918,7 @@ function createResourceCardMarkup(resource) {
       size: 'md',
       title: resource.title,
       description: resource.description,
-      cover: resource.cover,
+      cover: resolvedCover,
       chips: [resource.type].filter(Boolean),
       meta,
       iconHtml,
@@ -1746,7 +1936,7 @@ function createResourceCardMarkup(resource) {
     size: 'md',
     title: resource.title,
     description: resource.description,
-    cover: resource.cover,
+    cover: resolvedCover,
     chips: [resource.type].filter(Boolean),
     meta,
     iconHtml,
@@ -1800,7 +1990,7 @@ function renderResourcesList(items, page = 1) {
   });
 
   resourcesGrid.querySelectorAll('.media-card-image').forEach((imageEl) => {
-    withImageFallback(imageEl, 'assets/images/Markdowntest.png');
+    withImageFallback(imageEl, imageEl.getAttribute('data-fallback-src') || '');
   });
 
   renderPaginationControls(pagination, totalPages, safePage, (nextPage) => {
@@ -1828,7 +2018,7 @@ function setupResourcesShowcase(options = {}) {
       });
     });
     resourcesGrid.querySelectorAll('.media-card-image').forEach((imageEl) => {
-      withImageFallback(imageEl, 'assets/images/Markdowntest.png');
+      withImageFallback(imageEl, imageEl.getAttribute('data-fallback-src') || '');
     });
     return;
   }

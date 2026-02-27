@@ -3,17 +3,19 @@
 This guide covers where content lives, which metadata is supported, and how the Content Hub pulls it into cards and detail pages.
 
 ## Where the files live
-- Projects: `projects/*.md`
-- Resources: `resources/*.md`
+- Posts: `content/posts/<Post Name>/<Post Name>.md`
+- Projects: `content/projects/<Project Name>/<project-slug>.md`
+- Resources: `content/resources/<Type>/<Resource Name>/<resource-slug>.md`
 
-The loader uses manifest arrays in `js/blog-loader.js`:
+The loader uses the manifest arrays in `content/content.json`:
+- `POST_MANIFEST`
 - `PROJECT_MANIFEST`
 - `RESOURCE_MANIFEST`
 
-Add new filenames to those arrays or they will not show up.
+Add new names to those arrays or they will not show up. The loader will resolve paths for you.
 
 ## Project files (frontmatter)
-Example frontmatter from `projects/nomu-site.md`:
+Example frontmatter from `content/projects/Nomu's Site/nomu-site.md`:
 ```
 ---
 title: Nomu Personal Site
@@ -24,11 +26,11 @@ type: Website
 status: In Progress
 description: Short one‑liner for cards.
 summary: Longer summary for the project header.
-cover: assets/images/Nomu's_Site.png
-logo: assets/images/Nomu's_Site.png
+cover: content/projects/Nomu's Site/Nomu's_Site.png
+logo: content/projects/Nomu's Site/Nomu's_Site.png
 tags: Vanilla JS, Markdown, UI/UX, Blog Engine
 relatedPosts: NomuSite | SUpdate1 | SUpdate2
-album: [{"src":"assets/images/Nomu's_Site.png","alt":"Nomu site home screen","caption":"Current homepage layout."}]
+album: [{"src":"content/projects/Nomu's Site/Nomu's_Site.png","alt":"Nomu site home screen","caption":"Current homepage layout."}]
 repo: https://github.com/akumanomu/nomu
 live:
 video:
@@ -56,7 +58,7 @@ Notes:
 - “In Progress” in the left rail is picked up by status strings like `In Progress`, `WIP`, or `Active`.
 
 ## Resource files (frontmatter)
-Example frontmatter from `resources/StarterTutorial.md`:
+Example frontmatter from `content/resources/Tutorials/Starter Tutorial/starter-tutorial.md`:
 ```
 ---
 title: Starter Tutorial: Build a Small Markdown Blog
@@ -65,7 +67,7 @@ type: Tutorial
 icon: fas fa-graduation-cap
 excerpt: One‑liner shown on cards.
 summary: Longer summary for the detail header.
-cover: assets/images/SUpdate2.png
+cover: content/resources/Tutorials/Starter Tutorial/starter-tutorial.png
 downloads: Starter checklist::https://developer.mozilla.org/ | Markdown guide::https://www.markdownguide.org/basic-syntax/
 steps: Set up folders | Parse frontmatter | Build cards
 ---
@@ -84,15 +86,16 @@ Supported fields:
 - `steps` (pipe list)
 
 ## External resources
-External resources are defined in `EXTERNAL_RESOURCES` inside `js/blog-loader.js`. Add new entries there for links that don’t have a local markdown file.
+External resources are defined in `EXTERNAL_RESOURCES` inside `js/blog-loader.js`. Add new entries there for links that do not have a local markdown file.
 
 ## Images
-Store images in `assets/images/` and reference them with a relative path in frontmatter (`cover`, `logo`, `album`).
+Store images alongside each markdown file and reference them with a relative path in frontmatter (`cover`, `logo`, `album`).
 Recommended size for card images: 1200x675 or 1600x900 (16:9 works best).
 
 ## Quick add checklist
-1. Create the markdown file in `projects/` or `resources/`.
-2. Add the filename to the corresponding manifest array in `js/blog-loader.js`.
-3. Add a cover image to `assets/images/` and update `cover` in frontmatter.
+1. Create the markdown file in `content/posts/`, `content/projects/`, or `content/resources/`.
+2. Add the name to the corresponding manifest array in `content/content.json`.
+3. Add a cover image next to the markdown file and update `cover` in frontmatter (or let the loader infer it).
 4. Refresh the page.
+
 

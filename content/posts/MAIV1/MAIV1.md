@@ -4,7 +4,7 @@ date: 2025-12-27
 category: Projects
 author: Nomu
 excerpt: Working on a little project to reorder playlists so songs transition better
-cover: assets/images/MAIV1.png
+cover: content/posts/MAIV1/MAIV1.png
 ---
 
 # Why?
@@ -245,3 +245,4 @@ But for now? It works. I can take my chaotic playlist and get something that act
 [^1]: [Youtube Channel](https://www.youtube.com/@mai_dq)
 [^Salesman]: [Travelling Salesman Problem](https://en.wikipedia.org/wiki/Travelling_salesman_problem)
 [^greedy]: [Greedy Algorithm](https://en.wikipedia.org/wiki/Greedy_algorithm)
+

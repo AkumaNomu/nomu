@@ -1,0 +1,20 @@
+{
+  "POST_MANIFEST": [
+    "Markdowntest",
+    "NomuSite",
+    "MAIV1",
+    "SUpdate1",
+    "Pornban",
+    "SUpdate2",
+    "SUpdate3",
+    "PlanChina"
+  ],
+  "RESOURCE_MANIFEST": [
+    "Piracy Guide"
+  ],
+  "PROJECT_MANIFEST": [
+    "Micro Code 2.0",
+    "Mai",
+    "Nomu's Site"
+  ]
+}

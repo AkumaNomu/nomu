@@ -5,8 +5,8 @@ A modern, minimalist blog built with vanilla JavaScript and Markdown.
 ## Quick Start
 
 1. Open index.html in your browser
-2. Create .md files in posts/ folder
-3. Add filenames to POST_MANIFEST in js/blog-loader.js
+2. Create .md files in `content/posts/`
+3. Add names to `POST_MANIFEST` in `content/content.json`
 4. Customize colors in css/styles.css
 
 ## Features
@@ -20,19 +20,19 @@ A modern, minimalist blog built with vanilla JavaScript and Markdown.
 
 ## Writing Posts
 
-Create a new .md file in posts/ with this format:
+Create a new .md file in `content/posts/` with this format:
 
-`markdown
+```markdown
 ---
 title: Post Title
 date: 2026-01-20
 category: Life
 excerpt: Brief description for listing
-cover: assets/images/image.jpg
+cover: content/posts/<Post Name>/<image>.png
 ---
 
 # Your content in Markdown
-`
+```
 
 **Categories:** Development | Video Editing | Life | Projects | Politics
 

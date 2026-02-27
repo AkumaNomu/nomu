@@ -3,7 +3,7 @@ title: Markdown Test Post
 date: 1970-01-01
 category: Development
 excerpt: A comprehensive test of all markdown features supported on this site, from headings to footnotes.
-cover: assets/images/Markdowntest.png
+cover: content/posts/Markdowntest/Markdowntest.png
 ---
 
 This post demonstrates all the markdown features supported on nomu.dev. Use it as a reference for writing new posts.
@@ -158,4 +158,5 @@ Here's an embedded YouTube video thumbnail that links to YouTube:
 ## Conclusion
 
 This covers all the major markdown features supported on this site. Use this post as a reference when creating new content!
+
 

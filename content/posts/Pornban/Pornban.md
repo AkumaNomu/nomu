@@ -4,7 +4,7 @@ date: 2025-12-26
 category: Politics
 author: Nomu
 excerpt: My personal take on this new proposed law thats got everyone talking
-cover: assets/images/Pornban.png
+cover: content/posts/Pornban/Pornban.png
 ---
 
 # It's finally happening isn't it?
