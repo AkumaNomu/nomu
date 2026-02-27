@@ -598,12 +598,19 @@
 
     // Sticky bar reveal on scroll + back to top
     const stickyBackToTop = document.getElementById('back-to-top-sticky');
+    let ticking = false;
     function handleStickyVisibility() {
-      const isSingle = singlePostView && singlePostView.style.display !== 'none';
-      const shouldShow = isSingle && window.scrollY > 180;
-      stickyBar.classList.toggle('visible', shouldShow);
-      if (stickyPostNav) {
-        stickyPostNav.classList.toggle('visible', shouldShow);
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          const isSingle = singlePostView && singlePostView.style.display !== 'none';
+          const shouldShow = isSingle && window.scrollY > 180;
+          stickyBar.classList.toggle('visible', shouldShow);
+          if (stickyPostNav) {
+            stickyPostNav.classList.toggle('visible', shouldShow);
+          }
+          ticking = false;
+        });
+        ticking = true;
       }
     }
     window.addEventListener('scroll', handleStickyVisibility, { passive: true });
