@@ -1,9 +1,9 @@
 ---
+id: PlanChina
 title: Why are study agencies such a scam?
+description: Looking into studying in China
 date: 2026-02-08
-category: Life
-author: Nomu
-excerpt: Looking into studying in China
+tags: Life
 cover: content/posts/PlanChina/PlanChina.png
 ---
 
@@ -11,7 +11,9 @@ cover: content/posts/PlanChina/PlanChina.png
 ## HMMMM...
 I got sent an agency by a friend of mine, when I contacted them on Instagram they immediately asked me for what majors I wanted and some relevant information about me. They immediately mentioned a need to pass a test called **CSCA** afterwards, ***keep this in mind***.
 They also sent me a picture of all the majors available for scholarships.
-[[Pasted image 20260208182758.png]]
+<div style="text-align: center;">
+  <img src="content/posts/PlanChina/Majors.png" width="300">
+</div>
 Funny thing here is, it isn't really that long. The list they provided is **80 items long**, while if you remove the duplicates it's only **45 items long** ( Assuming *Electrical and Computer Engineering, Electronic Information Engineering, Engineering Mechanics, Electronic Science and Technology, Electrical engineering and automation* are all different majors. )
 
 Let's skip that, maybe the English and Computer Science majors duplicated more than 5 times were mistakes.

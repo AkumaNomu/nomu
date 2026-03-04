@@ -1,12 +1,14 @@
 ---
+id: piracy-guide
 title: Your first journey on the seven seas
-date: 2026-02-26
+desc: A quick guide on how to start piracy.
 type: Guide
-excerpt: A quick guide on how to start piracy.
-summary: What is torrent, how to use it, as well as useful indexes and piracy websites.
+difficulty:
+url: https://www.qbittorrent.org/download
 cover: content/resources/Guides/Piracy Guide/piracy-guide.png
-downloads: QbitTorrent::https://www.qbittorrent.org/download | FreeMediaHeckYeah::https://www.fmhy.net/
-steps: History Lesson | Install QbitTorrent | Set-up VPN ( optional ) | Find torrents 
+gallery: content/resources/Guides/Piracy Guide/piracy-guide.png::Torrenting flow chart
+steps: Install qBittorrent | Configure network interface safely | Pick trusted sources | Verify files before opening
+quickLinks: qBittorrent::https://www.qbittorrent.org/download | r/Piracy Megathread::https://www.reddit.com/r/Piracy/wiki/megathread
 ---
 
 # What even is torrenting?

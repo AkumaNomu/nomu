@@ -1,8 +1,9 @@
 ---
+id: Markdowntest
 title: Markdown Test Post
+description: A comprehensive test of all markdown features supported on this site, from headings to footnotes.
 date: 1970-01-01
-category: Development
-excerpt: A comprehensive test of all markdown features supported on this site, from headings to footnotes.
+tags: Development
 cover: content/posts/Markdowntest/Markdowntest.png
 ---
 

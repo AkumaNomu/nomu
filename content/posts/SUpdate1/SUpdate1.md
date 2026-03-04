@@ -1,9 +1,9 @@
 ---
+id: SUpdate1
 title: Katex Support
+description: Added Katex support to the blog!
 date: 2025-12-26
-category: Development
-author: Nomu
-excerpt: Added Katex support to the blog!
+tags: Development
 cover: content/posts/SUpdate1/SUpdate1.png
 ---
 

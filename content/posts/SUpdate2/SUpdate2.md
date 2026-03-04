@@ -1,9 +1,9 @@
 ---
+id: SUpdate2
 title: Merging, Pagination, Music Support
+description: Merged the blog page with the home page, added pagination to avoid having a very long page, and added background music for reading, also a table of contents for easier navigation!
 date: 2026-01-04
-category: Development
-author: Nomu
-excerpt: Merged the blog page with the home page, added pagination to avoid having a very long page, and added background music for reading, also a table of contents for easier navigation! 
+tags: Development
 cover: content/posts/SUpdate2/SUpdate2.png
 ---
 

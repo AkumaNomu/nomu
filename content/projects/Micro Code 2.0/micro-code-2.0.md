@@ -1,20 +1,20 @@
 ---
-title: Micro Code 2.0
-slug: micro-code-2.0
 id: micro-code-2.0
-date: 2026-02-22
-type: Video Editing
-status: Finished
-description: 
-summary: 
-cover: content/projects/Micro Code 2.0/micro-code-2.0.png
-logo: assets/Peak.png
-tags: After Effects, Motion Design
-relatedPosts: 
-album: [{"src":"content/posts/MAIV1/MAIV1.png","alt":"MAI graph preview","caption":"Transition scoring graph snapshot."},{"src":"content/posts/SUpdate2/SUpdate2.png","alt":"Workflow notebook screenshot","caption":"Feature experiments and ranking notes."},{"src":"content/posts/SUpdate3/SUpdate3.png","alt":"Iteration board screenshot","caption":"Current roadmap and test scenarios."}]
+name: Micro Code 2.0
+description: Motion design teaser work for Micro Code 2.0.
+category: Video Editing
+focus: Motion Design
+type: Project
+icon: palette
+stack: After Effects, Motion Design
+url: https://github.com/akumanomu
 repo: https://github.com/akumanomu
-live: 
-video: 
+live:
+video: content/projects/Micro Code 2.0/micro-code-2.0.mp4
+featured: true
+cover: content/projects/Micro Code 2.0/micro-code-2.0.png
+gallery: content/projects/Micro Code 2.0/micro-code-2.0.png::Teaser frame
+badge: Finished
 ---
 
 #

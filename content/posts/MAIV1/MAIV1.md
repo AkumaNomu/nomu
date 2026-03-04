@@ -1,9 +1,9 @@
 ---
+id: MAIV1
 title: Trying to make playlists flow better
+description: Working on a little project to reorder playlists so songs transition better
 date: 2025-12-27
-category: Projects
-author: Nomu
-excerpt: Working on a little project to reorder playlists so songs transition better
+tags: Projects
 cover: content/posts/MAIV1/MAIV1.png
 ---
 
@@ -178,7 +178,7 @@ print(f"\nMinimum similarity edge is between song {min_edge[0]} and song {min_ed
 ```
 Basically, Each song is a **node**, and the similarity scores are **edges** connecting them. Since I compared every two songs, this makes a complete graph as shown below:
 <div style="text-align: center;">
-  <img src="assets/MAIV1/CompleteGraph.png" width="300">
+  <img src="content/posts/MAIV1/CompleteGraph.png" width="300">
 </div>
 
 ### The "Start with the Worst" Strategy

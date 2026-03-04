@@ -1,9 +1,9 @@
 ---
+id: Pornban
 title: So they want to ban porn, my two cents
+description: My personal take on this new proposed law thats got everyone talking
 date: 2025-12-26
-category: Politics
-author: Nomu
-excerpt: My personal take on this new proposed law thats got everyone talking
+tags: Politics
 cover: content/posts/Pornban/Pornban.png
 ---
 

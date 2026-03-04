@@ -1,10 +1,10 @@
 ---
+id: NomuSite
 title: Nomu's First Post
+description: My chaotic journey building a simple, no BS personal site; why I scrapped everything (again), went vanilla, and here we are.
 date: 2025-12-24
-category: Development
-author: Nomu
-excerpt: My chaotic journey building a simple, no BS personal site; why I scrapped everything (again), went vanilla, and here we are.
-cover: assets\images\Nomu's_Site.png
+tags: Development
+cover: content/posts/NomuSite/Nomu's_Site.png
 ---
 
 # How did it start?

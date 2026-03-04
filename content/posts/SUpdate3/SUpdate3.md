@@ -1,9 +1,9 @@
 ---
+id: SUpdate3
 title: Nomu's V2
+description: A complete visual and functional refresh.
 date: 2026-02-03
-category: Development
-author: Nomu
-excerpt: A complete visual and functional refresh.
+tags: Development
 cover: content/posts/SUpdate3/SUpdate3.png
 ---
 

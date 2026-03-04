@@ -4,10 +4,17 @@ A modern, minimalist blog built with vanilla JavaScript and Markdown.
 
 ## Quick Start
 
-1. Open index.html in your browser
-2. Create .md files in `content/posts/`
-3. Add names to `POST_MANIFEST` in `content/content.json`
-4. Customize colors in css/styles.css
+1. Install deps: `npm install`
+2. Build CSS once: `npm run build:css`
+3. Open `index.html` in your browser
+4. (Optional) Watch CSS while editing: `npm run watch:css`
+
+## Tailwind CSS Workflow
+
+- Source stylesheet: `css/tailwind.src.css`
+- Generated artifact (committed): `css/styles.css`
+- Tailwind scans: `index.html` and `js/**/*.js`
+- Keep runtime-dynamic style updates in JS (`style.width`, CSS vars, transforms) as-is.
 
 ## Features
 
@@ -24,17 +31,18 @@ Create a new .md file in `content/posts/` with this format:
 
 ```markdown
 ---
+id: PostSlug
 title: Post Title
+description: Brief description for listing
 date: 2026-01-20
-category: Life
-excerpt: Brief description for listing
+tags: Life | Projects
 cover: content/posts/<Post Name>/<image>.png
 ---
 
 # Your content in Markdown
 ```
 
-**Categories:** Development | Video Editing | Life | Projects | Politics
+**Tags (examples):** Development | Video Editing | Life | Projects | Politics
 
 ## Customization
 

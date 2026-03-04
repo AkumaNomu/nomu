@@ -1,0 +1,92 @@
+﻿{
+  "categories": [
+    {
+      "name": "Everyday Objects",
+      "sets": [
+        { "target": "Toothbrush", "forbidden": ["teeth", "bristles", "bathroom", "paste", "brush"] },
+        { "target": "Umbrella", "forbidden": ["rain", "handle", "fold", "canopy", "storm"] },
+        { "target": "Backpack", "forbidden": ["bag", "straps", "school", "carry", "zipper"] },
+        { "target": "Flashlight", "forbidden": ["battery", "beam", "dark", "torch", "switch"] },
+        { "target": "Remote control", "forbidden": ["TV", "buttons", "channel", "couch", "click"] },
+        { "target": "Notebook", "forbidden": ["paper", "pages", "write", "spiral", "notes"] }
+      ]
+    },
+    {
+      "name": "Food & Drink",
+      "sets": [
+        { "target": "Pizza", "forbidden": ["slice", "cheese", "crust", "pepperoni", "oven"] },
+        { "target": "Sushi", "forbidden": ["rice", "fish", "roll", "seaweed", "soy"] },
+        { "target": "Taco", "forbidden": ["tortilla", "filling", "salsa", "shell", "Mexican"] },
+        { "target": "Pancake", "forbidden": ["syrup", "breakfast", "griddle", "stack", "flour"] },
+        { "target": "Coffee", "forbidden": ["beans", "caffeine", "mug", "brew", "espresso"] },
+        { "target": "Ice cream", "forbidden": ["scoop", "cone", "frozen", "dessert", "flavor"] }
+      ]
+    },
+    {
+      "name": "Places",
+      "sets": [
+        { "target": "Airport", "forbidden": ["flight", "gate", "terminal", "security", "baggage"] },
+        { "target": "Library", "forbidden": ["books", "quiet", "borrow", "shelves", "librarian"] },
+        { "target": "Hospital", "forbidden": ["doctor", "nurse", "patient", "emergency", "ward"] },
+        { "target": "Beach", "forbidden": ["sand", "ocean", "waves", "sun", "shore"] },
+        { "target": "Stadium", "forbidden": ["crowd", "game", "seats", "arena", "scoreboard"] },
+        { "target": "Museum", "forbidden": ["exhibit", "artifacts", "gallery", "curator", "tickets"] }
+      ]
+    },
+    {
+      "name": "Nature",
+      "sets": [
+        { "target": "Mountain", "forbidden": ["peak", "climb", "rock", "summit", "trail"] },
+        { "target": "River", "forbidden": ["water", "stream", "flow", "bank", "current"] },
+        { "target": "Forest", "forbidden": ["trees", "woods", "wildlife", "path", "canopy"] },
+        { "target": "Desert", "forbidden": ["sand", "dry", "cactus", "dunes", "heat"] },
+        { "target": "Waterfall", "forbidden": ["drop", "cliff", "spray", "pool", "cascade"] },
+        { "target": "Volcano", "forbidden": ["lava", "eruption", "ash", "crater", "magma"] }
+      ]
+    },
+    {
+      "name": "Entertainment",
+      "sets": [
+        { "target": "Movie", "forbidden": ["film", "actor", "screen", "ticket", "director"] },
+        { "target": "Concert", "forbidden": ["music", "stage", "crowd", "band", "song"] },
+        { "target": "Video game", "forbidden": ["controller", "console", "level", "player", "score"] },
+        { "target": "Theater", "forbidden": ["play", "actors", "stage", "curtain", "audience"] },
+        { "target": "Podcast", "forbidden": ["episode", "host", "audio", "stream", "listen"] },
+        { "target": "Comic book", "forbidden": ["panels", "superhero", "speech bubbles", "issue", "illustration"] }
+      ]
+    },
+    {
+      "name": "Technology",
+      "sets": [
+        { "target": "Smartphone", "forbidden": ["apps", "touchscreen", "camera", "calls", "text"] },
+        { "target": "Laptop", "forbidden": ["keyboard", "screen", "battery", "mousepad", "portable"] },
+        { "target": "Router", "forbidden": ["wifi", "internet", "signal", "network", "modem"] },
+        { "target": "Drone", "forbidden": ["propellers", "flight", "camera", "remote", "aerial"] },
+        { "target": "Printer", "forbidden": ["paper", "ink", "documents", "scan", "tray"] },
+        { "target": "Headphones", "forbidden": ["audio", "ears", "wireless", "volume", "music"] }
+      ]
+    },
+    {
+      "name": "Sports",
+      "sets": [
+        { "target": "Basketball", "forbidden": ["hoop", "dribble", "court", "shoot", "ball"] },
+        { "target": "Soccer", "forbidden": ["goal", "kick", "field", "ball", "team"] },
+        { "target": "Tennis", "forbidden": ["racket", "serve", "court", "net", "match"] },
+        { "target": "Baseball", "forbidden": ["bat", "pitch", "diamond", "glove", "inning"] },
+        { "target": "Swimming", "forbidden": ["pool", "stroke", "lap", "water", "goggles"] },
+        { "target": "Cycling", "forbidden": ["bike", "pedal", "helmet", "race", "road"] }
+      ]
+    },
+    {
+      "name": "Work & School",
+      "sets": [
+        { "target": "Meeting", "forbidden": ["agenda", "calendar", "conference", "discussion", "notes"] },
+        { "target": "Homework", "forbidden": ["assignment", "class", "due", "study", "teacher"] },
+        { "target": "Exam", "forbidden": ["test", "grade", "questions", "study", "paper"] },
+        { "target": "Office", "forbidden": ["desk", "coworkers", "email", "schedule", "work"] },
+        { "target": "Presentation", "forbidden": ["slides", "projector", "talk", "audience", "pitch"] },
+        { "target": "Interview", "forbidden": ["questions", "resume", "job", "candidate", "hiring"] }
+      ]
+    }
+  ]
+}
