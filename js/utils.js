@@ -1279,11 +1279,11 @@ function copyText(id) {
 /* ─── Music wiring ───────────────────────────────────────── */
 function wireLocalMusic() {
   const TRACK_MAP = {
-    'No One Ever Said':                { src: 'assets/music/No%20One%20Ever%20Said.mp3',                              cover: 'assets/music/covers/No%20One%20Ever%20Said.png'                              },
-    'Rises The Moon':                  { src: 'assets/music/Rises%20The%20Moon.mp3',                                  cover: 'assets/music/covers/Rises%20The%20Moon.png'                                  },
-    'Sorry, I Like You':               { src: 'assets/music/Sorry%2C%20I%20Like%20You.mp3',                           cover: 'assets/music/covers/Sorry%2C%20I%20Like%20You.png'                           },
-    'Wet':                             { src: 'assets/music/Wet.mp3',                                                 cover: 'assets/music/covers/Wet.png'                                                 },
-    "World's Number One Oden Store":   { src: "assets/music/World%27s%20Number%20One%20Oden%20Store.mp3",            cover: "assets/music/covers/World%27s%20Number%20One%20Oden%20Store.png"            },
+    'No One Ever Said':                { src: (DB.site.repo || '') + 'assets/music/No%20One%20Ever%20Said.mp3',                              cover: (DB.site.repo || '') + 'assets/music/covers/No%20One%20Ever%20Said.png'                              },
+    'Rises The Moon':                  { src: (DB.site.repo || '') + 'assets/music/Rises%20The%20Moon.mp3',                                  cover: (DB.site.repo || '') + 'assets/music/covers/Rises%20The%20Moon.png'                                  },
+    'Sorry, I Like You':               { src: (DB.site.repo || '') + 'assets/music/Sorry%2C%20I%20Like%20You.mp3',                           cover: (DB.site.repo || '') + 'assets/music/covers/Sorry%2C%20I%20Like%20You.png'                           },
+    'Wet':                             { src: (DB.site.repo || '') + 'assets/music/Wet.mp3',                                                 cover: (DB.site.repo || '') + 'assets/music/covers/Wet.png'                                                 },
+    "World's Number One Oden Store":   { src: (DB.site.repo || '') + "assets/music/World%27s%20Number%20One%20Oden%20Store.mp3",            cover: (DB.site.repo || '') + "assets/music/covers/World%27s%20Number%20One%20Oden%20Store.png"            },
   };
   DB.music = DB.music.map((track, idx) => {
     const mapped = TRACK_MAP[track.title];
@@ -1376,7 +1376,7 @@ window.addEventListener('DOMContentLoaded', async () => {
 async function loadContentFromFolders() {
   if (typeof USE_CONTENT_MANIFEST !== 'undefined' && !USE_CONTENT_MANIFEST) return;
   try {
-    const resp = await fetch('content/content.json');
+    const resp = await fetch((DB.site.repo || '') + 'content/content.json');
     if (!resp.ok) return;
     const manifest = await resp.json();
 
@@ -1387,8 +1387,8 @@ async function loadContentFromFolders() {
         try {
           const slug = slugifyName(name);
           const mdResp = await fetchFirstOk([
-            `content/posts/${encodeURIComponent(name)}/${encodeURIComponent(name)}.md`,
-            `content/posts/${encodeURIComponent(name)}/${encodeURIComponent(slug)}.md`,
+            (DB.site.repo || '') + `content/posts/${encodeURIComponent(name)}/${encodeURIComponent(name)}.md`,
+            (DB.site.repo || '') + `content/posts/${encodeURIComponent(name)}/${encodeURIComponent(slug)}.md`,
           ]);
           if (!mdResp) continue;
           const md = await mdResp.text();
@@ -1416,8 +1416,8 @@ async function loadContentFromFolders() {
         try {
           const slug = slugifyName(name);
           const mdResp = await fetchFirstOk([
-            `content/projects/${encodeURIComponent(name)}/${encodeURIComponent(slug)}.md`,
-            `content/projects/${encodeURIComponent(name)}/${encodeURIComponent(name)}.md`,
+            (DB.site.repo || '') + `content/projects/${encodeURIComponent(name)}/${encodeURIComponent(slug)}.md`,
+            (DB.site.repo || '') + `content/projects/${encodeURIComponent(name)}/${encodeURIComponent(name)}.md`,
           ]);
           if (!mdResp) continue;
           const md = await mdResp.text();
@@ -1456,8 +1456,8 @@ async function loadContentFromFolders() {
           const candidates = [];
           dirs.forEach(dir => {
             const d = encodeURIComponent(dir);
-            candidates.push(`content/resources/${d}/${base}/${encodeURIComponent(slug)}.md`);
-            candidates.push(`content/resources/${d}/${base}/${encodeURIComponent(name)}.md`);
+            candidates.push((DB.site.repo || '') + `content/resources/${d}/${base}/${encodeURIComponent(slug)}.md`);
+            candidates.push((DB.site.repo || '') + `content/resources/${d}/${base}/${encodeURIComponent(name)}.md`);
           });
           const mdResp = await fetchFirstOk(candidates);
           if (!mdResp) continue;

@@ -9,9 +9,11 @@ const SITE_CONFIG = {
   tagline:    'Terminal · v3.0',
   author:     'Nomu',
   initials:   'N',
+  repo:       'nomu/',
   bio:        'You can see me yap a lot or admire how amazing I am, whatever floats your boat.',
   email:      'akumanomu@proton.me',
   avatar:     null,            // path to avatar image, or null
+  logoSrc:    'nomu/assets/Nomu.svg',
   bootLabel:  'NOMU\'s',      // short label for the mobile header
   "social": {
       "github": "https://github.com/AkumaNomu",
