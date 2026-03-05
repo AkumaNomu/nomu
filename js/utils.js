@@ -1382,20 +1382,19 @@ async function loadContentFromFolders() {
 
     // Load posts listed in POST_MANIFEST
     if (manifest.POST_MANIFEST && Array.isArray(manifest.POST_MANIFEST) && manifest.POST_MANIFEST.length) {
-      const loaded = [];
-      for (const name of manifest.POST_MANIFEST) {
+      const loaded = (await Promise.all(manifest.POST_MANIFEST.map(async (name) => {
         try {
           const slug = slugifyName(name);
           const mdResp = await fetchFirstOk([
             (DB.site.repo || '') + `content/posts/${encodeURIComponent(name)}/${encodeURIComponent(name)}.md`,
             (DB.site.repo || '') + `content/posts/${encodeURIComponent(name)}/${encodeURIComponent(slug)}.md`,
           ]);
-          if (!mdResp) continue;
+          if (!mdResp) return null;
           const md = await mdResp.text();
           const { meta, body } = parseFrontmatter(md);
           const tags = splitList(meta.tags);
           const readTime = parseInt(meta.readTime, 10) || estimateReadTime(body);
-          loaded.push({
+          return {
             id: meta.id || slug,
             title: meta.title || name,
             description: meta.description || meta.desc || '',
@@ -1404,25 +1403,26 @@ async function loadContentFromFolders() {
             readTime,
             cover: meta.cover || null,
             markdown: body.trim(),
-          });
-        } catch (e) { continue; }
-      }
+          };
+        } catch (e) {
+          return null;
+        }
+      }))).filter(Boolean);
       if (loaded.length) DB.posts = loaded;
     }
 
     if (manifest.PROJECT_MANIFEST && Array.isArray(manifest.PROJECT_MANIFEST) && manifest.PROJECT_MANIFEST.length) {
-      const loaded = [];
-      for (const name of manifest.PROJECT_MANIFEST) {
+      const loaded = (await Promise.all(manifest.PROJECT_MANIFEST.map(async (name) => {
         try {
           const slug = slugifyName(name);
           const mdResp = await fetchFirstOk([
             (DB.site.repo || '') + `content/projects/${encodeURIComponent(name)}/${encodeURIComponent(slug)}.md`,
             (DB.site.repo || '') + `content/projects/${encodeURIComponent(name)}/${encodeURIComponent(name)}.md`,
           ]);
-          if (!mdResp) continue;
+          if (!mdResp) return null;
           const md = await mdResp.text();
           const { meta, body } = parseFrontmatter(md);
-          loaded.push({
+          return {
             id: meta.id || slug,
             name: meta.name || name,
             description: meta.description || '',
@@ -1440,16 +1440,17 @@ async function loadContentFromFolders() {
             cover: meta.cover || null,
             badge: meta.badge || '',
             markdown: body.trim(),
-          });
-        } catch (e) { continue; }
-      }
+          };
+        } catch (e) {
+          return null;
+        }
+      }))).filter(Boolean);
       if (loaded.length) DB.projects = loaded;
     }
 
     if (manifest.RESOURCE_MANIFEST && Array.isArray(manifest.RESOURCE_MANIFEST) && manifest.RESOURCE_MANIFEST.length) {
-      const loaded = [];
       const dirs = getResourceDirs();
-      for (const name of manifest.RESOURCE_MANIFEST) {
+      const loaded = (await Promise.all(manifest.RESOURCE_MANIFEST.map(async (name) => {
         try {
           const slug = slugifyName(name);
           const base = encodeURIComponent(name);
@@ -1460,10 +1461,10 @@ async function loadContentFromFolders() {
             candidates.push((DB.site.repo || '') + `content/resources/${d}/${base}/${encodeURIComponent(name)}.md`);
           });
           const mdResp = await fetchFirstOk(candidates);
-          if (!mdResp) continue;
+          if (!mdResp) return null;
           const md = await mdResp.text();
           const { meta, body } = parseFrontmatter(md);
-          loaded.push({
+          return {
             id: meta.id || slug,
             title: meta.title || name,
             desc: meta.desc || meta.description || '',
@@ -1476,9 +1477,11 @@ async function loadContentFromFolders() {
             steps: splitList(meta.steps),
             quickLinks: parseQuickLinks(meta.quickLinks),
             markdown: body.trim(),
-          });
-        } catch (e) { continue; }
-      }
+          };
+        } catch (e) {
+          return null;
+        }
+      }))).filter(Boolean);
       if (loaded.length) DB.resources = loaded;
     }
   } catch (e) {
