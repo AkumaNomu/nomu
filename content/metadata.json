@@ -1,0 +1,251 @@
+{
+  "posts": [
+    {
+      "id": "Markdowntest",
+      "title": "Markdown Test Post",
+      "description": "A comprehensive test of all markdown features supported on this site, from headings to footnotes.",
+      "date": "1970-01-01",
+      "tags": [
+        "Development"
+      ],
+      "readTime": 2,
+      "cover": "content/posts/Markdowntest/Markdowntest.png",
+      "contentPath": "posts/Markdowntest/Markdowntest.md"
+    },
+    {
+      "id": "NomuSite",
+      "title": "Nomu's First Post",
+      "description": "My chaotic journey building a simple, no BS personal site; why I scrapped everything (again), went vanilla, and here we are.",
+      "date": "2025-12-24",
+      "tags": [
+        "Development"
+      ],
+      "readTime": 2,
+      "cover": "content/posts/NomuSite/Nomu's_Site.png",
+      "contentPath": "posts/NomuSite/NomuSite.md"
+    },
+    {
+      "id": "MAIV1",
+      "title": "Trying to make playlists flow better",
+      "description": "Working on a little project to reorder playlists so songs transition better",
+      "date": "2025-12-27",
+      "tags": [
+        "Projects"
+      ],
+      "readTime": 8,
+      "cover": "content/posts/MAIV1/MAIV1.png",
+      "contentPath": "posts/MAIV1/MAIV1.md"
+    },
+    {
+      "id": "SUpdate1",
+      "title": "Katex Support",
+      "description": "Added Katex support to the blog!",
+      "date": "2025-12-26",
+      "tags": [
+        "Development"
+      ],
+      "readTime": 1,
+      "cover": "content/posts/SUpdate1/SUpdate1.png",
+      "contentPath": "posts/SUpdate1/SUpdate1.md"
+    },
+    {
+      "id": "Pornban",
+      "title": "So they want to ban porn, my two cents",
+      "description": "My personal take on this new proposed law thats got everyone talking",
+      "date": "2025-12-26",
+      "tags": [
+        "Politics"
+      ],
+      "readTime": 5,
+      "cover": "content/posts/Pornban/Pornban.png",
+      "contentPath": "posts/Pornban/Pornban.md"
+    },
+    {
+      "id": "SUpdate2",
+      "title": "Merging, Pagination, Music Support",
+      "description": "Merged the blog page with the home page, added pagination to avoid having a very long page, and added background music for reading, also a table of contents for easier navigation!",
+      "date": "2026-01-04",
+      "tags": [
+        "Development"
+      ],
+      "readTime": 1,
+      "cover": "content/posts/SUpdate2/SUpdate2.png",
+      "contentPath": "posts/SUpdate2/SUpdate2.md"
+    },
+    {
+      "id": "SUpdate3",
+      "title": "Nomu's V2",
+      "description": "A complete visual and functional refresh.",
+      "date": "2026-02-03",
+      "tags": [
+        "Development"
+      ],
+      "readTime": 1,
+      "cover": "content/posts/SUpdate3/SUpdate3.png",
+      "contentPath": "posts/SUpdate3/SUpdate3.md"
+    },
+    {
+      "id": "PlanChina",
+      "title": "Why are study agencies such a scam?",
+      "description": "Looking into studying in China",
+      "date": "2026-02-08",
+      "tags": [
+        "Life"
+      ],
+      "readTime": 5,
+      "cover": "content/posts/PlanChina/PlanChina.png",
+      "contentPath": "posts/PlanChina/PlanChina.md"
+    }
+  ],
+  "projects": [
+    {
+      "id": "micro-code-2.0",
+      "name": "Micro Code 2.0",
+      "description": "Motion design teaser work for Micro Code 2.0.",
+      "category": "Video Editing",
+      "focus": "Motion Design",
+      "type": "Project",
+      "icon": "palette",
+      "stack": [
+        "After Effects",
+        "Motion Design"
+      ],
+      "url": "https://github.com/akumanomu",
+      "repo": "https://github.com/akumanomu",
+      "live": "",
+      "video": "content/projects/Micro Code 2.0/micro-code-2.0.mp4",
+      "gallery": [
+        {
+          "src": "content/projects/Micro Code 2.0/micro-code-2.0.png",
+          "caption": "Teaser frame"
+        }
+      ],
+      "featured": true,
+      "cover": "content/projects/Micro Code 2.0/micro-code-2.0.png",
+      "badge": "Finished",
+      "contentPath": "projects/Micro Code 2.0/micro-code-2.0.md"
+    },
+    {
+      "id": "mai-engine",
+      "name": "MAI Playlist Engine",
+      "description": "Playlist ordering engine focused on smoother song-to-song transitions.",
+      "category": "Development",
+      "focus": "AI",
+      "type": "Project",
+      "icon": "database",
+      "stack": [
+        "Python",
+        "Data",
+        "Music Tech",
+        "ML-ready"
+      ],
+      "url": "https://github.com/akumanomu/mai",
+      "repo": "https://github.com/akumanomu/mai",
+      "live": "",
+      "video": "",
+      "gallery": [
+        {
+          "src": "content/projects/Mai/mai.png",
+          "caption": "Model preview"
+        }
+      ],
+      "featured": true,
+      "cover": "content/projects/Mai/mai.png",
+      "badge": "In Progress",
+      "contentPath": "projects/Mai/mai.md"
+    },
+    {
+      "id": "nomu-site",
+      "name": "Nomu Personal Site",
+      "description": "The blog and publishing stack you are currently using.",
+      "category": "Development",
+      "focus": "Web",
+      "type": "Project",
+      "icon": "terminal",
+      "stack": [
+        "Vanilla JS",
+        "Markdown",
+        "UI/UX",
+        "Blog Engine"
+      ],
+      "url": "https://github.com/akumanomu/nomu",
+      "repo": "https://github.com/akumanomu/nomu",
+      "live": "",
+      "video": "",
+      "gallery": [
+        {
+          "src": "content/projects/Nomu's Site/nomu-site.png",
+          "caption": "Current homepage"
+        }
+      ],
+      "featured": true,
+      "cover": "content/projects/Nomu's Site/nomu-site.png",
+      "badge": "In Progress",
+      "contentPath": "projects/Nomu's Site/nomu-site.md"
+    }
+  ],
+  "resources": [
+    {
+      "id": "piracy-guide",
+      "title": "Your first journey on the seven seas",
+      "desc": "A quick guide on how to start piracy.",
+      "type": "Guide",
+      "difficulty": "",
+      "url": "https://www.qbittorrent.org/download",
+      "cover": "content/resources/Guides/Piracy Guide/piracy-guide.png",
+      "video": "",
+      "gallery": [
+        {
+          "src": "content/resources/Guides/Piracy Guide/piracy-guide.png",
+          "caption": "Torrenting flow chart"
+        }
+      ],
+      "steps": [
+        "Install qBittorrent",
+        "Configure network interface safely",
+        "Pick trusted sources",
+        "Verify files before opening"
+      ],
+      "quickLinks": [
+        {
+          "label": "qBittorrent",
+          "url": "https://www.qbittorrent.org/download"
+        },
+        {
+          "label": "r/Piracy Megathread",
+          "url": "https://www.reddit.com/r/Piracy/wiki/megathread"
+        }
+      ],
+      "contentPath": "resources/Guides/Piracy Guide/piracy-guide.md"
+    },
+    {
+      "id": "piracy-guide",
+      "title": "Free media, heck yeah!",
+      "desc": "An index of free resources on the internet.",
+      "type": "Site",
+      "difficulty": "",
+      "url": "https://www.fmhy.net/",
+      "cover": null,
+      "video": "",
+      "gallery": [
+        {
+          "src": "content/resources/Guides/Piracy Guide/piracy-guide.png",
+          "caption": "Flow chart"
+        }
+      ],
+      "steps": [
+        "Install client",
+        "Bind VPN interface",
+        "Use trusted indexers",
+        "Verify file health"
+      ],
+      "quickLinks": [
+        {
+          "label": "FMHY",
+          "url": "https://www.fmhy.net/"
+        }
+      ],
+      "contentPath": "resources/Sites/FMHY/FMHY.md"
+    }
+  ]
+}
