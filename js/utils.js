@@ -46,11 +46,16 @@
 
   for (let i = 0; i < 80; i++) particles.push(new P());
 
+  let animFrame;
   function loop() {
+    if (document.hidden) {
+      animFrame = requestAnimationFrame(loop);
+      return;
+    }
     ctx.clearRect(0, 0, W, H);
     drawGrid();
     particles.forEach(p => { p.update(); p.draw(); });
-    requestAnimationFrame(loop);
+    animFrame = requestAnimationFrame(loop);
   }
   loop();
 })();
@@ -70,6 +75,7 @@ let SFX_ENABLED = JSON.parse(localStorage.getItem('sfx_enabled') || 'true');
 let READING_MODE = JSON.parse(localStorage.getItem('reading_mode') || 'false');
 const ARTICLE_SWIPE = { active: false, startX: 0, startY: 0, time: 0 };
 const PULL_REFRESH = { tracking: false, active: false, refreshing: false, startY: 0, distance: 0 };
+const CONTENT_CACHE = new Map();
 
 function isMobileViewport() {
   return window.matchMedia('(max-width: 860px)').matches;
@@ -1370,19 +1376,32 @@ window.addEventListener('DOMContentLoaded', async () => {
   }
 });
 
-/* Attempt to load file-based content from the `content/` folder.
-   This is defensive: if the manifest or files aren't present, we silently
-   fall back to the inlined `DB` defined in `config.js`. */
+/* Attempt to load content metadata from `content/metadata.json`. */
 async function loadContentFromFolders() {
   if (typeof USE_CONTENT_MANIFEST !== 'undefined' && !USE_CONTENT_MANIFEST) return;
+  try {
+    const resp = await fetch((DB.site.repo || '') + 'content/metadata.json');
+    if (!resp.ok) {
+      console.warn('Metadata manifest not found, falling back to legacy manifest loading');
+      return await loadContentFromLegacyManifest();
+    }
+    const metadata = await resp.json();
+    if (metadata.posts) DB.posts = metadata.posts;
+    if (metadata.projects) DB.projects = metadata.projects;
+    if (metadata.resources) DB.resources = metadata.resources;
+  } catch (e) {
+    console.error('Error loading content metadata:', e);
+  }
+}
+
+async function loadContentFromLegacyManifest() {
   try {
     const resp = await fetch((DB.site.repo || '') + 'content/content.json');
     if (!resp.ok) return;
     const manifest = await resp.json();
 
-    // Load posts listed in POST_MANIFEST
-    if (manifest.POST_MANIFEST && Array.isArray(manifest.POST_MANIFEST) && manifest.POST_MANIFEST.length) {
-      const loaded = (await Promise.all(manifest.POST_MANIFEST.map(async (name) => {
+    if (manifest.POST_MANIFEST) {
+      DB.posts = (await Promise.all(manifest.POST_MANIFEST.map(async (name) => {
         try {
           const slug = slugifyName(name);
           const mdResp = await fetchFirstOk([
@@ -1392,100 +1411,38 @@ async function loadContentFromFolders() {
           if (!mdResp) return null;
           const md = await mdResp.text();
           const { meta, body } = parseFrontmatter(md);
-          const tags = splitList(meta.tags);
-          const readTime = parseInt(meta.readTime, 10) || estimateReadTime(body);
           return {
             id: meta.id || slug,
             title: meta.title || name,
             description: meta.description || meta.desc || '',
-            date: meta.date || new Date().toISOString().slice(0,10),
-            tags,
-            readTime,
+            date: meta.date || new Date().toISOString().slice(0, 10),
+            tags: splitList(meta.tags),
+            readTime: parseInt(meta.readTime, 10) || estimateReadTime(body),
             cover: meta.cover || null,
             markdown: body.trim(),
           };
-        } catch (e) {
-          return null;
-        }
+        } catch (e) { return null; }
       }))).filter(Boolean);
-      if (loaded.length) DB.posts = loaded;
     }
+  } catch (e) {}
+}
 
-    if (manifest.PROJECT_MANIFEST && Array.isArray(manifest.PROJECT_MANIFEST) && manifest.PROJECT_MANIFEST.length) {
-      const loaded = (await Promise.all(manifest.PROJECT_MANIFEST.map(async (name) => {
-        try {
-          const slug = slugifyName(name);
-          const mdResp = await fetchFirstOk([
-            (DB.site.repo || '') + `content/projects/${encodeURIComponent(name)}/${encodeURIComponent(slug)}.md`,
-            (DB.site.repo || '') + `content/projects/${encodeURIComponent(name)}/${encodeURIComponent(name)}.md`,
-          ]);
-          if (!mdResp) return null;
-          const md = await mdResp.text();
-          const { meta, body } = parseFrontmatter(md);
-          return {
-            id: meta.id || slug,
-            name: meta.name || name,
-            description: meta.description || '',
-            category: meta.category || 'Development',
-            focus: meta.focus || '',
-            type: meta.type || 'Project',
-            icon: meta.icon || 'terminal',
-            stack: splitList(meta.stack),
-            url: meta.url || '',
-            repo: meta.repo || '',
-            live: meta.live || '',
-            video: meta.video || '',
-            gallery: parseGallery(meta.gallery),
-            featured: String(meta.featured).toLowerCase() === 'true',
-            cover: meta.cover || null,
-            badge: meta.badge || '',
-            markdown: body.trim(),
-          };
-        } catch (e) {
-          return null;
-        }
-      }))).filter(Boolean);
-      if (loaded.length) DB.projects = loaded;
-    }
+async function fetchItemMarkdown(item) {
+  if (!item) return '';
+  if (item.markdown) return item.markdown;
+  if (!item.contentPath) return '';
+  if (CONTENT_CACHE.has(item.contentPath)) return CONTENT_CACHE.get(item.contentPath);
 
-    if (manifest.RESOURCE_MANIFEST && Array.isArray(manifest.RESOURCE_MANIFEST) && manifest.RESOURCE_MANIFEST.length) {
-      const dirs = getResourceDirs();
-      const loaded = (await Promise.all(manifest.RESOURCE_MANIFEST.map(async (name) => {
-        try {
-          const slug = slugifyName(name);
-          const base = encodeURIComponent(name);
-          const candidates = [];
-          dirs.forEach(dir => {
-            const d = encodeURIComponent(dir);
-            candidates.push((DB.site.repo || '') + `content/resources/${d}/${base}/${encodeURIComponent(slug)}.md`);
-            candidates.push((DB.site.repo || '') + `content/resources/${d}/${base}/${encodeURIComponent(name)}.md`);
-          });
-          const mdResp = await fetchFirstOk(candidates);
-          if (!mdResp) return null;
-          const md = await mdResp.text();
-          const { meta, body } = parseFrontmatter(md);
-          return {
-            id: meta.id || slug,
-            title: meta.title || name,
-            desc: meta.desc || meta.description || '',
-            type: meta.type || 'Guide',
-            difficulty: meta.difficulty || '',
-            url: meta.url || '',
-            cover: meta.cover || null,
-            video: meta.video || '',
-            gallery: parseGallery(meta.gallery),
-            steps: splitList(meta.steps),
-            quickLinks: parseQuickLinks(meta.quickLinks),
-            markdown: body.trim(),
-          };
-        } catch (e) {
-          return null;
-        }
-      }))).filter(Boolean);
-      if (loaded.length) DB.resources = loaded;
-    }
+  try {
+    const resp = await fetch((DB.site.repo || '') + 'content/' + item.contentPath);
+    if (!resp.ok) return '';
+    const md = await resp.text();
+    const { body } = parseFrontmatter(md);
+    const content = body.trim();
+    CONTENT_CACHE.set(item.contentPath, content);
+    return content;
   } catch (e) {
-    // ignore and use inlined DB
-    return;
+    console.error('Failed to fetch markdown:', e);
+    return '';
   }
 }

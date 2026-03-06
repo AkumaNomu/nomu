@@ -4,7 +4,9 @@
   "private": true,
   "scripts": {
     "build:css": "tailwindcss -c tailwind.config.js -i ./css/tailwind.src.css -o ./css/styles.css --minify",
-    "watch:css": "tailwindcss -c tailwind.config.js -i ./css/tailwind.src.css -o ./css/styles.css --watch"
+    "watch:css": "tailwindcss -c tailwind.config.js -i ./css/tailwind.src.css -o ./css/styles.css --watch",
+    "build:metadata": "node scripts/build-manifest.js",
+    "build": "npm run build:css && npm run build:metadata"
   },
   "devDependencies": {
     "autoprefixer": "^10.4.20",

@@ -331,7 +331,7 @@ function doHeaderReaction(pid, reaction) {
   syncHeaderReactionButtons(pid);
 }
 
-function loadArticle(id) {
+async function loadArticle(id) {
   const p = DB.posts.find(x => x.id === id);
   if (!p) return nav('blog');
 
@@ -382,9 +382,12 @@ function loadArticle(id) {
       </span>
     </div>`;
 
+  // Fetch markdown only when needed
+  const markdown = await fetchItemMarkdown(p);
+
   // Use unified markdown renderer (Prism + KaTeX)
   const body = document.getElementById('art-body');
-  renderMarkdown(p.markdown || '', body);
+  renderMarkdown(markdown || '', body);
 
   // Heading anchors
   body.querySelectorAll('h1,h2,h3,h4').forEach((h, i) => {
@@ -435,7 +438,7 @@ function renderResourceLinks(links, url) {
 }
 
 /* ─── Detail views ───────────────────────────────────────── */
-function loadProjectDetail(id) {
+async function loadProjectDetail(id) {
   const p = DB.projects.find(x => x.id === id);
   if (!p) return nav('projects');
 
@@ -468,12 +471,13 @@ function loadProjectDetail(id) {
   document.getElementById('proj-actions').innerHTML = detailActions(p, 'project');
   renderProjectShowcase(p);
 
+  const markdown = await fetchItemMarkdown(p);
   const body = document.getElementById('proj-body');
-  renderMarkdown(p.markdown || '', body);
+  renderMarkdown(markdown || '', body);
   bindInlineMedia(body);
 }
 
-function loadResourceDetail(id) {
+async function loadResourceDetail(id) {
   const r = DB.resources.find(x => x.id === id);
   if (!r) return nav('resources');
 
@@ -487,7 +491,8 @@ function loadResourceDetail(id) {
   document.getElementById('resd-steps').innerHTML   = renderResourceSteps(r.steps || []);
   document.getElementById('resd-links').innerHTML   = renderResourceLinks(r.quickLinks || [], r.url || '');
 
+  const markdown = await fetchItemMarkdown(r);
   const body = document.getElementById('resd-body');
-  renderMarkdown(r.markdown || '', body);
+  renderMarkdown(markdown || '', body);
   bindInlineMedia(body);
 }
