@@ -1,16 +1,78 @@
 /* ================================================================
-   SEARCH.JS - Terminal command palette (commands only)
+   SEARCH.JS - Hybrid terminal shell
 ================================================================ */
-
-/* --- State ------------------------------------------------------ */
-let SEARCH_FOCUS_IDX = -1;
-let SEARCH_ALL_ITEMS = [];
-let SEARCH_CMD_SUGGESTIONS = [];
-let HISTORY_IDX = -1;
 
 const TERMINAL_HISTORY_KEY = 'terminal_history';
 const LEGACY_HISTORY_KEY = 'search_history';
-let TERMINAL_HISTORY = [];
+const TERMINAL_PROMPT_FALLBACK = 'nomu@site:~$';
+const TERMINAL_MAX_HISTORY = 12;
+const TERMINAL_ACTIONS = new Map();
+
+const TERMINAL_STATE = {
+  transcript: [],
+  history: loadTerminalHistory(),
+  historyCursor: -1,
+  historyDraft: '',
+  buffer: '',
+  completions: [],
+  completionIndex: -1,
+  completionCycle: null,
+  booted: false,
+  scrollPending: false,
+};
+
+const COMMANDS = [
+  { cmd: 'help', args: '', desc: 'Show all commands', aliases: ['?'] },
+  { cmd: 'search', args: '<query>', desc: 'Search site content', aliases: ['find'] },
+  { cmd: 'open', args: '<url|page|name>', desc: 'Open a page, post, project, resource, tool, or URL', aliases: ['o'] },
+  { cmd: 'ls', args: '[tools|posts|projects|resources]', desc: 'List available items', aliases: ['list'] },
+  { cmd: 'history', args: '', desc: 'Show recent commands', aliases: [] },
+  { cmd: 'clear', args: '', desc: 'Clear the transcript', aliases: ['cls'] },
+  { cmd: 'volume', args: '<0-100>', desc: 'Set music volume', aliases: ['vol'] },
+  { cmd: 'song', args: '<next|prev|play|pause|toggle|name>', desc: 'Control music playback', aliases: ['music', 'track'] },
+  { cmd: 'sfx', args: 'on|off|1|0', desc: 'Toggle sound effects', aliases: ['sound'] },
+  { cmd: 'color', args: 'theme <name> | hex <#rrggbb>', desc: 'Set accent color', aliases: ['theme', 'accent'] },
+  { cmd: 'filter', args: 'blog|projects|resources ...', desc: 'Apply view filters', aliases: ['filters'] },
+  { cmd: 'favorites', args: 'tools <show|hide|toggle>', desc: 'Tools favorites filter', aliases: ['fav'] },
+  { cmd: 'whoami', args: '', desc: 'Show current user/site info', aliases: [] },
+  { cmd: 'time', args: '', desc: 'Show current local time', aliases: ['date'] },
+  { cmd: 'echo', args: '<text>', desc: 'Echo text back into the transcript', aliases: [] },
+  { cmd: 'ping', args: '', desc: 'Ping the app', aliases: [] },
+];
+
+const COMMAND_NAV_VIEWS = ['home', 'blog', 'projects', 'resources', 'tools', 'about'];
+const SONG_ACTIONS = ['next', 'prev', 'previous', 'skip', 'play', 'pause', 'toggle'];
+const LS_SCOPES = ['tools', 'posts', 'projects', 'resources'];
+
+const COMMAND_INDEX = new Map();
+COMMANDS.forEach(command => {
+  COMMAND_INDEX.set(command.cmd, command.cmd);
+  (command.aliases || []).forEach(alias => COMMAND_INDEX.set(alias, command.cmd));
+});
+
+const TERMINAL_DOM = {
+  modal: document.getElementById('search-modal'),
+  transcript: document.getElementById('search-transcript'),
+  input: document.getElementById('search-input'),
+  ghost: document.getElementById('search-ghost'),
+  completions: document.getElementById('search-completions'),
+  promptRow: document.getElementById('search-prompt-row'),
+  promptLabel: document.getElementById('search-prompt-label'),
+};
+
+function escHtml(value) {
+  return String(value || '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+function getPromptLabel() {
+  const author = (typeof DB !== 'undefined' && DB.site && DB.site.author) ? DB.site.author : 'nomu';
+  return `${String(author).toLowerCase()}@site:~$`;
+}
 
 function loadTerminalHistory() {
   const legacy = localStorage.getItem(LEGACY_HISTORY_KEY);
@@ -31,121 +93,42 @@ function loadTerminalHistory() {
 }
 
 function saveTerminalHistory() {
-  localStorage.setItem(TERMINAL_HISTORY_KEY, JSON.stringify(TERMINAL_HISTORY));
+  localStorage.setItem(TERMINAL_HISTORY_KEY, JSON.stringify(TERMINAL_STATE.history));
 }
 
-TERMINAL_HISTORY = loadTerminalHistory();
-
-const COMMANDS = [
-  { cmd: 'help',      args: '',                              desc: 'Show all commands', aliases: ['?'] },
-  { cmd: 'page',      args: '<view>',                        desc: 'Go to a page (home, blog, projects, resources, tools, about)', aliases: ['nav', 'goto'] },
-  { cmd: 'tool',      args: '<tool name>',                   desc: 'Open a tool', aliases: ['tools'] },
-  { cmd: 'blog',      args: '<post title>',                  desc: 'Open a blog post', aliases: ['post'] },
-  { cmd: 'project',   args: '<project title>',               desc: 'Open a project', aliases: ['proj'] },
-  { cmd: 'resource',  args: '<resource name>',               desc: 'Open a resource', aliases: ['res'] },
-  { cmd: 'volume',    args: '<0-100>',                       desc: 'Set music volume', aliases: ['vol'] },
-  { cmd: 'song',      args: '<next|prev|play|pause|toggle|name>', desc: 'Control music playback', aliases: ['music', 'track'] },
-  { cmd: 'sfx',       args: 'on|off|1|0',                    desc: 'Toggle sound effects', aliases: ['sound'] },
-  { cmd: 'color',     args: 'theme <name> | hex <#rrggbb>',  desc: 'Set accent color', aliases: ['theme', 'accent'] },
-  { cmd: 'filter',    args: 'blog|projects|resources ...',   desc: 'Apply view filters', aliases: ['filters'] },
-  { cmd: 'reading',   args: 'on|off|toggle',                 desc: 'Toggle reading mode', aliases: ['read'] },
-  { cmd: 'favorites', args: 'tools <show|hide|toggle>',      desc: 'Tools favorites filter', aliases: ['fav'] },
-];
-
-const COMMAND_NAV_VIEWS = ['home', 'blog', 'projects', 'resources', 'tools', 'about'];
-const SONG_ACTIONS = ['next', 'prev', 'previous', 'skip', 'play', 'pause', 'toggle'];
-
-const COMMAND_INDEX = new Map();
-COMMANDS.forEach(c => {
-  COMMAND_INDEX.set(c.cmd, c.cmd);
-  (c.aliases || []).forEach(a => COMMAND_INDEX.set(a, c.cmd));
-});
-
-/* --- Open / Close ------------------------------------------------ */
-function openSearch() {
-  const modal = document.getElementById('search-modal');
-  modal.classList.add('open');
-  document.body.classList.add('search-open');
-  playSfx('scan');
-  setTimeout(() => {
-    const inp = document.getElementById('search-input');
-    if (inp) inp.focus();
-    runTerminalIntro();
-  }, 60);
+function pushHistory(cmdLine) {
+  const cleaned = String(cmdLine || '').trim();
+  if (!cleaned) return;
+  TERMINAL_STATE.history = [cleaned, ...TERMINAL_STATE.history.filter(item => item !== cleaned)].slice(0, TERMINAL_MAX_HISTORY);
+  saveTerminalHistory();
 }
 
-function closeSearch(e) {
-  if (!e || e.target === document.getElementById('search-modal')) {
-    document.getElementById('search-modal').classList.remove('open');
-    document.body.classList.remove('search-open');
-    const inp = document.getElementById('search-input');
-    if (inp) inp.value = '';
-    document.getElementById('search-results').innerHTML = buildEmptyState();
-    SEARCH_FOCUS_IDX = -1;
-    SEARCH_ALL_ITEMS = [];
-    HISTORY_IDX = -1;
-  }
+function getDbList(key) {
+  return (typeof DB !== 'undefined' && Array.isArray(DB[key])) ? DB[key] : [];
 }
 
-function openTerminal() { openSearch(); }
-function closeTerminal(e) { closeSearch(e); }
-
-/* --- Intro / Empty ---------------------------------------------- */
-function escHtml(s) {
-  return String(s || '')
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#39;');
-}
-
-function runTerminalIntro() {
-  const results = document.getElementById('search-results');
-  const recents = TERMINAL_HISTORY.slice(0, 4).map(q =>
-    `<span class="stb-hist" onclick='searchFromHistory(${JSON.stringify(q)})'>${escHtml(q)}</span>`
-  ).join(' · ');
-
-  results.innerHTML = `
-    <div class="search-terminal-boot">
-      <div class="stb-line"><span class="stb-tag">SYS</span> :: Terminal subsystem online</div>
-      <div class="stb-line"><span class="stb-tag accent">RDY</span> :: Type <kbd>help</kbd> to list commands</div>
-      ${TERMINAL_HISTORY.length ? `<div class="stb-line"><span class="stb-tag dim">HIS</span> :: Recent: ${recents}</div>` : ''}
-    </div>`;
-}
-
-function buildEmptyState() {
-  return `<div class="search-empty">${TERMINAL_HISTORY.length
-    ? `<span>Last command: <em>${escHtml(TERMINAL_HISTORY[0])}</em></span>`
-    : '<span>Type a command or run <em>help</em></span>'}</div>`;
-}
-
-function searchFromHistory(q) {
-  const inp = document.getElementById('search-input');
-  if (inp) {
-    inp.value = q;
-    inp.dispatchEvent(new Event('input'));
-  }
-}
-
-/* --- Icon map ---------------------------------------------------- */
-const SEARCH_ICONS = {
-  cmd: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>`,
-};
-
-/* --- Command helpers -------------------------------------------- */
 function getThemeList() {
   return (typeof THEMES !== 'undefined' && Array.isArray(THEMES)) ? THEMES : [];
 }
 
-function resolveThemeIndex(query) {
-  const needle = String(query || '').trim().toLowerCase();
-  if (!needle) return -1;
-  const themes = getThemeList();
-  let idx = themes.findIndex(t => (t.name || '').toLowerCase() === needle);
-  if (idx !== -1) return idx;
-  idx = themes.findIndex(t => (t.name || '').toLowerCase().startsWith(needle));
-  return idx;
+function isCaretAtEnd() {
+  if (!TERMINAL_DOM.input) return true;
+  return TERMINAL_DOM.input.selectionStart === TERMINAL_DOM.input.value.length
+    && TERMINAL_DOM.input.selectionEnd === TERMINAL_DOM.input.value.length;
+}
+
+function setCaret(pos) {
+  if (!TERMINAL_DOM.input) return;
+  const next = Math.max(0, Math.min(TERMINAL_DOM.input.value.length, pos));
+  TERMINAL_DOM.input.focus();
+  TERMINAL_DOM.input.setSelectionRange(next, next);
+}
+
+function focusInputAtEnd() {
+  if (!TERMINAL_DOM.input) return;
+  TERMINAL_DOM.input.focus();
+  const end = TERMINAL_DOM.input.value.length;
+  TERMINAL_DOM.input.setSelectionRange(end, end);
 }
 
 function normalizeCommandToken(token) {
@@ -153,24 +136,45 @@ function normalizeCommandToken(token) {
 }
 
 function findCommand(token) {
-  const norm = normalizeCommandToken(token);
-  return COMMANDS.find(c => c.cmd === norm) || null;
+  const normalized = normalizeCommandToken(String(token || '').toLowerCase());
+  return COMMANDS.find(command => command.cmd === normalized) || null;
+}
+
+function rankMatches(items, getter, query) {
+  const needle = String(query || '').trim().toLowerCase();
+  if (!needle) return items.slice();
+  const exact = [];
+  const starts = [];
+  const contains = [];
+  items.forEach(item => {
+    const hay = String(getter(item) || '').toLowerCase();
+    if (!hay) return;
+    if (hay === needle) exact.push(item);
+    else if (hay.startsWith(needle)) starts.push(item);
+    else if (hay.includes(needle)) contains.push(item);
+  });
+  return [...exact, ...starts, ...contains];
 }
 
 function findBestMatch(list, query, fields) {
   const needle = String(query || '').trim().toLowerCase();
   if (!needle) return null;
-  const fieldVal = (item, field) => String(item[field] || '').toLowerCase();
-  const exact = list.find(item => fields.some(f => fieldVal(item, f) === needle));
+  const fieldValue = (item, field) => String(item[field] || '').toLowerCase();
+  const exact = list.find(item => fields.some(field => fieldValue(item, field) === needle));
   if (exact) return exact;
-  const starts = list.find(item => fields.some(f => fieldVal(item, f).startsWith(needle)));
+  const starts = list.find(item => fields.some(field => fieldValue(item, field).startsWith(needle)));
   if (starts) return starts;
-  return list.find(item => fields.some(f => fieldVal(item, f).includes(needle))) || null;
+  return list.find(item => fields.some(field => fieldValue(item, field).includes(needle))) || null;
+}
+
+function findExactFieldMatch(list, query, fields) {
+  const needle = String(query || '').trim().toLowerCase();
+  if (!needle) return null;
+  return list.find(item => fields.some(field => String(item[field] || '').trim().toLowerCase() === needle)) || null;
 }
 
 function looksLikeHex(value) {
-  const v = String(value || '').trim();
-  return /^#?[0-9a-fA-F]{6}$/.test(v);
+  return /^#?[0-9a-fA-F]{6}$/.test(String(value || '').trim());
 }
 
 function hexToHsl(hex) {
@@ -202,646 +206,1467 @@ function hexToHsl(hex) {
 function applyCustomTheme(hex) {
   const color = hex.startsWith('#') ? hex : `#${hex}`;
   const hsl = hexToHsl(color);
-  const r = document.documentElement;
-  r.style.setProperty('--ah', hsl.h);
-  r.style.setProperty('--as', `${hsl.s}%`);
-  r.style.setProperty('--al', `${hsl.l}%`);
-  r.style.setProperty('--accent', `hsl(${hsl.h},${hsl.s}%,${hsl.l}%)`);
-  r.style.setProperty('--accent-dim', `hsl(${hsl.h},${hsl.s}%,32%)`);
-  r.style.setProperty('--accent-glow', `hsl(${hsl.h},${hsl.s}%,${hsl.l}%,0.2)`);
-  r.style.setProperty('--accent-glow2', `hsl(${hsl.h},${hsl.s}%,${hsl.l}%,0.07)`);
-  r.style.setProperty('--accent-subtle', `hsl(${hsl.h},50%,9%)`);
-  r.style.setProperty('--border-a', `hsl(${hsl.h},${hsl.s}%,${hsl.l}%,0.26)`);
-  document.querySelectorAll('.swatch').forEach(s => s.classList.remove('active'));
+  const root = document.documentElement;
+  root.style.setProperty('--ah', hsl.h);
+  root.style.setProperty('--as', `${hsl.s}%`);
+  root.style.setProperty('--al', `${hsl.l}%`);
+  root.style.setProperty('--accent', `hsl(${hsl.h},${hsl.s}%,${hsl.l}%)`);
+  root.style.setProperty('--accent-dim', `hsl(${hsl.h},${hsl.s}%,32%)`);
+  root.style.setProperty('--accent-glow', `hsl(${hsl.h},${hsl.s}%,${hsl.l}%,0.2)`);
+  root.style.setProperty('--accent-glow2', `hsl(${hsl.h},${hsl.s}%,${hsl.l}%,0.07)`);
+  root.style.setProperty('--accent-subtle', `hsl(${hsl.h},50%,9%)`);
+  root.style.setProperty('--border-a', `hsl(${hsl.h},${hsl.s}%,${hsl.l}%,0.26)`);
+  document.querySelectorAll('.swatch').forEach(swatch => swatch.classList.remove('active'));
   localStorage.setItem('themeIdx', '-1');
   localStorage.setItem('theme_custom', color);
 }
 
-function fillSearchInput(val) {
-  const inp = document.getElementById('search-input');
-  if (!inp) return;
-  inp.value = val;
-  inp.focus();
-  inp.dispatchEvent(new Event('input'));
+function resolveThemeIndex(query) {
+  const needle = String(query || '').trim().toLowerCase();
+  if (!needle) return -1;
+  const themes = getThemeList();
+  let idx = themes.findIndex(theme => String(theme.name || '').toLowerCase() === needle);
+  if (idx !== -1) return idx;
+  idx = themes.findIndex(theme => String(theme.name || '').toLowerCase().startsWith(needle));
+  if (idx !== -1) return idx;
+  return themes.findIndex(theme => String(theme.name || '').toLowerCase().includes(needle));
 }
 
-function getAutocompleteValue() {
-  if (SEARCH_FOCUS_IDX !== -1) return SEARCH_ALL_ITEMS[SEARCH_FOCUS_IDX]?.value;
-  return SEARCH_ALL_ITEMS[0]?.value;
+function normalizeExternalUrl(value) {
+  const raw = String(value || '').trim();
+  if (!raw) return '';
+  if (/^https?:\/\//i.test(raw) || /^mailto:/i.test(raw)) return raw;
+  if (/^www\./i.test(raw)) return `https://${raw}`;
+  return '';
 }
 
-function makeFillSuggestion(cmdLine, sub, badge = 'CMD') {
-  const value = cmdLine.endsWith(' ') ? cmdLine : `${cmdLine} `;
-  return {
-    icon: 'cmd',
-    title: cmdLine,
-    sub,
-    act: `fillSearchInput(${JSON.stringify(`${value}`)})`,
-    badge,
-    value: value.trim(),
-  };
+function setSfxEnabledSilent(enabled) {
+  SFX_ENABLED = !!enabled;
+  if (typeof window.__setSynthSfxEnabled === 'function') window.__setSynthSfxEnabled(SFX_ENABLED);
+  else localStorage.setItem('sfx_enabled', JSON.stringify(SFX_ENABLED));
+  document.getElementById('sfx-toggle-btn')?.classList.toggle('active', SFX_ENABLED);
 }
 
-function makeRunSuggestion(cmdLine, sub, badge = 'RUN') {
-  return {
-    icon: 'cmd',
-    title: cmdLine,
-    sub,
-    act: `executeCommand(${JSON.stringify(`${cmdLine}`)})`,
-    badge,
-    value: cmdLine.trim(),
-  };
+function formatLocalTime(now = new Date()) {
+  const pad = value => String(value).padStart(2, '0');
+  const offsetMinutes = -now.getTimezoneOffset();
+  const sign = offsetMinutes >= 0 ? '+' : '-';
+  const offsetAbs = Math.abs(offsetMinutes);
+  const offsetHours = Math.floor(offsetAbs / 60);
+  const offsetMins = offsetAbs % 60;
+  return `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())} ${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())} UTC${sign}${pad(offsetHours)}:${pad(offsetMins)}`;
 }
 
-function collectCommandSuggestions(q) {
-  const raw = String(q || '');
-  const tokens = raw.trim().split(/\s+/).filter(Boolean);
-  const hasTrailingSpace = /\s$/.test(raw);
+function makeCompletion({ insertText, label, meta, badge = 'CMD', replaceStart, replaceEnd, appendSpace = true }) {
+  return { insertText, label, meta, badge, replaceStart, replaceEnd, appendSpace };
+}
+
+function commandEntry(text) {
+  return { kind: 'command', text };
+}
+
+function lineEntry(text, tone = 'default', tag = 'OUT') {
+  return { kind: 'line', text, tone, tag };
+}
+
+function listEntry(title, items, tone = 'default') {
+  return { kind: 'list', title, items, tone };
+}
+
+function registerAction(action) {
+  const id = `terminal-action-${TERMINAL_ACTIONS.size + 1}`;
+  TERMINAL_ACTIONS.set(id, action);
+  return id;
+}
+
+function applyCompletionCandidate(candidate, appendSpace = candidate.appendSpace) {
+  const nextValue = `${TERMINAL_STATE.buffer.slice(0, candidate.replaceStart)}${candidate.insertText}${TERMINAL_STATE.buffer.slice(candidate.replaceEnd)}`;
+  return appendSpace && !/\s$/.test(nextValue) ? `${nextValue} ` : nextValue;
+}
+
+function longestCommonPrefix(values) {
+  if (!values.length) return '';
+  const lower = values.map(value => String(value || '').toLowerCase());
+  let idx = 0;
+  while (idx < lower[0].length && lower.every(value => value[idx] === lower[0][idx])) idx += 1;
+  return String(values[0] || '').slice(0, idx);
+}
+
+function buildCommandCandidates(query, replaceStart, replaceEnd) {
+  const needle = String(query || '').trim().toLowerCase();
+  return COMMANDS
+    .filter(command => {
+      if (!needle) return true;
+      if (command.cmd.startsWith(needle)) return true;
+      return (command.aliases || []).some(alias => alias.startsWith(needle));
+    })
+    .map(command => {
+      const aliasText = (command.aliases || []).length ? `Aliases: ${(command.aliases || []).join(', ')}` : 'No aliases';
+      return makeCompletion({
+        insertText: command.cmd,
+        label: command.cmd,
+        meta: `${command.desc}${command.args ? ` (${command.args})` : ''} · ${aliasText}`,
+        badge: 'CMD',
+        replaceStart,
+        replaceEnd,
+      });
+    });
+}
+
+function buildNameCandidates(raw, replaceStart, items, getName, metaBuilder, badge, limit = 8) {
+  const query = raw.trim();
+  return rankMatches(items, getName, query)
+    .slice(0, limit)
+    .map(item => makeCompletion({
+      insertText: getName(item),
+      label: getName(item),
+      meta: metaBuilder(item),
+      badge,
+      replaceStart,
+      replaceEnd: TERMINAL_STATE.buffer.length,
+    }));
+}
+
+function buildSearchQueryCandidates(argRaw, replaceStart) {
+  const query = String(argRaw || '').trim().toLowerCase();
+  if (!query) return [];
+  const pool = [
+    ...getDbList('posts').map(item => ({ label: item.title, meta: item.excerpt || item.description || 'Blog post', badge: 'POST' })),
+    ...getDbList('projects').map(item => ({ label: item.name, meta: item.desc || 'Project', badge: 'PROJ' })),
+    ...getDbList('resources').map(item => ({ label: item.title, meta: item.desc || 'Resource', badge: 'RES' })),
+    ...getDbList('tools').map(item => ({ label: item.name, meta: item.desc || 'Tool', badge: 'TOOL' })),
+  ];
+  return rankMatches(pool, item => item.label, query)
+    .slice(0, 8)
+    .map(item => makeCompletion({
+      insertText: item.label,
+      label: item.label,
+      meta: item.meta,
+      badge: item.badge,
+      replaceStart,
+      replaceEnd: TERMINAL_STATE.buffer.length,
+    }));
+}
+
+function buildOpenCandidates(argRaw, replaceStart) {
+  const query = String(argRaw || '').trim().toLowerCase();
+  const pool = [
+    ...COMMAND_NAV_VIEWS.map(item => ({ label: item, meta: `Go to ${item}`, badge: 'NAV' })),
+    ...getDbList('posts').map(item => ({ label: item.title, meta: item.excerpt || item.description || 'Blog post', badge: 'POST' })),
+    ...getDbList('projects').map(item => ({ label: item.name, meta: item.desc || 'Project', badge: 'PROJ' })),
+    ...getDbList('resources').map(item => ({ label: item.title, meta: item.desc || 'Resource', badge: 'RES' })),
+    ...getDbList('tools').map(item => ({ label: item.name, meta: item.desc || 'Tool', badge: 'TOOL' })),
+  ];
+
+  return rankMatches(pool, item => item.label, query)
+    .slice(0, 8)
+    .map(item => makeCompletion({
+      insertText: item.label,
+      label: item.label,
+      meta: item.meta,
+      badge: item.badge,
+      replaceStart,
+      replaceEnd: TERMINAL_STATE.buffer.length,
+    }));
+}
+
+function buildColorCandidates(argRaw, commandSpan) {
+  const tokens = argRaw.trim().split(/\s+/).filter(Boolean);
+  const hasTrailing = /\s$/.test(argRaw);
+  const bufferLength = TERMINAL_STATE.buffer.length;
 
   if (!tokens.length) {
-    return COMMANDS.map(c => makeFillSuggestion(c.cmd, `${c.desc}${c.args ? ` (${c.args})` : ''}`));
+    return [
+      makeCompletion({ insertText: 'theme', label: 'theme', meta: 'Pick a saved theme', badge: 'MODE', replaceStart: commandSpan, replaceEnd: bufferLength }),
+      makeCompletion({ insertText: 'hex', label: 'hex', meta: 'Use a custom hex color', badge: 'MODE', replaceStart: commandSpan, replaceEnd: bufferLength }),
+    ];
   }
 
-  const tokenRaw = tokens[0].toLowerCase();
-  const tokenNorm = normalizeCommandToken(tokenRaw);
-  const argText = tokens.slice(1).join(' ');
-  const argLower = argText.toLowerCase();
-
-  if (tokens.length === 1 && !hasTrailingSpace) {
-    return COMMANDS
-      .filter(c =>
-        c.cmd.startsWith(tokenNorm) ||
-        (c.aliases || []).some(a => a.startsWith(tokenRaw)) ||
-        c.desc.toLowerCase().includes(tokenNorm)
-      )
-      .map(c => makeFillSuggestion(c.cmd, `${c.desc}${c.args ? ` (${c.args})` : ''}`));
+  if (tokens.length === 1 && !hasTrailing) {
+    return ['theme', 'hex']
+      .filter(mode => mode.startsWith(tokens[0].toLowerCase()))
+      .map(mode => makeCompletion({
+        insertText: mode,
+        label: mode,
+        meta: mode === 'theme' ? 'Pick a saved theme' : 'Use a custom hex color',
+        badge: 'MODE',
+        replaceStart: commandSpan,
+        replaceEnd: bufferLength,
+      }));
   }
 
-  switch (tokenNorm) {
-    case 'page':
-      return COMMAND_NAV_VIEWS
-        .filter(v => v.includes(argLower))
-        .map(v => makeRunSuggestion(`page ${v}`, `Go to ${v}`, 'NAV'));
-    case 'tool':
-      return (DB.tools || [])
-        .filter(t => (t.name || '').toLowerCase().includes(argLower))
-        .slice(0, 8)
-        .map(t => makeRunSuggestion(`tool ${t.name}`, `Open ${t.name}`, 'TOOL'));
-    case 'blog':
-      return (DB.posts || [])
-        .filter(p => (p.title || '').toLowerCase().includes(argLower))
-        .slice(0, 8)
-        .map(p => makeRunSuggestion(`blog ${p.title}`, `Open ${p.title}`, 'POST'));
-    case 'project':
-      return (DB.projects || [])
-        .filter(p => (p.name || '').toLowerCase().includes(argLower))
-        .slice(0, 8)
-        .map(p => makeRunSuggestion(`project ${p.name}`, `Open ${p.name}`, 'PROJ'));
-    case 'resource':
-      return (DB.resources || [])
-        .filter(r => (r.title || '').toLowerCase().includes(argLower))
-        .slice(0, 8)
-        .map(r => makeRunSuggestion(`resource ${r.title}`, `Open ${r.title}`, 'RES'));
+  const mode = tokens[0].toLowerCase();
+  if (mode === 'theme') {
+    const replaceStart = (/^\s*\S+\s+theme\s*/i.exec(TERMINAL_STATE.buffer) || [''])[0].length;
+    const prefix = argRaw.replace(/^theme\b\s*/i, '');
+    return rankMatches(getThemeList(), theme => theme.name, prefix)
+      .map(theme => makeCompletion({
+        insertText: theme.name,
+        label: theme.name,
+        meta: `Accent ${theme.c || ''}`.trim(),
+        badge: 'THEME',
+        replaceStart,
+        replaceEnd: bufferLength,
+      }));
+  }
+
+  if (mode === 'hex') {
+    const replaceStart = (/^\s*\S+\s+hex\s*/i.exec(TERMINAL_STATE.buffer) || [''])[0].length;
+    return ['#00d4b4', '#9f6ef7', '#22c55e']
+      .filter(value => value.toLowerCase().startsWith(argRaw.replace(/^hex\b\s*/i, '').toLowerCase()))
+      .map(value => makeCompletion({
+        insertText: value,
+        label: value,
+        meta: 'Custom accent color',
+        badge: 'HEX',
+        replaceStart,
+        replaceEnd: bufferLength,
+      }));
+  }
+
+  return [];
+}
+
+function buildFilterCandidates(argRaw, commandSpan) {
+  const tokens = argRaw.trim().split(/\s+/).filter(Boolean);
+  const hasTrailing = /\s$/.test(argRaw);
+  const bufferLength = TERMINAL_STATE.buffer.length;
+
+  if (!tokens.length) {
+    return ['blog', 'projects', 'resources'].map(scope => makeCompletion({
+      insertText: scope,
+      label: scope,
+      meta: `Filter ${scope}`,
+      badge: 'SCOPE',
+      replaceStart: commandSpan,
+      replaceEnd: bufferLength,
+    }));
+  }
+
+  if (tokens.length === 1 && !hasTrailing) {
+    return ['blog', 'projects', 'resources']
+      .filter(scope => scope.startsWith(tokens[0].toLowerCase()))
+      .map(scope => makeCompletion({
+        insertText: scope,
+        label: scope,
+        meta: `Filter ${scope}`,
+        badge: 'SCOPE',
+        replaceStart: commandSpan,
+        replaceEnd: bufferLength,
+      }));
+  }
+
+  const scope = tokens[0].toLowerCase();
+  if (scope === 'blog') {
+    const replaceStart = (/^\s*\S+\s+blog\s*/i.exec(TERMINAL_STATE.buffer) || [''])[0].length;
+    const prefix = argRaw.replace(/^blog\b\s*/i, '');
+    return rankMatches(['all', ...getAllTags()], tag => tag, prefix)
+      .slice(0, 8)
+      .map(tag => makeCompletion({
+        insertText: tag,
+        label: tag,
+        meta: 'Blog tag',
+        badge: 'TAG',
+        replaceStart,
+        replaceEnd: bufferLength,
+      }));
+  }
+
+  if (scope === 'projects') {
+    if ((tokens.length === 1 && hasTrailing) || (tokens.length === 2 && !hasTrailing)) {
+      const replaceStart = (/^\s*\S+\s+projects\s*/i.exec(TERMINAL_STATE.buffer) || [''])[0].length;
+      const prefix = tokens.length === 2 && !hasTrailing ? tokens[1] : '';
+      return ['category', 'focus']
+        .filter(mode => mode.startsWith(prefix.toLowerCase()))
+        .map(mode => makeCompletion({
+          insertText: mode,
+          label: mode,
+          meta: `Projects ${mode}`,
+          badge: 'MODE',
+          replaceStart,
+          replaceEnd: bufferLength,
+        }));
+    }
+
+    const mode = String(tokens[1] || '').toLowerCase();
+    if (mode === 'category') {
+      const replaceStart = (/^\s*\S+\s+projects\s+category\s*/i.exec(TERMINAL_STATE.buffer) || [''])[0].length;
+      const prefix = argRaw.replace(/^projects\s+category\b\s*/i, '');
+      const categories = typeof PROJECT_CATEGORIES !== 'undefined' ? PROJECT_CATEGORIES.filter(cat => cat !== 'All') : [];
+      return rankMatches(categories, value => value, prefix).map(value => makeCompletion({
+        insertText: value,
+        label: value,
+        meta: 'Project category',
+        badge: 'CAT',
+        replaceStart,
+        replaceEnd: bufferLength,
+      }));
+    }
+
+    if (mode === 'focus') {
+      const replaceStart = (/^\s*\S+\s+projects\s+focus\s*/i.exec(TERMINAL_STATE.buffer) || [''])[0].length;
+      const prefix = argRaw.replace(/^projects\s+focus\b\s*/i, '');
+      const focusMap = typeof PROJECT_FOCUS_MAP !== 'undefined' ? PROJECT_FOCUS_MAP : {};
+      const allFocus = [...new Set(Object.values(focusMap).flat().filter(Boolean).filter(item => item !== 'All'))];
+      return rankMatches(allFocus, value => value, prefix).map(value => makeCompletion({
+        insertText: value,
+        label: value,
+        meta: 'Project focus',
+        badge: 'FOCUS',
+        replaceStart,
+        replaceEnd: bufferLength,
+      }));
+    }
+  }
+
+  if (scope === 'resources') {
+    if ((tokens.length === 1 && hasTrailing) || (tokens.length === 2 && !hasTrailing)) {
+      const replaceStart = (/^\s*\S+\s+resources\s*/i.exec(TERMINAL_STATE.buffer) || [''])[0].length;
+      const prefix = tokens.length === 2 && !hasTrailing ? tokens[1] : '';
+      return ['type']
+        .filter(mode => mode.startsWith(prefix.toLowerCase()))
+        .map(mode => makeCompletion({
+          insertText: mode,
+          label: mode,
+          meta: 'Resource type',
+          badge: 'MODE',
+          replaceStart,
+          replaceEnd: bufferLength,
+        }));
+    }
+
+    if (String(tokens[1] || '').toLowerCase() === 'type') {
+      const replaceStart = (/^\s*\S+\s+resources\s+type\s*/i.exec(TERMINAL_STATE.buffer) || [''])[0].length;
+      const prefix = argRaw.replace(/^resources\s+type\b\s*/i, '');
+      const types = typeof RESOURCE_TYPES !== 'undefined' ? RESOURCE_TYPES.filter(type => type !== 'All') : [];
+      return rankMatches(types, value => value, prefix).map(value => makeCompletion({
+        insertText: value,
+        label: value,
+        meta: 'Resource type',
+        badge: 'TYPE',
+        replaceStart,
+        replaceEnd: bufferLength,
+      }));
+    }
+  }
+
+  return [];
+}
+
+function buildFavoritesCandidates(argRaw, commandSpan) {
+  const tokens = argRaw.trim().split(/\s+/).filter(Boolean);
+  const hasTrailing = /\s$/.test(argRaw);
+  const bufferLength = TERMINAL_STATE.buffer.length;
+
+  if (!tokens.length) {
+    return [
+      makeCompletion({
+        insertText: 'tools',
+        label: 'tools',
+        meta: 'Filter the tools rail favorites view',
+        badge: 'SCOPE',
+        replaceStart: commandSpan,
+        replaceEnd: bufferLength,
+      }),
+    ];
+  }
+
+  if (tokens.length === 1 && !hasTrailing) {
+    return ['tools']
+      .filter(scope => scope.startsWith(tokens[0].toLowerCase()))
+      .map(scope => makeCompletion({
+        insertText: scope,
+        label: scope,
+        meta: 'Filter the tools rail favorites view',
+        badge: 'SCOPE',
+        replaceStart: commandSpan,
+        replaceEnd: bufferLength,
+      }));
+  }
+
+  if (String(tokens[0] || '').toLowerCase() === 'tools') {
+    const replaceStart = (/^\s*\S+\s+tools\s*/i.exec(TERMINAL_STATE.buffer) || [''])[0].length;
+    const prefix = argRaw.replace(/^tools\b\s*/i, '');
+    return ['show', 'hide', 'toggle']
+      .filter(action => action.startsWith(prefix.toLowerCase()))
+      .map(action => makeCompletion({
+        insertText: action,
+        label: action,
+        meta: `Favorites ${action}`,
+        badge: 'FAV',
+        replaceStart,
+        replaceEnd: bufferLength,
+      }));
+  }
+
+  return [];
+}
+
+function buildSongCandidates(argRaw, commandSpan) {
+  const replaceStart = commandSpan;
+  const bufferLength = TERMINAL_STATE.buffer.length;
+  const prefix = String(argRaw || '').trim();
+  const actionCandidates = rankMatches(SONG_ACTIONS, value => value, prefix).map(value => makeCompletion({
+    insertText: value,
+    label: value,
+    meta: `Music ${value}`,
+    badge: 'MUSIC',
+    replaceStart,
+    replaceEnd: bufferLength,
+  }));
+  const trackCandidates = rankMatches(getDbList('music'), item => item.title, prefix)
+    .slice(0, 6)
+    .map(item => makeCompletion({
+      insertText: item.title,
+      label: item.title,
+      meta: item.artist || 'Track',
+      badge: 'TRACK',
+      replaceStart,
+      replaceEnd: bufferLength,
+    }));
+  return [...actionCandidates, ...trackCandidates];
+}
+
+function buildArgumentCompletions(commandName, argRaw, commandSpan) {
+  const bufferLength = TERMINAL_STATE.buffer.length;
+  switch (commandName) {
+    case 'search':
+      return buildSearchQueryCandidates(argRaw, commandSpan);
+    case 'open':
+      return buildOpenCandidates(argRaw, commandSpan);
     case 'volume':
       return [0, 25, 50, 75, 100]
-        .filter(v => String(v).startsWith(argLower))
-        .map(v => makeRunSuggestion(`volume ${v}`, `Set volume to ${v}`, 'VOL'));
+        .filter(value => String(value).startsWith(String(argRaw || '').trim()))
+        .map(value => makeCompletion({
+          insertText: String(value),
+          label: String(value),
+          meta: `Set volume to ${value}%`,
+          badge: 'VOL',
+          replaceStart: commandSpan,
+          replaceEnd: bufferLength,
+        }));
     case 'song':
-      if (!argLower || SONG_ACTIONS.some(a => a.startsWith(argLower))) {
-        const actions = SONG_ACTIONS
-          .filter(a => a.startsWith(argLower))
-          .map(a => makeRunSuggestion(`song ${a}`, `Music ${a}`, 'MUSIC'));
-        const tracks = (DB.music || [])
-          .filter(t => (t.title || '').toLowerCase().includes(argLower))
-          .slice(0, 6)
-          .map(t => makeRunSuggestion(`song ${t.title}`, `Play ${t.title}`, 'TRACK'));
-        return [...actions, ...tracks];
-      }
-      return (DB.music || [])
-        .filter(t => (t.title || '').toLowerCase().includes(argLower))
-        .slice(0, 8)
-        .map(t => makeRunSuggestion(`song ${t.title}`, `Play ${t.title}`, 'TRACK'));
+      return buildSongCandidates(argRaw, commandSpan);
     case 'sfx':
       return ['on', 'off', '1', '0']
-        .filter(v => v.includes(argLower))
-        .map(v => makeRunSuggestion(`sfx ${v}`, `SFX ${v}`, 'SFX'));
+        .filter(value => value.startsWith(String(argRaw || '').trim().toLowerCase()))
+        .map(value => makeCompletion({
+          insertText: value,
+          label: value,
+          meta: `Sound effects ${value}`,
+          badge: 'SFX',
+          replaceStart: commandSpan,
+          replaceEnd: bufferLength,
+        }));
     case 'color':
-      if (argLower.startsWith('theme')) {
-        const name = argLower.replace(/^theme\s*/, '');
-        return getThemeList()
-          .filter(t => (t.name || '').toLowerCase().includes(name))
-          .map(t => makeRunSuggestion(`color theme ${t.name}`, `Theme ${t.name}`, 'THEME'));
-      }
-      if (argLower.startsWith('hex')) {
-        return [makeRunSuggestion('color hex #00d4b4', 'Set custom hex color', 'HEX')];
-      }
-      return [
-        makeFillSuggestion('color theme ', 'Theme name'),
-        makeFillSuggestion('color hex ', 'Custom hex color'),
-      ];
+      return buildColorCandidates(argRaw, commandSpan);
     case 'filter':
-      if (!argLower) {
-        return [
-          makeFillSuggestion('filter blog ', 'Filter blog by tag'),
-          makeFillSuggestion('filter projects category ', 'Filter projects by category'),
-          makeFillSuggestion('filter projects focus ', 'Filter projects by focus'),
-          makeFillSuggestion('filter resources type ', 'Filter resources by type'),
-        ];
-      }
-      if (argLower.startsWith('blog')) {
-        const q2 = argLower.replace(/^blog\s*/, '');
-        return ['all', ...getAllTags()]
-          .filter(t => t.toLowerCase().includes(q2))
-          .slice(0, 8)
-          .map(t => makeRunSuggestion(`filter blog ${t}`, `Blog: ${t}`, 'TAG'));
-      }
-      if (argLower.startsWith('projects category')) {
-        const q2 = argLower.replace(/^projects category\s*/, '');
-        const cats = typeof PROJECT_CATEGORIES !== 'undefined' ? PROJECT_CATEGORIES : ['All'];
-        return cats
-          .filter(c => c.toLowerCase().includes(q2))
-          .map(c => makeRunSuggestion(`filter projects category ${c}`, `Projects: ${c}`, 'CAT'));
-      }
-      if (argLower.startsWith('projects focus')) {
-        const q2 = argLower.replace(/^projects focus\s*/, '');
-        const focusMap = typeof PROJECT_FOCUS_MAP !== 'undefined' ? PROJECT_FOCUS_MAP : {};
-        const allFocus = Object.values(focusMap).flat().filter(Boolean);
-        return allFocus
-          .filter(f => f.toLowerCase().includes(q2))
-          .map(f => makeRunSuggestion(`filter projects focus ${f}`, `Focus: ${f}`, 'FOCUS'));
-      }
-      if (argLower.startsWith('resources type')) {
-        const q2 = argLower.replace(/^resources type\s*/, '');
-        const types = typeof RESOURCE_TYPES !== 'undefined' ? RESOURCE_TYPES : ['All'];
-        return types
-          .filter(t => t.toLowerCase().includes(q2))
-          .map(t => makeRunSuggestion(`filter resources type ${t}`, `Resources: ${t}`, 'TYPE'));
-      }
-      return [];
-    case 'reading':
-      return ['on', 'off', 'toggle']
-        .filter(v => v.includes(argLower))
-        .map(v => makeRunSuggestion(`reading ${v}`, `Reading mode ${v}`, 'READ'));
+      return buildFilterCandidates(argRaw, commandSpan);
     case 'favorites':
-      if (!argLower) return [makeFillSuggestion('favorites tools ', 'Show or hide tools favorites filter')];
-      return ['show', 'hide', 'toggle']
-        .filter(v => v.includes(argLower.replace('tools ', '')))
-        .map(v => makeRunSuggestion(`favorites tools ${v}`, `Favorites ${v}`, 'FAV'));
-    case 'help':
-      return [makeRunSuggestion('help', 'Show all commands', 'HELP')];
+      return buildFavoritesCandidates(argRaw, commandSpan);
+    case 'ls':
+      return LS_SCOPES
+        .filter(value => value.startsWith(String(argRaw || '').trim().toLowerCase()))
+        .map(value => makeCompletion({
+          insertText: value,
+          label: value,
+          meta: `List ${value}`,
+          badge: 'LS',
+          replaceStart: commandSpan,
+          replaceEnd: bufferLength,
+        }));
     default:
-      return COMMANDS
-        .filter(c => c.cmd.includes(tokenNorm) || (c.aliases || []).some(a => a.includes(tokenRaw)))
-        .map(c => makeFillSuggestion(c.cmd, `${c.desc}${c.args ? ` (${c.args})` : ''}`));
+      return [];
   }
 }
 
-function collectToolSuggestions(raw) {
-  const text = String(raw || '').trim();
-  const lower = text.toLowerCase();
-  let query = text;
-  if (lower.startsWith('tool ')) query = text.slice(5);
-  else if (lower.startsWith('tools ')) query = text.slice(6);
-  else if (lower === 'tool' || lower === 'tools') query = '';
-  const needle = query.toLowerCase();
-  return (DB.tools || [])
-    .filter(t => (t.name || '').toLowerCase().includes(needle))
-    .slice(0, 8)
-    .map(t => makeRunSuggestion(`tool ${t.name}`, `Open ${t.name}`, 'TOOL'));
+function buildCompletions(value) {
+  const raw = String(value || '');
+  const trimmed = raw.trim();
+  const leadingSpaces = (raw.match(/^\s*/) || [''])[0].length;
+  if (!trimmed) {
+    return buildCommandCandidates('', leadingSpaces, raw.length);
+  }
+
+  const hasTrailing = /\s$/.test(raw);
+  if (!hasTrailing && !/\s/.test(trimmed)) {
+    return buildCommandCandidates(trimmed, leadingSpaces, raw.length);
+  }
+
+  const firstTokenMatch = raw.trimStart().match(/^\S+/);
+  const firstToken = firstTokenMatch ? firstTokenMatch[0] : '';
+  const command = findCommand(firstToken);
+  if (!command) return [];
+
+  const commandSpan = (/^\s*\S+\s*/.exec(raw) || [''])[0].length;
+  const argRaw = raw.slice(commandSpan);
+  return buildArgumentCompletions(command.cmd, argRaw, commandSpan);
 }
 
-function renderGroups(groups) {
-  SEARCH_ALL_ITEMS = [];
-  let html = '';
-  let totalCount = 0;
+function updateCompletionState() {
+  if (TERMINAL_STATE.completionCycle) {
+    TERMINAL_STATE.completions = TERMINAL_STATE.completionCycle.candidates;
+    TERMINAL_STATE.completionIndex = TERMINAL_STATE.completionCycle.index;
+    return;
+  }
 
-  Object.entries(groups).forEach(([group, items]) => {
-    if (!items.length) return;
-    totalCount += items.length;
-    html += `<div class="s-group-label">
-      <span class="s-group-arrow">></span> ${group}
-      <span class="s-group-count">${items.length}</span>
-    </div>`;
-    html += items.map(it => {
-      const idx = SEARCH_ALL_ITEMS.length;
-      SEARCH_ALL_ITEMS.push(it);
-      return `<div class="s-item" data-idx="${idx}" onclick="${it.act}" onmouseover="focusSearchItem(${idx})">
-        <div class="s-item-icon">${SEARCH_ICONS[it.icon] || ''}</div>
-        <div class="s-item-body">
-          <div class="s-title">${escHtml(it.title)}</div>
-          <div class="s-sub">${escHtml((it.sub || '').substring(0, 100))}</div>
-        </div>
-        <span class="s-badge">${it.badge || ''}</span>
-        <span class="s-arrow">-></span>
-      </div>`;
-    }).join('');
+  if (!isCaretAtEnd()) {
+    TERMINAL_STATE.completions = [];
+    TERMINAL_STATE.completionIndex = -1;
+    return;
+  }
+
+  TERMINAL_STATE.completions = buildCompletions(TERMINAL_STATE.buffer);
+  TERMINAL_STATE.completionIndex = TERMINAL_STATE.completions.length ? 0 : -1;
+}
+
+function clearCompletionCycle() {
+  TERMINAL_STATE.completionCycle = null;
+}
+
+function setBuffer(value, options = {}) {
+  TERMINAL_STATE.buffer = String(value ?? '');
+  if (TERMINAL_DOM.input && TERMINAL_DOM.input.value !== TERMINAL_STATE.buffer) {
+    TERMINAL_DOM.input.value = TERMINAL_STATE.buffer;
+  }
+
+  if (!options.preserveHistory) {
+    TERMINAL_STATE.historyCursor = -1;
+    TERMINAL_STATE.historyDraft = TERMINAL_STATE.buffer;
+  }
+
+  if (!options.keepCycle) clearCompletionCycle();
+  updateCompletionState();
+  renderTerminal();
+
+  if (options.focus !== false) focusInputAtEnd();
+  if (options.caret === 'start') setCaret(0);
+}
+
+function ensureTerminalBoot() {
+  if (TERMINAL_STATE.booted) return;
+  TERMINAL_STATE.booted = true;
+  TERMINAL_STATE.transcript.push(
+    lineEntry('Terminal subsystem online', 'dim', 'SYS'),
+    lineEntry('Type "help" to list commands', 'accent', 'RDY')
+  );
+  if (TERMINAL_STATE.history.length) {
+    TERMINAL_STATE.transcript.push(
+      lineEntry(`Loaded ${TERMINAL_STATE.history.length} saved command${TERMINAL_STATE.history.length !== 1 ? 's' : ''}`, 'dim', 'HIS')
+    );
+  }
+  TERMINAL_STATE.scrollPending = true;
+}
+
+function parseCommandLine(input) {
+  const raw = String(input || '').trim();
+  const clean = raw.startsWith('>') ? raw.slice(1).trim() : raw;
+  if (!clean) return null;
+  const firstSpace = clean.search(/\s/);
+  const token = firstSpace === -1 ? clean : clean.slice(0, firstSpace);
+  const argRaw = firstSpace === -1 ? '' : clean.slice(firstSpace + 1);
+  return {
+    clean,
+    token,
+    cmdToken: normalizeCommandToken(token.toLowerCase()),
+    argRaw,
+    arg: argRaw.trim(),
+  };
+}
+
+function openExternalUrl(url) {
+  if (typeof openUrl === 'function') openUrl(url);
+  else window.open(url, '_blank', 'noopener,noreferrer');
+}
+
+function buildHelpEntries() {
+  const entries = [lineEntry(`${COMMANDS.length} commands available`, 'accent', 'MAN')];
+  COMMANDS.forEach(command => {
+    const usage = `${command.cmd}${command.args ? ` ${command.args}` : ''}`;
+    const aliasText = (command.aliases || []).length ? ` | aliases: ${(command.aliases || []).join(', ')}` : '';
+    entries.push(lineEntry(`${usage} :: ${command.desc}${aliasText}`, 'default', 'CMD'));
   });
-
-  if (!totalCount) {
-    return `<div class="search-empty">
-      <div class="search-no-results">
-        <span class="snr-code">?</span>
-        <span>No command matches</span>
-        <span class="snr-hint">Try <em>help</em></span>
-      </div>
-    </div>`;
-  }
-
-  return `<div class="s-count-bar">
-    <span><span class="stb-tag accent">CMD</span> ${totalCount} suggestion${totalCount !== 1 ? 's' : ''}</span>
-  </div>` + html;
+  return entries;
 }
 
-/* --- Command execution ------------------------------------------ */
-function pushHistory(cmdLine) {
-  const cleaned = String(cmdLine || '').trim();
-  if (!cleaned) return;
-  TERMINAL_HISTORY = [cleaned, ...TERMINAL_HISTORY.filter(x => x !== cleaned)].slice(0, 12);
-  saveTerminalHistory();
+function buildHistoryEntries() {
+  if (!TERMINAL_STATE.history.length) {
+    return [lineEntry('No commands in history yet', 'dim', 'HIS')];
+  }
+
+  return [
+    lineEntry(`Showing ${TERMINAL_STATE.history.length} recent command${TERMINAL_STATE.history.length !== 1 ? 's' : ''}`, 'accent', 'HIS'),
+    listEntry('History', TERMINAL_STATE.history.map((item, idx) => ({
+      title: item,
+      meta: `#${idx + 1}`,
+      badge: 'HIS',
+      action: { kind: 'fill', value: item },
+    }))),
+  ];
+}
+
+function buildSearchEntries(query) {
+  const needle = String(query || '').trim().toLowerCase();
+  if (!needle) return [lineEntry('Usage: search <query>', 'error', 'ERR')];
+
+  const exactPost = findExactFieldMatch(getDbList('posts'), query, ['id', 'title']);
+  if (exactPost) {
+    nav('article', exactPost.id);
+    return [lineEntry(`Opened post ${exactPost.title}`, 'accent', 'POST')];
+  }
+
+  const exactProject = findExactFieldMatch(getDbList('projects'), query, ['id', 'name']);
+  if (exactProject) {
+    nav('project', exactProject.id);
+    return [lineEntry(`Opened project ${exactProject.name}`, 'accent', 'PROJ')];
+  }
+
+  const posts = rankMatches(getDbList('posts'), item => `${item.title} ${item.excerpt || item.description || ''} ${(item.tags || []).join(' ')}`, needle)
+    .slice(0, 8)
+    .map(item => ({
+      title: item.title,
+      meta: item.excerpt || item.description || 'Blog post',
+      badge: 'POST',
+      action: { kind: 'run', command: `open ${item.title}` },
+    }));
+
+  const projects = rankMatches(getDbList('projects'), item => `${item.name} ${item.desc || ''} ${item.category || ''}`, needle)
+    .slice(0, 8)
+    .map(item => ({
+      title: item.name,
+      meta: item.desc || 'Project',
+      badge: 'PROJ',
+      action: { kind: 'run', command: `open ${item.name}` },
+    }));
+
+  const resources = rankMatches(getDbList('resources'), item => `${item.title} ${item.desc || ''} ${item.type || ''}`, needle)
+    .slice(0, 8)
+    .map(item => ({
+      title: item.title,
+      meta: item.desc || 'Resource',
+      badge: 'RES',
+      action: { kind: 'run', command: `open ${item.title}` },
+    }));
+
+  const tools = rankMatches(getDbList('tools'), item => `${item.name} ${item.desc || ''} ${item.category || ''}`, needle)
+    .slice(0, 8)
+    .map(item => ({
+      title: item.name,
+      meta: item.desc || 'Tool',
+      badge: 'TOOL',
+      action: { kind: 'run', command: `open ${item.name}` },
+    }));
+
+  const total = posts.length + projects.length + resources.length + tools.length;
+  if (!total) return [lineEntry(`No results for "${query}"`, 'error', '404')];
+
+  const entries = [lineEntry(`${total} result${total !== 1 ? 's' : ''} for "${query}"`, 'accent', 'FND')];
+  if (posts.length) entries.push(listEntry('Posts', posts));
+  if (projects.length) entries.push(listEntry('Projects', projects));
+  if (resources.length) entries.push(listEntry('Resources', resources));
+  if (tools.length) entries.push(listEntry('Tools', tools));
+  return entries;
+}
+
+function buildOpenEntries(query) {
+  const needle = String(query || '').trim().toLowerCase();
+  if (!needle) return [lineEntry('Usage: open <url|page|name>', 'error', 'ERR')];
+
+  const page = COMMAND_NAV_VIEWS.find(value => value === needle);
+  if (page) {
+    nav(page);
+    return [lineEntry(`Navigated to ${page}`, 'accent', 'NAV')];
+  }
+
+  const exactPost = findExactFieldMatch(getDbList('posts'), query, ['id', 'title']);
+  if (exactPost) {
+    nav('article', exactPost.id);
+    return [lineEntry(`Opened post ${exactPost.title}`, 'accent', 'POST')];
+  }
+
+  const exactProject = findExactFieldMatch(getDbList('projects'), query, ['id', 'name']);
+  if (exactProject) {
+    nav('project', exactProject.id);
+    return [lineEntry(`Opened project ${exactProject.name}`, 'accent', 'PROJ')];
+  }
+
+  const exactResource = findExactFieldMatch(getDbList('resources'), query, ['id', 'title']);
+  if (exactResource) {
+    nav('resource', exactResource.id);
+    return [lineEntry(`Opened resource ${exactResource.title}`, 'accent', 'RES')];
+  }
+
+  const exactTool = findExactFieldMatch(getDbList('tools'), query, ['id', 'name']);
+  if (exactTool) {
+    nav('tools');
+    if (typeof isMobileViewport === 'function' && isMobileViewport() && typeof openToolsRail === 'function') openToolsRail();
+    openTool(exactTool.id, { scroll: true, source: 'terminal', keepRailOpen: true });
+    return [lineEntry(`Opened tool ${exactTool.name}`, 'accent', 'TOOL')];
+  }
+
+  const pages = rankMatches(COMMAND_NAV_VIEWS, value => value, needle)
+    .slice(0, 6)
+    .map(value => ({
+      title: value,
+      meta: `Go to ${value}`,
+      badge: 'NAV',
+      action: { kind: 'run', command: `open ${value}` },
+    }));
+
+  const posts = rankMatches(getDbList('posts'), item => `${item.title} ${item.excerpt || item.description || ''} ${(item.tags || []).join(' ')}`, needle)
+    .slice(0, 8)
+    .map(item => ({
+      title: item.title,
+      meta: item.excerpt || item.description || 'Blog post',
+      badge: 'POST',
+      action: { kind: 'run', command: `open ${item.title}` },
+    }));
+
+  const projects = rankMatches(getDbList('projects'), item => `${item.name} ${item.desc || ''} ${item.category || ''}`, needle)
+    .slice(0, 8)
+    .map(item => ({
+      title: item.name,
+      meta: item.desc || 'Project',
+      badge: 'PROJ',
+      action: { kind: 'run', command: `open ${item.name}` },
+    }));
+
+  const resources = rankMatches(getDbList('resources'), item => `${item.title} ${item.desc || ''} ${item.type || ''}`, needle)
+    .slice(0, 8)
+    .map(item => ({
+      title: item.title,
+      meta: item.desc || 'Resource',
+      badge: 'RES',
+      action: { kind: 'run', command: `open ${item.title}` },
+    }));
+
+  const tools = rankMatches(getDbList('tools'), item => `${item.name} ${item.desc || ''} ${item.category || ''}`, needle)
+    .slice(0, 8)
+    .map(item => ({
+      title: item.name,
+      meta: item.desc || 'Tool',
+      badge: 'TOOL',
+      action: { kind: 'run', command: `open ${item.name}` },
+    }));
+
+  const total = pages.length + posts.length + projects.length + resources.length + tools.length;
+  if (!total) return [lineEntry(`Nothing matched "${query}"`, 'error', 'ERR')];
+
+  const entries = [lineEntry(`No exact match for "${query}". Showing results.`, 'accent', 'OPEN')];
+  if (pages.length) entries.push(listEntry('Pages', pages));
+  if (posts.length) entries.push(listEntry('Posts', posts));
+  if (projects.length) entries.push(listEntry('Projects', projects));
+  if (resources.length) entries.push(listEntry('Resources', resources));
+  if (tools.length) entries.push(listEntry('Tools', tools));
+  return entries;
+}
+
+function buildLsEntries(scope) {
+  const normalized = String(scope || '').trim().toLowerCase();
+  if (!normalized) {
+    return [
+      lineEntry('Available collections', 'accent', 'LS'),
+      listEntry('Collections', LS_SCOPES.map(name => {
+        const count = getDbList(name).length;
+        return {
+          title: name,
+          meta: `${count} item${count !== 1 ? 's' : ''}`,
+          badge: 'LS',
+          action: { kind: 'run', command: `ls ${name}` },
+        };
+      })),
+    ];
+  }
+
+  if (normalized === 'tools') {
+    const items = getDbList('tools').map(item => ({
+      title: item.name,
+      meta: item.desc || 'Tool',
+      badge: 'TOOL',
+      action: { kind: 'run', command: `open ${item.name}` },
+    }));
+    return items.length ? [lineEntry(`${items.length} tool${items.length !== 1 ? 's' : ''}`, 'accent', 'LS'), listEntry('Tools', items)] : [lineEntry('No tools loaded', 'dim', 'LS')];
+  }
+
+  if (normalized === 'posts') {
+    const items = getDbList('posts').map(item => ({
+      title: item.title,
+      meta: item.excerpt || item.description || 'Blog post',
+      badge: 'POST',
+      action: { kind: 'run', command: `open ${item.title}` },
+    }));
+    return items.length ? [lineEntry(`${items.length} post${items.length !== 1 ? 's' : ''}`, 'accent', 'LS'), listEntry('Posts', items)] : [lineEntry('No posts loaded', 'dim', 'LS')];
+  }
+
+  if (normalized === 'projects') {
+    const items = getDbList('projects').map(item => ({
+      title: item.name,
+      meta: item.desc || 'Project',
+      badge: 'PROJ',
+      action: { kind: 'run', command: `open ${item.name}` },
+    }));
+    return items.length ? [lineEntry(`${items.length} project${items.length !== 1 ? 's' : ''}`, 'accent', 'LS'), listEntry('Projects', items)] : [lineEntry('No projects loaded', 'dim', 'LS')];
+  }
+
+  if (normalized === 'resources') {
+    const items = getDbList('resources').map(item => ({
+      title: item.title,
+      meta: item.desc || 'Resource',
+      badge: 'RES',
+      action: { kind: 'run', command: `open ${item.title}` },
+    }));
+    return items.length ? [lineEntry(`${items.length} resource${items.length !== 1 ? 's' : ''}`, 'accent', 'LS'), listEntry('Resources', items)] : [lineEntry('No resources loaded', 'dim', 'LS')];
+  }
+
+  return [lineEntry('Usage: ls [tools|posts|projects|resources]', 'error', 'ERR')];
+}
+
+function buildWhoamiEntries() {
+  const site = (typeof DB !== 'undefined' && DB.site) ? DB.site : {};
+  const socials = Object.entries(site.social || {})
+    .filter(([, url]) => !!url)
+    .map(([name, url]) => ({
+      title: name,
+      meta: url,
+      badge: 'URL',
+      action: { kind: 'run', command: `open ${url}` },
+    }));
+
+  const entries = [
+    lineEntry(`${site.name || 'Nomu'} :: ${site.tagline || 'Terminal'}`, 'accent', 'USR'),
+    lineEntry(site.bio || 'No bio configured', 'default', 'BIO'),
+    lineEntry(`Current view: ${typeof CUR_VIEW !== 'undefined' ? CUR_VIEW : 'unknown'}`, 'dim', 'CTX'),
+  ];
+  if (socials.length) entries.push(listEntry('Socials', socials));
+  return entries;
 }
 
 function executeCommand(input) {
-  const raw = String(input || '').trim();
-  const clean = raw.startsWith('>') ? raw.substring(1).trim() : raw;
-  const parts = clean.split(/\s+/).filter(Boolean);
-  if (!parts.length) return;
+  const parsed = parseCommandLine(input);
+  if (!parsed) return;
 
-  const cmdToken = normalizeCommandToken((parts[0] || '').toLowerCase());
-  const arg = parts.slice(1).join(' ').trim();
-  let keepOpen = false;
+  pushHistory(parsed.clean);
 
-  switch (cmdToken) {
-    case 'help': {
-      const helpList = COMMANDS.map(c =>
-        `<div class="stb-line"><span class="stb-tag">${c.cmd.toUpperCase()}</span> :: ${escHtml(c.desc)} ${c.args ? `<em>${escHtml(c.args)}</em>` : ''}</div>`
-      ).join('');
-      document.getElementById('search-results').innerHTML = `<div class="search-terminal-boot">${helpList}</div>`;
-      SEARCH_ALL_ITEMS = [];
-      SEARCH_FOCUS_IDX = -1;
-      keepOpen = true;
+  if (parsed.cmdToken === 'clear') {
+    TERMINAL_STATE.transcript = [];
+    TERMINAL_STATE.scrollPending = true;
+    setBuffer('', { focus: true });
+    return;
+  }
+
+  const entries = [commandEntry(parsed.clean)];
+  const arg = parsed.arg;
+  const argRaw = parsed.argRaw;
+
+  switch (parsed.cmdToken) {
+    case 'help':
+      entries.push(...buildHelpEntries());
       break;
-    }
-    case 'page': {
-      const target = (arg || '').toLowerCase();
-      if (COMMAND_NAV_VIEWS.includes(target)) {
-        nav(target);
-      } else {
-        toast(`Usage: page <${COMMAND_NAV_VIEWS.join('|')}>`);
-        keepOpen = true;
-      }
+    case 'search':
+      entries.push(...buildSearchEntries(argRaw));
       break;
-    }
-    case 'tool': {
-      const tool = findBestMatch(DB.tools || [], arg, ['id', 'name']);
-      if (!tool) {
-        toast(`Tool not found: ${arg || '(empty)'}`);
-        keepOpen = true;
+    case 'open': {
+      const target = argRaw.trim();
+      if (!target) {
+        entries.push(lineEntry('Usage: open <url|page|name>', 'error', 'ERR'));
         break;
       }
-      nav('tools');
-      if (typeof isMobileViewport === 'function' && isMobileViewport()) openToolsRail();
-      openTool(tool.id, { scroll: true, source: 'terminal', keepRailOpen: true });
-      break;
-    }
-    case 'blog': {
-      const post = findBestMatch(DB.posts || [], arg, ['id', 'title']);
-      if (!post) {
-        toast(`Post not found: ${arg || '(empty)'}`);
-        keepOpen = true;
+      const url = normalizeExternalUrl(target);
+      if (url) {
+        openExternalUrl(url);
+        entries.push(lineEntry(`Opened ${url}`, 'accent', 'URL'));
         break;
       }
-      nav('article', post.id);
+      entries.push(...buildOpenEntries(target));
       break;
     }
-    case 'project': {
-      const proj = findBestMatch(DB.projects || [], arg, ['id', 'name']);
-      if (!proj) {
-        toast(`Project not found: ${arg || '(empty)'}`);
-        keepOpen = true;
-        break;
-      }
-      nav('project', proj.id);
+    case 'ls':
+      entries.push(...buildLsEntries(arg));
       break;
-    }
-    case 'resource': {
-      const res = findBestMatch(DB.resources || [], arg, ['id', 'title']);
-      if (!res) {
-        toast(`Resource not found: ${arg || '(empty)'}`);
-        keepOpen = true;
-        break;
-      }
-      nav('resource', res.id);
+    case 'history':
+      entries.push(...buildHistoryEntries());
       break;
-    }
     case 'volume': {
       const value = Number(arg);
       if (Number.isNaN(value)) {
-        toast('Usage: volume <0-100>');
-        keepOpen = true;
+        entries.push(lineEntry('Usage: volume <0-100>', 'error', 'ERR'));
         break;
       }
-      const vol = Math.max(0, Math.min(100, value));
+      const volume = Math.max(0, Math.min(100, value));
       const slider = document.getElementById('vol-slider');
-      if (slider) slider.value = String(vol / 100);
-      if (typeof setVol === 'function') setVol(vol / 100);
-      toast(`Volume ${vol}`);
+      if (slider) slider.value = String(volume / 100);
+      if (typeof setVol === 'function') setVol(volume / 100);
+      entries.push(lineEntry(`Volume set to ${volume}%`, 'accent', 'VOL'));
       break;
     }
     case 'song': {
-      const action = (arg || '').toLowerCase();
+      const action = arg.toLowerCase();
       if (!action) {
-        toast('Usage: song <next|prev|play|pause|toggle|name>');
-        keepOpen = true;
+        entries.push(lineEntry('Usage: song <next|prev|play|pause|toggle|name>', 'error', 'ERR'));
         break;
       }
       if (SONG_ACTIONS.includes(action)) {
-        if (action === 'next' || action === 'skip') nextTrack();
-        else if (action === 'prev' || action === 'previous') prevTrack();
-        else if (action === 'toggle') togglePlay();
-        else if (action === 'play') { if (!IS_PLAYING) togglePlay(); }
-        else if (action === 'pause') { if (IS_PLAYING) togglePlay(); }
+        if ((action === 'next' || action === 'skip') && typeof nextTrack === 'function') nextTrack();
+        else if ((action === 'prev' || action === 'previous') && typeof prevTrack === 'function') prevTrack();
+        else if (action === 'toggle' && typeof togglePlay === 'function') togglePlay();
+        else if (action === 'play' && typeof togglePlay === 'function' && !IS_PLAYING) togglePlay();
+        else if (action === 'pause' && typeof togglePlay === 'function' && IS_PLAYING) togglePlay();
+        entries.push(lineEntry(`Song command: ${action}`, 'accent', 'MUSIC'));
         break;
       }
-      const track = findBestMatch(DB.music || [], arg, ['title', 'id']);
+      const track = findBestMatch(getDbList('music'), arg, ['title', 'id']);
       if (!track) {
-        toast(`Track not found: ${arg || '(empty)'}`);
-        keepOpen = true;
+        entries.push(lineEntry(`Track not found: ${arg || '(empty)'}`, 'error', 'ERR'));
         break;
       }
-      const idx = (DB.music || []).findIndex(t => t === track);
+      const idx = getDbList('music').findIndex(item => item === track);
       if (idx !== -1) {
         TRACK_IDX = idx;
         IS_PLAYING = false;
-        initPlayer();
-        togglePlay();
+        if (typeof initPlayer === 'function') initPlayer();
+        if (typeof togglePlay === 'function') togglePlay();
       }
+      entries.push(lineEntry(`Playing ${track.title}`, 'accent', 'TRACK'));
       break;
     }
     case 'sfx': {
       const mode = arg.toLowerCase();
-      if (mode === 'on' || mode === '1') setSfxEnabled(true);
-      else if (mode === 'off' || mode === '0') setSfxEnabled(false);
-      else {
-        toast('Usage: sfx on|off');
-        keepOpen = true;
+      if (mode === 'on' || mode === '1') {
+        setSfxEnabledSilent(true);
+        entries.push(lineEntry('Sound effects enabled', 'accent', 'SFX'));
+      } else if (mode === 'off' || mode === '0') {
+        setSfxEnabledSilent(false);
+        entries.push(lineEntry('Sound effects disabled', 'accent', 'SFX'));
+      } else {
+        entries.push(lineEntry('Usage: sfx on|off|1|0', 'error', 'ERR'));
       }
       break;
     }
     case 'color': {
       const parts = arg.split(/\s+/).filter(Boolean);
-      const mode = (parts[0] || '').toLowerCase();
+      const mode = String(parts[0] || '').toLowerCase();
       if (mode === 'theme') {
         const name = parts.slice(1).join(' ');
         const idx = resolveThemeIndex(name);
-        if (idx !== -1) applyTheme(idx, true);
-        else {
-          toast(`Theme not found: ${name || '(empty)'}`);
-          keepOpen = true;
+        if (idx === -1) {
+          entries.push(lineEntry(`Theme not found: ${name || '(empty)'}`, 'error', 'ERR'));
+        } else {
+          applyTheme(idx, false);
+          const theme = getThemeList()[idx];
+          entries.push(lineEntry(`Theme set to ${theme.name}`, 'accent', 'THEME'));
         }
         break;
       }
       if (mode === 'hex') {
-        const hex = parts[1];
+        const hex = String(parts[1] || '');
         if (!looksLikeHex(hex)) {
-          toast('Usage: color hex <#rrggbb>');
-          keepOpen = true;
-          break;
+          entries.push(lineEntry('Usage: color hex <#rrggbb>', 'error', 'ERR'));
+        } else {
+          applyCustomTheme(hex);
+          entries.push(lineEntry(`Custom theme applied: ${hex.startsWith('#') ? hex : `#${hex}`}`, 'accent', 'HEX'));
         }
-        applyCustomTheme(hex);
-        toast('Custom theme applied');
         break;
       }
       if (looksLikeHex(arg)) {
         applyCustomTheme(arg);
-        toast('Custom theme applied');
+        entries.push(lineEntry(`Custom theme applied: ${arg.startsWith('#') ? arg : `#${arg}`}`, 'accent', 'HEX'));
         break;
       }
       const idx = resolveThemeIndex(arg);
       if (idx !== -1) {
-        applyTheme(idx, true);
+        applyTheme(idx, false);
+        const theme = getThemeList()[idx];
+        entries.push(lineEntry(`Theme set to ${theme.name}`, 'accent', 'THEME'));
         break;
       }
-      toast('Usage: color theme <name> | color hex <#rrggbb>');
-      keepOpen = true;
+      entries.push(lineEntry('Usage: color theme <name> | color hex <#rrggbb>', 'error', 'ERR'));
       break;
     }
     case 'filter': {
       const tokens = arg.split(/\s+/).filter(Boolean);
-      const scope = (tokens[0] || '').toLowerCase();
+      const scope = String(tokens[0] || '').toLowerCase();
       const rest = tokens.slice(1).join(' ').trim();
       if (!scope) {
-        toast('Usage: filter blog|projects|resources ...');
-        keepOpen = true;
+        entries.push(lineEntry('Usage: filter blog|projects|resources ...', 'error', 'ERR'));
         break;
       }
       if (scope === 'blog') {
         const tag = rest || 'all';
         filterBlog(tag);
         nav('blog');
+        entries.push(lineEntry(`Blog filter set to ${tag}`, 'accent', 'FILTER'));
         break;
       }
       if (scope === 'projects') {
-        const type = (tokens[1] || '').toLowerCase();
+        const type = String(tokens[1] || '').toLowerCase();
         const value = tokens.slice(2).join(' ').trim();
         if (type === 'category') {
           setProjCat(value || 'All');
           nav('projects');
+          entries.push(lineEntry(`Project category set to ${value || 'All'}`, 'accent', 'FILTER'));
           break;
         }
         if (type === 'focus') {
           const focusMap = typeof PROJECT_FOCUS_MAP !== 'undefined' ? PROJECT_FOCUS_MAP : {};
-          const cats = Object.keys(focusMap);
-          let foundCat = null;
-          cats.some(c => {
-            const arr = focusMap[c] || [];
-            if (arr.some(f => String(f).toLowerCase() === value.toLowerCase())) {
-              foundCat = c;
+          const categories = Object.keys(focusMap);
+          let foundCategory = null;
+          categories.some(category => {
+            const values = focusMap[category] || [];
+            if (values.some(item => String(item).toLowerCase() === value.toLowerCase())) {
+              foundCategory = category;
               return true;
             }
             return false;
           });
-          if (foundCat && PROJ_CAT_FILTER !== foundCat) setProjCat(foundCat);
+          if (foundCategory && PROJ_CAT_FILTER !== foundCategory) setProjCat(foundCategory);
           setProjFocus(value || 'All');
           nav('projects');
+          entries.push(lineEntry(`Project focus set to ${value || 'All'}`, 'accent', 'FILTER'));
           break;
         }
-        toast('Usage: filter projects category <name> | filter projects focus <name>');
-        keepOpen = true;
+        entries.push(lineEntry('Usage: filter projects category <name> | filter projects focus <name>', 'error', 'ERR'));
         break;
       }
       if (scope === 'resources') {
-        const type = (tokens[1] || '').toLowerCase();
+        const type = String(tokens[1] || '').toLowerCase();
         const value = tokens.slice(2).join(' ').trim();
         if (type === 'type') {
           setResType(value || 'All');
           nav('resources');
+          entries.push(lineEntry(`Resource type set to ${value || 'All'}`, 'accent', 'FILTER'));
           break;
         }
-        toast('Usage: filter resources type <name>');
-        keepOpen = true;
+        entries.push(lineEntry('Usage: filter resources type <name>', 'error', 'ERR'));
         break;
       }
-      toast('Usage: filter blog|projects|resources ...');
-      keepOpen = true;
-      break;
-    }
-    case 'reading': {
-      const mode = arg.toLowerCase();
-      if (mode === 'toggle') toggleReadingMode();
-      else if (mode === 'on') setReadingMode(true);
-      else if (mode === 'off') setReadingMode(false);
-      else {
-        toast('Usage: reading on|off|toggle');
-        keepOpen = true;
-      }
+      entries.push(lineEntry('Usage: filter blog|projects|resources ...', 'error', 'ERR'));
       break;
     }
     case 'favorites': {
       const tokens = arg.split(/\s+/).filter(Boolean);
-      const scope = (tokens[0] || '').toLowerCase();
-      const action = (tokens[1] || '').toLowerCase();
+      const scope = String(tokens[0] || '').toLowerCase();
+      const action = String(tokens[1] || '').toLowerCase();
       if (scope !== 'tools') {
-        toast('Usage: favorites tools <show|hide|toggle>');
-        keepOpen = true;
+        entries.push(lineEntry('Usage: favorites tools <show|hide|toggle>', 'error', 'ERR'));
         break;
       }
-      if (action === 'show') window.setToolsFavFilter?.(true);
-      else if (action === 'hide') window.setToolsFavFilter?.(false);
-      else if (action === 'toggle') window.toggleToolsFavFilter?.();
-      else {
-        toast('Usage: favorites tools <show|hide|toggle>');
-        keepOpen = true;
+      if (action === 'show') {
+        window.setToolsFavFilter?.(true);
+        entries.push(lineEntry('Tool favorites filter enabled', 'accent', 'FAV'));
+      } else if (action === 'hide') {
+        window.setToolsFavFilter?.(false);
+        entries.push(lineEntry('Tool favorites filter disabled', 'accent', 'FAV'));
+      } else if (action === 'toggle') {
+        window.toggleToolsFavFilter?.();
+        entries.push(lineEntry('Tool favorites filter toggled', 'accent', 'FAV'));
+      } else {
+        entries.push(lineEntry('Usage: favorites tools <show|hide|toggle>', 'error', 'ERR'));
       }
       break;
     }
+    case 'whoami':
+      entries.push(...buildWhoamiEntries());
+      break;
+    case 'time':
+      entries.push(lineEntry(formatLocalTime(new Date()), 'accent', 'TIME'));
+      break;
+    case 'echo':
+      entries.push(lineEntry(argRaw, 'default', 'ECHO'));
+      break;
+    case 'ping':
+      entries.push(lineEntry('pong :: terminal online', 'accent', 'PONG'));
+      break;
     default:
-      toast(`Unknown command: ${cmdToken}`);
-      keepOpen = true;
+      entries.push(lineEntry(`command not found: ${parsed.token}`, 'error', 'ERR'));
+      break;
   }
 
-  pushHistory(clean);
-  if (!keepOpen) closeSearch({ target: document.getElementById('search-modal') });
-}
-
-/* --- Keyboard navigation ---------------------------------------- */
-function focusSearchItem(idx) {
-  SEARCH_FOCUS_IDX = idx;
-  document.querySelectorAll('.s-item').forEach((el, i) => {
-    el.classList.toggle('focus', i === idx);
-  });
-}
-
-function moveFocus(dir) {
-  const total = SEARCH_ALL_ITEMS.length;
-  if (!total) return;
-  SEARCH_FOCUS_IDX = (SEARCH_FOCUS_IDX + dir + total) % total;
-  focusSearchItem(SEARCH_FOCUS_IDX);
-  const focused = document.querySelector(`.s-item[data-idx="${SEARCH_FOCUS_IDX}"]`);
-  if (focused) focused.scrollIntoView({ block: 'nearest' });
-}
-
-function activateFocused() {
-  if (SEARCH_FOCUS_IDX < 0 || !SEARCH_ALL_ITEMS[SEARCH_FOCUS_IDX]) return false;
-  const item = SEARCH_ALL_ITEMS[SEARCH_FOCUS_IDX];
-  try { (new Function(item.act))(); } catch (e) { eval(item.act); }
-  return true;
+  TERMINAL_STATE.transcript.push(...entries);
+  TERMINAL_STATE.scrollPending = true;
+  setBuffer('', { focus: true });
 }
 
 function stepHistory(delta) {
-  if (!TERMINAL_HISTORY.length) return;
-  if (HISTORY_IDX === -1) HISTORY_IDX = 0;
-  HISTORY_IDX = Math.max(0, Math.min(TERMINAL_HISTORY.length - 1, HISTORY_IDX + delta));
-  const value = TERMINAL_HISTORY[HISTORY_IDX] || '';
-  const inp = document.getElementById('search-input');
-  if (inp) {
-    inp.value = value;
-    inp.dispatchEvent(new Event('input'));
+  if (!TERMINAL_STATE.history.length) return;
+  if (TERMINAL_STATE.historyCursor === -1) {
+    TERMINAL_STATE.historyDraft = TERMINAL_DOM.input ? TERMINAL_DOM.input.value : TERMINAL_STATE.buffer;
+    if (delta < 0) return;
+    TERMINAL_STATE.historyCursor = 0;
+  } else if (delta < 0) {
+    TERMINAL_STATE.historyCursor -= 1;
+    if (TERMINAL_STATE.historyCursor < 0) {
+      const draft = TERMINAL_STATE.historyDraft;
+      TERMINAL_STATE.historyCursor = -1;
+      setBuffer(draft, { focus: true, preserveHistory: true });
+      return;
+    }
+  } else {
+    TERMINAL_STATE.historyCursor = Math.min(TERMINAL_STATE.history.length - 1, TERMINAL_STATE.historyCursor + 1);
   }
+
+  const value = TERMINAL_STATE.history[TERMINAL_STATE.historyCursor] || '';
+  setBuffer(value, { focus: true, preserveHistory: true });
 }
 
-/* --- Input handler ---------------------------------------------- */
-document.getElementById('search-input').addEventListener('input', function () {
-  const val = this.value;
-  SEARCH_FOCUS_IDX = -1;
-  HISTORY_IDX = -1;
+function startCompletionCycle(direction) {
+  if (!TERMINAL_STATE.completions.length) return false;
+  TERMINAL_STATE.completionCycle = {
+    candidates: TERMINAL_STATE.completions.slice(),
+    index: direction > 0 ? 0 : TERMINAL_STATE.completions.length - 1,
+  };
+  const candidate = TERMINAL_STATE.completionCycle.candidates[TERMINAL_STATE.completionCycle.index];
+  setBuffer(applyCompletionCandidate(candidate, true), { focus: true, keepCycle: true });
+  return true;
+}
 
-  if (!val.trim()) {
-    document.getElementById('search-results').innerHTML = buildEmptyState();
+function cycleCompletion(direction) {
+  if (!TERMINAL_STATE.completionCycle) return startCompletionCycle(direction);
+  const total = TERMINAL_STATE.completionCycle.candidates.length;
+  if (!total) return false;
+  TERMINAL_STATE.completionCycle.index = (TERMINAL_STATE.completionCycle.index + direction + total) % total;
+  const candidate = TERMINAL_STATE.completionCycle.candidates[TERMINAL_STATE.completionCycle.index];
+  setBuffer(applyCompletionCandidate(candidate, true), { focus: true, keepCycle: true });
+  return true;
+}
+
+function handleTabCompletion(direction) {
+  if (!isCaretAtEnd()) return;
+  if (TERMINAL_STATE.completionCycle) {
+    cycleCompletion(direction);
     return;
   }
 
-  SEARCH_CMD_SUGGESTIONS = collectCommandSuggestions(val);
-  if (!SEARCH_CMD_SUGGESTIONS.length) {
-    SEARCH_CMD_SUGGESTIONS = [makeRunSuggestion('help', 'Show all commands', 'HELP')];
+  if (!TERMINAL_STATE.completions.length) return;
+  const currentPrefix = TERMINAL_STATE.buffer.slice(TERMINAL_STATE.completions[0].replaceStart, TERMINAL_STATE.completions[0].replaceEnd);
+  const lcp = longestCommonPrefix(TERMINAL_STATE.completions.map(candidate => candidate.insertText));
+
+  if (TERMINAL_STATE.completions.length === 1 && lcp.toLowerCase() === currentPrefix.toLowerCase()) {
+    setBuffer(applyCompletionCandidate(TERMINAL_STATE.completions[0], true), { focus: true });
+    return;
   }
-  const groups = { Commands: SEARCH_CMD_SUGGESTIONS };
-  const token = String(val || '').trim().split(/\s+/)[0] || '';
-  const tokenNorm = normalizeCommandToken(token.toLowerCase());
-  const toolSuggestions = collectToolSuggestions(val);
-  if (toolSuggestions.length) {
-    if (tokenNorm === 'tool' || tokenNorm === 'tools') {
-      const ordered = { Tools: toolSuggestions, Commands: SEARCH_CMD_SUGGESTIONS };
-      document.getElementById('search-results').innerHTML = renderGroups(ordered);
-      return;
-    }
-    groups.Tools = toolSuggestions;
+
+  if (lcp && lcp.length > currentPrefix.length) {
+    const base = TERMINAL_STATE.completions[0];
+    const nextValue = `${TERMINAL_STATE.buffer.slice(0, base.replaceStart)}${lcp}${TERMINAL_STATE.buffer.slice(base.replaceEnd)}`;
+    setBuffer(nextValue, { focus: true });
+    return;
   }
-  document.getElementById('search-results').innerHTML = renderGroups(groups);
+
+  startCompletionCycle(direction);
+}
+
+function clearTranscript() {
+  TERMINAL_STATE.transcript = [];
+  TERMINAL_STATE.scrollPending = true;
+  renderTerminal();
+}
+
+function dispatchTerminalAction(action) {
+  if (!action) return;
+  switch (action.kind) {
+    case 'fill':
+      setBuffer(action.value, { focus: true });
+      break;
+    case 'run':
+      executeCommand(action.command);
+      break;
+    case 'completion':
+      setBuffer(applyCompletionCandidate(action.candidate, true), { focus: true });
+      break;
+    default:
+      break;
+  }
+}
+
+function renderEntry(entry) {
+  if (entry.kind === 'command') {
+    return `
+      <div class="terminal-entry terminal-entry-command">
+        <span class="terminal-prompt-copy">${escHtml(getPromptLabel())}</span>
+        <span class="terminal-command-copy">${escHtml(entry.text)}</span>
+      </div>`;
+  }
+
+  if (entry.kind === 'line') {
+    const tag = entry.tag ? `<span class="terminal-tag">${escHtml(entry.tag)}</span>` : '';
+    return `
+      <div class="terminal-entry terminal-entry-line tone-${escHtml(entry.tone || 'default')}">
+        ${tag}
+        <span class="terminal-line-text">${escHtml(entry.text)}</span>
+      </div>`;
+  }
+
+  if (entry.kind === 'list') {
+    const title = entry.title ? `<div class="terminal-list-title">${escHtml(entry.title)}</div>` : '';
+    const items = (entry.items || []).map(item => {
+      const actionId = item.action ? registerAction(item.action) : '';
+      const badge = item.badge ? `<span class="terminal-list-badge">${escHtml(item.badge)}</span>` : '';
+      if (actionId) {
+        return `
+          <button class="terminal-list-item" type="button" data-terminal-action="${actionId}">
+            <span class="terminal-list-main">
+              <span class="terminal-list-label">${escHtml(item.title)}</span>
+              ${item.meta ? `<span class="terminal-list-meta">${escHtml(item.meta)}</span>` : ''}
+            </span>
+            ${badge}
+          </button>`;
+      }
+      return `
+        <div class="terminal-list-item static">
+          <span class="terminal-list-main">
+            <span class="terminal-list-label">${escHtml(item.title)}</span>
+            ${item.meta ? `<span class="terminal-list-meta">${escHtml(item.meta)}</span>` : ''}
+          </span>
+          ${badge}
+        </div>`;
+    }).join('');
+    return `
+      <div class="terminal-entry terminal-entry-list tone-${escHtml(entry.tone || 'default')}">
+        ${title}
+        <div class="terminal-list-grid">${items}</div>
+      </div>`;
+  }
+
+  return '';
+}
+
+function renderGhost() {
+  if (!TERMINAL_DOM.ghost) return;
+  if (!isCaretAtEnd() || !TERMINAL_STATE.completions.length) {
+    TERMINAL_DOM.ghost.textContent = '';
+    TERMINAL_DOM.ghost.style.removeProperty('--ghost-prefix');
+    return;
+  }
+
+  const index = TERMINAL_STATE.completionIndex >= 0 ? TERMINAL_STATE.completionIndex : 0;
+  const candidate = TERMINAL_STATE.completions[index];
+  if (!candidate) {
+    TERMINAL_DOM.ghost.textContent = '';
+    TERMINAL_DOM.ghost.style.removeProperty('--ghost-prefix');
+    return;
+  }
+
+  const ghostValue = applyCompletionCandidate(candidate, false);
+  if (!ghostValue.toLowerCase().startsWith(TERMINAL_STATE.buffer.toLowerCase())) {
+    TERMINAL_DOM.ghost.textContent = '';
+    TERMINAL_DOM.ghost.style.removeProperty('--ghost-prefix');
+    return;
+  }
+
+  const suffix = ghostValue.slice(TERMINAL_STATE.buffer.length);
+  if (!suffix) {
+    TERMINAL_DOM.ghost.textContent = '';
+    TERMINAL_DOM.ghost.style.removeProperty('--ghost-prefix');
+    return;
+  }
+
+  TERMINAL_DOM.ghost.textContent = suffix;
+  TERMINAL_DOM.ghost.style.setProperty('--ghost-prefix', String(TERMINAL_STATE.buffer.length));
+}
+
+function renderTranscript() {
+  if (!TERMINAL_DOM.transcript) return;
+  TERMINAL_DOM.transcript.innerHTML = TERMINAL_STATE.transcript.length
+    ? TERMINAL_STATE.transcript.map(renderEntry).join('')
+    : '<div class="terminal-entry terminal-entry-empty">Session cleared. Type <em>help</em> to continue.</div>';
+
+  if (TERMINAL_STATE.scrollPending) {
+    requestAnimationFrame(() => {
+      if (!TERMINAL_DOM.transcript) return;
+      TERMINAL_DOM.transcript.scrollTop = TERMINAL_DOM.transcript.scrollHeight;
+    });
+    TERMINAL_STATE.scrollPending = false;
+  }
+}
+
+function renderCompletions() {
+  if (!TERMINAL_DOM.completions) return;
+  if (!TERMINAL_STATE.completions.length || !isCaretAtEnd()) {
+    TERMINAL_DOM.completions.innerHTML = '';
+    return;
+  }
+
+  const visibleCount = 3;
+  const activeIndex = TERMINAL_STATE.completionIndex >= 0 ? TERMINAL_STATE.completionIndex : 0;
+  const start = Math.max(0, Math.min(TERMINAL_STATE.completions.length - visibleCount, activeIndex - 1));
+  const visible = TERMINAL_STATE.completions.slice(start, start + visibleCount);
+
+  const items = visible.map((candidate, offset) => {
+    const idx = start + offset;
+    const actionId = registerAction({ kind: 'completion', candidate });
+    return `
+      <button class="terminal-completion ${idx === activeIndex ? 'active' : ''}" type="button" data-terminal-action="${actionId}" title="${escHtml(candidate.meta || candidate.label)}">
+        <span class="terminal-completion-main">
+          <span class="terminal-completion-label">${escHtml(candidate.label)}</span>
+        </span>
+        <span class="terminal-completion-badge">${escHtml(candidate.badge || '')}</span>
+      </button>`;
+  }).join('');
+
+  TERMINAL_DOM.completions.innerHTML = items;
+}
+
+function renderTerminal() {
+  TERMINAL_ACTIONS.clear();
+  if (TERMINAL_DOM.promptLabel) TERMINAL_DOM.promptLabel.textContent = getPromptLabel() || TERMINAL_PROMPT_FALLBACK;
+  renderTranscript();
+  renderCompletions();
+  renderGhost();
+}
+
+function openSearch() {
+  if (!TERMINAL_DOM.modal) return;
+  ensureTerminalBoot();
+  TERMINAL_DOM.modal.classList.add('open');
+  document.body.classList.add('search-open');
+  updateCompletionState();
+  renderTerminal();
+  focusInputAtEnd();
+  if (typeof playSfx === 'function') playSfx('scan');
+}
+
+function closeSearch(event) {
+  if (event && event.target !== TERMINAL_DOM.modal) return;
+  TERMINAL_DOM.modal?.classList.remove('open');
+  document.body.classList.remove('search-open');
+  TERMINAL_DOM.input?.blur();
+}
+
+function openTerminal() {
+  openSearch();
+}
+
+function closeTerminal(event) {
+  closeSearch(event);
+}
+
+function handleTerminalActionClick(event) {
+  const trigger = event.target.closest('[data-terminal-action]');
+  if (!trigger) return;
+  const action = TERMINAL_ACTIONS.get(trigger.dataset.terminalAction);
+  if (!action) return;
+  event.preventDefault();
+  dispatchTerminalAction(action);
+}
+
+TERMINAL_DOM.transcript?.addEventListener('click', handleTerminalActionClick);
+TERMINAL_DOM.completions?.addEventListener('click', handleTerminalActionClick);
+
+TERMINAL_DOM.promptRow?.addEventListener('click', event => {
+  if (event.target.closest('.search-esc')) return;
+  focusInputAtEnd();
 });
 
-/* --- Keyboard shortcuts ----------------------------------------- */
-document.addEventListener('keydown', e => {
-  const key = (e.key || '').toLowerCase();
+TERMINAL_DOM.input?.addEventListener('input', () => {
+  TERMINAL_STATE.buffer = TERMINAL_DOM.input.value;
+  TERMINAL_STATE.historyCursor = -1;
+  TERMINAL_STATE.historyDraft = TERMINAL_STATE.buffer;
+  clearCompletionCycle();
+  updateCompletionState();
+  renderTerminal();
+});
 
-  if ((e.ctrlKey || e.metaKey) && key === 'k') {
-    e.preventDefault();
+['click', 'select', 'keyup'].forEach(eventName => {
+  TERMINAL_DOM.input?.addEventListener(eventName, event => {
+    const key = String(event.key || '');
+    if (eventName === 'keyup' && !['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(key)) return;
+    updateCompletionState();
+    renderTerminal();
+  });
+});
+
+TERMINAL_DOM.input?.addEventListener('keydown', event => {
+  if (!TERMINAL_DOM.modal?.classList.contains('open')) return;
+
+  const key = String(event.key || '').toLowerCase();
+  const stop = () => {
+    event.preventDefault();
+    event.stopPropagation();
+  };
+
+  if (event.ctrlKey && !event.metaKey && !event.altKey) {
+    if (key === 'a') {
+      stop();
+      setCaret(0);
+      updateCompletionState();
+      renderTerminal();
+      return;
+    }
+    if (key === 'e') {
+      stop();
+      focusInputAtEnd();
+      updateCompletionState();
+      renderTerminal();
+      return;
+    }
+    if (key === 'u') {
+      stop();
+      const cursor = TERMINAL_DOM.input.selectionStart || 0;
+      const next = TERMINAL_DOM.input.value.slice(cursor);
+      setBuffer(next, { focus: true });
+      setCaret(0);
+      return;
+    }
+    if (key === 'k') {
+      stop();
+      const cursor = TERMINAL_DOM.input.selectionStart || 0;
+      const next = TERMINAL_DOM.input.value.slice(0, cursor);
+      setBuffer(next, { focus: true });
+      setCaret(cursor);
+      return;
+    }
+    if (key === 'l') {
+      stop();
+      clearTranscript();
+      focusInputAtEnd();
+      return;
+    }
+  }
+
+  if (key === 'arrowup') {
+    stop();
+    stepHistory(1);
+    return;
+  }
+
+  if (key === 'arrowdown') {
+    stop();
+    stepHistory(-1);
+    return;
+  }
+
+  if (key === 'tab') {
+    stop();
+    handleTabCompletion(event.shiftKey ? -1 : 1);
+    return;
+  }
+
+  if (key === 'enter') {
+    stop();
+    executeCommand(TERMINAL_DOM.input.value);
+  }
+});
+
+document.addEventListener('keydown', event => {
+  const key = String(event.key || '').toLowerCase();
+  const isOpen = TERMINAL_DOM.modal?.classList.contains('open');
+
+  if ((event.ctrlKey || event.metaKey) && key === 'k' && !isOpen) {
+    event.preventDefault();
     openSearch();
     return;
   }
 
-  const isOpen = document.getElementById('search-modal').classList.contains('open');
   if (!isOpen) return;
 
   if (key === 'escape') {
-    closeSearch({ target: document.getElementById('search-modal') });
-    return;
-  }
-
-  const input = document.getElementById('search-input');
-  const isInput = document.activeElement === input;
-
-  if (isInput && e.altKey && key === 'arrowup') { e.preventDefault(); stepHistory(1); return; }
-  if (isInput && e.altKey && key === 'arrowdown') { e.preventDefault(); stepHistory(-1); return; }
-
-  if (key === 'arrowdown') { e.preventDefault(); moveFocus(1); return; }
-  if (key === 'arrowup') { e.preventDefault(); moveFocus(-1); return; }
-
-  if (key === 'enter') {
-    const val = input.value;
-    if (SEARCH_CMD_SUGGESTIONS.length) {
-      if (SEARCH_FOCUS_IDX !== -1) activateFocused();
-      else executeCommand(val);
-      return;
-    }
-    executeCommand(val);
-  }
-
-  if (key === 'tab') {
-    if (!SEARCH_ALL_ITEMS.length) return;
-    e.preventDefault();
-    const next = getAutocompleteValue();
-    if (next) fillSearchInput(next + ' ');
-  }
-
-  if (key === 'arrowright' && isInput) {
-    if (!SEARCH_ALL_ITEMS.length) return;
-    const caretAtEnd = input.selectionStart === input.value.length && input.selectionEnd === input.value.length;
-    if (!caretAtEnd) return;
-    e.preventDefault();
-    const next = getAutocompleteValue();
-    if (next) fillSearchInput(next + ' ');
+    event.preventDefault();
+    closeSearch({ target: TERMINAL_DOM.modal });
   }
 });
+
+updateCompletionState();
+renderTerminal();
 
 window.openTerminal = openTerminal;
 window.closeTerminal = closeTerminal;

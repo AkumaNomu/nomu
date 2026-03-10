@@ -315,7 +315,9 @@ function renderActions(schema, tool, module) {
   if (schema.supportsSwap || typeof module.swap === 'function') {
     buttons.push(`<button class="btn btn-ghost" type="button" data-tool-action="swap">Swap</button>`);
   }
-  buttons.push(`<button class="btn btn-ghost" type="button" data-tool-action="reset">Reset</button>`);
+  if (!schema.hideReset) {
+    buttons.push(`<button class="btn btn-ghost" type="button" data-tool-action="reset">Reset</button>`);
+  }
   if (tool.supportsCopy) {
     buttons.push(`<button class="btn btn-ghost" type="button" data-tool-action="copy">Copy output</button>`);
   }
@@ -341,7 +343,12 @@ async function renderToolPanel(toolId) {
   }
   const schema = module.schema || {};
   const defaults = buildDefaultState(schema);
-  let state = loadToolState(toolId, defaults);
+  let state = defaults;
+  if (schema.persist !== false) {
+    state = loadToolState(toolId, defaults);
+  } else {
+    clearToolState(toolId);
+  }
   state = normalizeState(module, schema, state);
   const runtime = ensureRuntime(toolId);
   runtime.state = state;
@@ -379,7 +386,9 @@ function bindPanelEvents(panel, tool, module, schema, state, runtime) {
   const updateStateAndCompute = async updated => {
     state = normalizeState(module, schema, updated);
     runtime.state = state;
-    saveToolState(tool.id, filterPersistedState(schema, state));
+    if (schema.persist !== false) {
+      saveToolState(tool.id, filterPersistedState(schema, state));
+    }
     if (schema.runMode !== 'manual') {
       state = await computeTool(module, schema, state, runtime, panel);
     }
@@ -436,7 +445,9 @@ function bindPanelEvents(panel, tool, module, schema, state, runtime) {
 
     if (action === 'swap' && typeof module.swap === 'function') {
       state = normalizeState(module, schema, module.swap(state) || state);
-      saveToolState(tool.id, filterPersistedState(schema, state));
+      if (schema.persist !== false) {
+        saveToolState(tool.id, filterPersistedState(schema, state));
+      }
       renderToolPanel(tool.id);
       return;
     }

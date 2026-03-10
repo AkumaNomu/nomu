@@ -355,14 +355,6 @@ function loadArticle(id) {
           <polyline points="15 18 9 12 15 6" />
         </svg>
       </button>
-      <button class="art-icon-btn art-read-btn" id="reading-mode-toggle" type="button" onclick="toggleReadingMode()" aria-label="Reading mode" title="Reading mode">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M3 4h18v16H3z" />
-          <path d="M7 8h10" />
-          <path d="M7 12h10" />
-          <path d="M7 16h6" />
-        </svg>
-      </button>
     </div>
     <div class="art-tags">${(p.tags || []).map(t => `<span class="post-tag">${t}</span>`).join('')}</div>
     <h1 class="art-title">${p.title}</h1>

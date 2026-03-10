@@ -130,14 +130,7 @@ const DB = {
   projects: [],
 
   /* ---- TOOLS ---------------------------------------------------------- */
-  tools: [
-    { id: 'password', name: 'Password Generator', desc: 'Secure random passwords with customizable rules.',  icon: 'key',         tag: 'Security',   category: 'Security'   },
-    { id: 'hash',     name: 'Hash Generator',      desc: 'SHA-256, SHA-512, MD5 hashing in the browser.',   icon: 'hash',        tag: 'Crypto',     category: 'Security'   },
-    { id: 'base64',   name: 'Base64 Encoder',       desc: 'Encode/decode Base64 strings instantly.',         icon: 'code',        tag: 'Encoding',   category: 'Encoding'   },
-    { id: 'uuid',     name: 'UUID Generator',       desc: 'Generate v4 UUIDs in bulk.',                      icon: 'fingerprint', tag: 'Utils',      category: 'Utilities'  },
-    { id: 'color',    name: 'Color Converter',      desc: 'Convert between HEX, RGB, HSL color formats.',   icon: 'palette',     tag: 'Design',     category: 'Design'     },
-    { id: 'json',     name: 'JSON Formatter',       desc: 'Pretty-print and validate JSON.',                 icon: 'braces',      tag: 'Utils',      category: 'Utilities'  },
-  ],
+  tools: [],
 
   /* ---- RESOURCES ------------------------------------------------------ */
   resources: [],

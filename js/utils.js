@@ -67,7 +67,6 @@ let REACTIONS  = JSON.parse(localStorage.getItem('v2_reactions') || '{}');
 let COMMENTS   = JSON.parse(localStorage.getItem('v2_comments') || '{}');
 let CUR_TOOL = null, TOOL_CATEGORY_FILTER = 'All', TOOL_QUERY = '';
 let SFX_ENABLED = JSON.parse(localStorage.getItem('sfx_enabled') || 'true');
-let READING_MODE = JSON.parse(localStorage.getItem('reading_mode') || 'false');
 const ARTICLE_SWIPE = { active: false, startX: 0, startY: 0, time: 0 };
 const PULL_REFRESH = { tracking: false, active: false, refreshing: false, startY: 0, distance: 0 };
 
@@ -76,37 +75,16 @@ function isMobileViewport() {
 }
 
 function isReadingModeActive() {
-  return !!READING_MODE && CUR_VIEW === 'article';
+  return CUR_VIEW === 'article';
 }
 
 function updateReadingModeUI() {
-  const btn = document.getElementById('reading-mode-toggle');
-  if (!btn) return;
-  const active = isReadingModeActive();
-  const labelText = active ? 'Exit reading mode' : 'Reading mode';
-  btn.classList.toggle('active', active);
-  btn.setAttribute('aria-label', labelText);
-  btn.setAttribute('title', labelText);
-  const label = btn.querySelector('span');
-  if (label) label.textContent = active ? 'Exit Reading Mode' : 'Reading Mode';
+  // Reading mode is fixed for article view.
 }
 
 function syncReadingModeClass() {
   document.body.classList.toggle('reading-mode', isReadingModeActive());
   updateReadingModeUI();
-}
-
-function setReadingMode(enabled, notify = true) {
-  READING_MODE = !!enabled;
-  localStorage.setItem('reading_mode', JSON.stringify(READING_MODE));
-  syncReadingModeClass();
-  if (READING_MODE && typeof resetPullIndicator === 'function') resetPullIndicator();
-  if (notify) toast(`Reading mode ${READING_MODE ? 'on' : 'off'}`);
-}
-
-function toggleReadingMode() {
-  if (CUR_VIEW !== 'article') return;
-  runReadingModeTransition(() => setReadingMode(!READING_MODE, true));
 }
 
 function runReadingModeTransition(action) {
@@ -119,11 +97,11 @@ function runReadingModeTransition(action) {
   setTimeout(() => {
     action();
     requestAnimationFrame(() => main.classList.remove('is-mode-fading'));
-  }, 220);
+  }, 620);
 }
 
 /* ─── View transitions ------------------------------------------------ */
-const VIEW_FADE_MS = 240;
+const VIEW_FADE_MS = 680;
 function runViewTransition(action) {
   const main = document.getElementById('main');
   if (!main || main.classList.contains('is-fading')) {
@@ -155,46 +133,47 @@ function nav(view, id, skipDelay = false) {
   const nextTargetId = id || null;
   const isDetailView = view === 'article' || view === 'project' || view === 'resource';
   const sameTarget = view === CUR_VIEW && (!isDetailView || nextTargetId === prevTargetId);
-  const skipLoadingViews = view === 'home' || view === 'about' || view === 'resources' || view === 'blog' || view === 'projects';
-  if (!sameTarget && !skipDelay) {
-    if (!skipLoadingViews) {
-      const navDelay = 800;
-      const label = getLoadingLabel(view, id);
-      flashPageLoading(label, navDelay);
-      clearTimeout(NAV_LOADING_TIMER);
-      NAV_LOADING_TIMER = setTimeout(() => nav(view, id, true), navDelay);
-      return;
-    }
-  }
+
+  // NOTE: removed per-user request — do not show page loading overlay
+  // on view navigations after startup. Previously this block displayed the
+  // loading screen for non-list views; we skip that behaviour now so
+  // transitions are faster and unobtrusive.
   const activeView = { article: 'blog', project: 'projects', resource: 'resources' }[view] || view;
 
-  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-  document.querySelectorAll('.nav-btn').forEach(b => b.classList.toggle('active', b.dataset.v === activeView));
+  const applyNavigation = () => {
+    document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+    document.querySelectorAll('.nav-btn').forEach(b => b.classList.toggle('active', b.dataset.v === activeView));
 
-  CUR_VIEW     = view;
-  CUR_POST     = view === 'article'  ? (id || null) : null;
-  CUR_PROJECT  = view === 'project'  ? (id || null) : null;
-  CUR_RESOURCE = view === 'resource' ? (id || null) : null;
-  syncMobileToolsBtn();
+    CUR_VIEW     = view;
+    CUR_POST     = view === 'article'  ? (id || null) : null;
+    CUR_PROJECT  = view === 'project'  ? (id || null) : null;
+    CUR_RESOURCE = view === 'resource' ? (id || null) : null;
+    syncMobileToolsBtn();
 
-  const el = document.getElementById('v-' + view);
-  if (el) el.classList.add('active');
-  const shell = document.getElementById('shell');
-  if (shell) shell.classList.toggle('tools-rail-open', view === 'tools');
-  if (view !== 'tools' && typeof window.closeToolsRail === 'function') window.closeToolsRail();
+    const el = document.getElementById('v-' + view);
+    if (el) el.classList.add('active');
+    const shell = document.getElementById('shell');
+    if (shell) shell.classList.toggle('tools-rail-open', view === 'tools');
+    if (view !== 'tools' && typeof window.closeToolsRail === 'function') window.closeToolsRail();
 
-  syncReadingModeClass();
-  updateQuickbar();
-  if (prevView !== view || id) document.getElementById('main').scrollTop = 0;
-  if (typeof playSfx === 'function' && prevView !== view) playSfx('open');
+    syncReadingModeClass();
+    updateQuickbar();
+    if (typeof window.refreshAnimations === 'function') window.refreshAnimations();
+    if (prevView !== view || id) document.getElementById('main').scrollTop = 0;
+    if (typeof playSfx === 'function' && prevView !== view) playSfx('open');
 
-  if (view === 'article' && id) {
-    loadArticle(id);
-    history.replaceState(null, '', `${location.href.split('#')[0]}#${id}`);
-  }
-  if (view === 'project'  && id) loadProjectDetail(id);
-  if (view === 'resource' && id) loadResourceDetail(id);
-  closeMob();
+    if (view === 'article' && id) {
+      loadArticle(id);
+      if (typeof resetPullIndicator === 'function') resetPullIndicator();
+      history.replaceState(null, '', `${location.href.split('#')[0]}#${id}`);
+    }
+    if (view === 'project'  && id) loadProjectDetail(id);
+    if (view === 'resource' && id) loadResourceDetail(id);
+    closeMob();
+  };
+
+  if (skipDelay || sameTarget) applyNavigation();
+  else runViewTransition(applyNavigation);
 }
 
 /* ─── Helpers ────────────────────────────────────────────── */
@@ -493,23 +472,6 @@ const PROJ_ICONS = {
   video:    `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="16" rx="2"/><line x1="7" y1="4" x2="7" y2="20"/><line x1="17" y1="4" x2="17" y2="20"/></svg>`,
 };
 
-const TOOL_ICONS = {
-  key:         `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/></svg>`,
-  hash:        `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="4" y1="9" x2="20" y2="9"/><line x1="4" y1="15" x2="20" y2="15"/><line x1="10" y1="3" x2="8" y2="21"/><line x1="16" y1="3" x2="14" y2="21"/></svg>`,
-  code:        `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>`,
-  fingerprint: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12C2 6.5 6.5 2 12 2a10 10 0 0 1 8 4"/><path d="M5 19.5C5.5 18 6 15 6 12c0-.7.12-1.37.34-2"/><path d="M17.29 21.02c.12-.6.43-2.3.5-3.02"/><path d="M12 10a2 2 0 0 0-2 2c0 1.02-.1 2.51-.26 4"/><path d="M8.65 22c.21-.66.45-1.32.57-2"/><path d="M14 13.12c0 2.38 0 6.38-1 8.88"/><path d="M2 16h.01"/><path d="M21.8 16c.2-2 .131-5.354 0-6"/><path d="M9 6.8a6 6 0 0 1 9 5.2c0 .47 0 1.17-.02 2"/></svg>`,
-  palette:     `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="13.5" cy="6.5" r=".5"/><circle cx="17.5" cy="10.5" r=".5"/><circle cx="8.5" cy="7.5" r=".5"/><circle cx="6.5" cy="12.5" r=".5"/><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"/></svg>`,
-  braces:      `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3H7a2 2 0 0 0-2 2v5a2 2 0 0 1-2 2 2 2 0 0 1 2 2v5c0 1.1.9 2 2 2h1"/><path d="M16 21h1a2 2 0 0 0 2-2v-5c0-1.1.9-2 2-2a2 2 0 0 1-2-2V5a2 2 0 0 0-2-2h-1"/></svg>`,
-  spark:       `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l2.2 5.2L20 9l-5.2 2.2L12 16l-2.8-4.8L4 9l5.8-1.8L12 2z"/></svg>`,
-  text:        `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7h16"/><path d="M9 7v10"/><path d="M15 7v10"/></svg>`,
-  calc:        `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="3" width="16" height="18" rx="2"/><line x1="8" y1="7" x2="16" y2="7"/><line x1="8" y1="11" x2="10" y2="11"/><line x1="14" y1="11" x2="16" y2="11"/><line x1="8" y1="15" x2="10" y2="15"/><line x1="14" y1="15" x2="16" y2="15"/></svg>`,
-  clock:       `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>`,
-  shield:      `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l7 4v6c0 5-3.5 9-7 10-3.5-1-7-5-7-10V6l7-4z"/></svg>`,
-  database:    `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v10c0 1.66 3.6 3 8 3s8-1.34 8-3V5"/></svg>`,
-  chip:        `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="7" y="7" width="10" height="10" rx="2"/><path d="M7 1v4M17 1v4M7 19v4M17 19v4M1 7h4M1 17h4M19 7h4M19 17h4"/></svg>`,
-  image:       `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="8" cy="9" r="2"/><path d="M21 16l-5-5-4 4-2-2-5 5"/></svg>`,
-};
-
 const PROJECT_CATEGORY_ICON_MAP = (typeof PROJECT_CATEGORY_ICONS !== 'undefined')
   ? PROJECT_CATEGORY_ICONS
   : {
@@ -518,24 +480,7 @@ const PROJECT_CATEGORY_ICON_MAP = (typeof PROJECT_CATEGORY_ICONS !== 'undefined'
       'Video Editing': PROJ_ICONS.video,
     };
 
-const TOOL_CATEGORY_ICON_MAP = (typeof TOOL_CATEGORY_ICONS !== 'undefined')
-  ? TOOL_CATEGORY_ICONS
-  : {
-      Converters: TOOL_ICONS.braces,
-      Generators: TOOL_ICONS.spark,
-      'Text Tools': TOOL_ICONS.text,
-      'Developer Tools': TOOL_ICONS.code,
-      'Image Tools': TOOL_ICONS.image,
-      Calculators: TOOL_ICONS.calc,
-      'Productivity & Organizers': TOOL_ICONS.clock,
-      'Security & Crypto': TOOL_ICONS.shield,
-      'Data & Files': TOOL_ICONS.database,
-      'AI Tools': TOOL_ICONS.chip,
-    };
-
 window.PROJECT_CATEGORY_ICON_MAP = PROJECT_CATEGORY_ICON_MAP;
-window.TOOL_CATEGORY_ICON_MAP = TOOL_CATEGORY_ICON_MAP;
-window.TOOL_ICONS = TOOL_ICONS;
 
 const RES_ICONS = {
   Book:     `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>`,
@@ -970,17 +915,6 @@ document.addEventListener('keydown', e => {
   if (e.key === '0') resetViewerImage();
 });
 
-document.addEventListener('keydown', e => {
-  if ((e.key || '').toLowerCase() !== 'r') return;
-  if (e.repeat) return;
-  if (CUR_VIEW !== 'article') return;
-  if (document.getElementById('search-modal')?.classList.contains('open')) return;
-  if (document.getElementById('lightbox')?.classList.contains('open')) return;
-  const t = e.target;
-  if (t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.tagName === 'SELECT' || t.isContentEditable)) return;
-  e.preventDefault();
-  toggleReadingMode();
-});
 
 /* ─── Scroll progress ─────────────────────────────────────── */
 document.getElementById('main').addEventListener('scroll', function () {

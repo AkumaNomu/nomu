@@ -70,19 +70,21 @@
   </div>
 
   <!-- Search -->
-  <div id="search-modal" class="fixed inset-0 z-[9000] flex items-start justify-center pt-[clamp(60px,12vh,120px)]" onclick="closeSearch(event)">
+  <div id="search-modal" class="fixed inset-0 z-[9000] flex items-start justify-center pt-[clamp(60px,12vh,120px)]" role="dialog" aria-modal="true" aria-label="Terminal" onclick="closeSearch(event)">
     <div class="search-box" onclick="event.stopPropagation()">
-      <div class="search-input-row">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <circle cx="11" cy="11" r="8" />
-          <path d="m21 21-4.35-4.35" />
-        </svg>
-        <input id="search-input" type="text" placeholder="Type a command (help)"
-          autocomplete="off" />
-        <span class="search-esc" onclick="closeSearch({target:document.getElementById('search-modal')})">ESC</span>
-      </div>
-      <div class="search-results" id="search-results">
-        <div class="search-empty">Type <em>help</em> to list commands.</div>
+      <div class="terminal-shell">
+        <div class="terminal-transcript" id="search-transcript" aria-live="polite"></div>
+        <div class="terminal-prompt-row" id="search-prompt-row">
+          <div class="terminal-input-lane">
+            <span class="terminal-prompt-label" id="search-prompt-label">nomu@site:~$</span>
+            <div class="terminal-input-stack">
+              <div class="terminal-ghost" id="search-ghost" aria-hidden="true"></div>
+              <input id="search-input" type="text" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="help" />
+            </div>
+          </div>
+          <button class="search-esc" type="button" onclick="closeSearch({target:document.getElementById('search-modal')})">ESC</button>
+        </div>
+        <div class="terminal-completions" id="search-completions"></div>
       </div>
     </div>
   </div>
@@ -474,6 +476,7 @@
   <script src="js/quickbar.js"></script>
   <script src="js/sounds.js"></script>
   <script src="js/music.js"></script>
+  <script src="js/animations.js"></script>
 
 </body>
 
