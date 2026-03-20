@@ -69,6 +69,7 @@ let CUR_TOOL = null, TOOL_CATEGORY_FILTER = 'All', TOOL_QUERY = '';
 let SFX_ENABLED = JSON.parse(localStorage.getItem('sfx_enabled') || 'true');
 const ARTICLE_SWIPE = { active: false, startX: 0, startY: 0, time: 0 };
 const PULL_REFRESH = { tracking: false, active: false, refreshing: false, startY: 0, distance: 0 };
+let WIKILINK_CACHE = new Map();
 
 function isMobileViewport() {
   return window.matchMedia('(max-width: 860px)').matches;
@@ -499,22 +500,33 @@ function normalizeLinkKey(value) {
   return slugifyName(String(value || '').trim());
 }
 
+function buildWikilinkCache() {
+  if (typeof DB === 'undefined') return;
+  const cache = new Map();
+
+  // Helper to add items to cache; later items of the same key will not overwrite
+  const addToCache = (items, getLabel, type) => {
+    (items || []).forEach(item => {
+      const idKey = normalizeLinkKey(item.id);
+      const labelKey = normalizeLinkKey(getLabel(item));
+      const val = { type, id: item.id };
+      if (idKey && !cache.has(idKey)) cache.set(idKey, val);
+      if (labelKey && !cache.has(labelKey)) cache.set(labelKey, val);
+    });
+  };
+
+  // Priority: Articles > Projects > Resources
+  addToCache(DB.posts || [], p => p.title, 'article');
+  addToCache(DB.projects || [], p => p.name, 'project');
+  addToCache(DB.resources || [], r => r.title, 'resource');
+
+  WIKILINK_CACHE = cache;
+}
+
 function resolveWikilinkTarget(value) {
   if (typeof DB === 'undefined') return null;
   const key = normalizeLinkKey(value);
-  const findMatch = (items, getLabel, type) => {
-    const match = items.find(item =>
-      normalizeLinkKey(item.id) === key || normalizeLinkKey(getLabel(item)) === key
-    );
-    return match ? { type, id: match.id } : null;
-  };
-  const post = findMatch(DB.posts || [], p => p.title, 'article');
-  if (post) return post;
-  const project = findMatch(DB.projects || [], p => p.name, 'project');
-  if (project) return project;
-  const resource = findMatch(DB.resources || [], r => r.title, 'resource');
-  if (resource) return resource;
-  return null;
+  return WIKILINK_CACHE.get(key) || null;
 }
 
 function escapeHtmlBasic(value) {
@@ -984,6 +996,7 @@ function resetPullIndicator() {
 async function refreshAppContent(source = 'manual') {
   const shouldFetchFromFiles = typeof USE_CONTENT_MANIFEST !== 'undefined' && USE_CONTENT_MANIFEST;
   if (shouldFetchFromFiles) await loadContentFromFolders();
+  buildWikilinkCache();
 
   renderHome();
   renderBlog();
@@ -1262,6 +1275,7 @@ window.addEventListener('DOMContentLoaded', async () => {
   if (typeof USE_CONTENT_MANIFEST !== 'undefined' && USE_CONTENT_MANIFEST) {
     await loadContentFromFolders();
   }
+  buildWikilinkCache();
 
   wireLocalMusic();
   renderHome();
