@@ -101,7 +101,7 @@ function runReadingModeTransition(action) {
 }
 
 /* ─── View transitions ------------------------------------------------ */
-const VIEW_FADE_MS = 680;
+const VIEW_FADE_MS = 260;
 function runViewTransition(action) {
   const main = document.getElementById('main');
   if (!main || main.classList.contains('is-fading')) {
@@ -1213,17 +1213,23 @@ function copyText(id) {
 /* ─── Music wiring ───────────────────────────────────────── */
 function wireLocalMusic() {
   const TRACK_MAP = {
-    'No One Ever Said':                { src: (DB.site.repo || '') + 'assets/music/No%20One%20Ever%20Said.mp3',                              cover: (DB.site.repo || '') + 'assets/music/covers/No%20One%20Ever%20Said.png'                              },
-    'Rises The Moon':                  { src: (DB.site.repo || '') + 'assets/music/Rises%20The%20Moon.mp3',                                  cover: (DB.site.repo || '') + 'assets/music/covers/Rises%20The%20Moon.png'                                  },
-    'Sorry, I Like You':               { src: (DB.site.repo || '') + 'assets/music/Sorry%2C%20I%20Like%20You.mp3',                           cover: (DB.site.repo || '') + 'assets/music/covers/Sorry%2C%20I%20Like%20You.png'                           },
-    'Wet':                             { src: (DB.site.repo || '') + 'assets/music/Wet.mp3',                                                 cover: (DB.site.repo || '') + 'assets/music/covers/Wet.png'                                                 },
-    "World's Number One Oden Store":   { src: (DB.site.repo || '') + "assets/music/World%27s%20Number%20One%20Oden%20Store.mp3",            cover: (DB.site.repo || '') + "assets/music/covers/World%27s%20Number%20One%20Oden%20Store.png"            },
+    'No One Ever Said':              { src: (DB.site.repo || '') + 'assets/music/No%20One%20Ever%20Said.mp3',                    cover: (DB.site.repo || '') + 'assets/music/covers/No%20One%20Ever%20Said.png'                    },
+    'Rises The Moon':                { src: (DB.site.repo || '') + 'assets/music/Rises%20The%20Moon.mp3',                        cover: (DB.site.repo || '') + 'assets/music/covers/Rises%20The%20Moon.png'                        },
+    'Sorry, I Like You':             { src: (DB.site.repo || '') + 'assets/music/Sorry%2C%20I%20Like%20You.mp3',                 cover: (DB.site.repo || '') + 'assets/music/covers/Sorry%2C%20I%20Like%20You.png'                 },
+    'Wet':                           { src: (DB.site.repo || '') + 'assets/music/Wet.mp3',                                       cover: (DB.site.repo || '') + 'assets/music/covers/Wet.png'                                       },
+    "World's Number One Oden Store": { src: (DB.site.repo || '') + "assets/music/World%27s%20Number%20One%20Oden%20Store.mp3",  cover: (DB.site.repo || '') + "assets/music/covers/World%27s%20Number%20One%20Oden%20Store.png", youtubeId: 'h3YnC9qEgcQ' },
   };
   DB.music = DB.music.map((track, idx) => {
     const mapped = TRACK_MAP[track.title];
     if (!mapped) return track;
-    return { ...track, id: track.id || `local-${idx + 1}`, src: mapped.src, cover: mapped.cover };
-  }).filter(t => t.src);
+    return {
+      ...track,
+      id: track.id || `local-${idx + 1}`,
+      src: track.src || mapped.src || null,
+      cover: track.cover || mapped.cover || null,
+      youtubeId: track.youtubeId || mapped.youtubeId || null,
+    };
+  }).filter(t => t.src || t.youtubeId);
   if (TRACK_IDX >= DB.music.length) TRACK_IDX = 0;
 }
 

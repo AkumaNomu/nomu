@@ -1,14 +1,25 @@
-﻿export const TOOL_CATEGORIES = ['Image'];
+export const TOOL_CATEGORIES = ['Image', 'Audio'];
 
 export const TOOL_DEFS = [
   {
     id: 'image-converter',
-    name: 'Image Converter',
-    description: 'Convert and resize images (client-side).',
+    name: 'Image Compressor / Converter',
+    description: 'Compress, convert, and resize images (client-side).',
     category: 'Image',
-    keywords: 'image convert png jpeg webp resize compress',
+    keywords: 'image convert png jpeg webp resize compress optimize quality',
     icon: 'image',
+    supportsDownload: true,
     loader: () => import('./modules/image-converter.js'),
+  },
+  {
+    id: 'audio-converter',
+    name: 'Audio Compressor / Converter',
+    description: 'Compress and convert audio files in-browser.',
+    category: 'Audio',
+    keywords: 'audio convert compress bitrate opus wav webm ogg',
+    icon: 'audio',
+    supportsDownload: true,
+    loader: () => import('./modules/audio-converter.js'),
   },
 ];
 

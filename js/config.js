@@ -153,37 +153,31 @@ const PAGINATION = {
 };
 
 const ABOUT_CONTENT = `
-## Hello World!
+<h2>Hello World!</h2>
 
-I'm Nomu - a systems engineer who finds beauty in the intersection of
-low-level code and high-level thinking. I work on distributed systems,
-compilers, and developer tooling by day. By night I experiment with generative
-art, cryptography, and whatever rabbit hole I fell into that week.
+I'm Nomu, someone who likes to tinker around. 
+I like music, motion design, coding and a lot of other things.
 
-## This Site
 
-NOMU's is my yapping place. A space to think out loud, share what I learn,
-and build useful tools. Everything here is hand-crafted - single HTML file,
-no framework, no build step.
+<h2>This Site</h2>
+<p>
+  This is my space to think in public, to write, experiment, and build.
+</p>
 
 ## Stack
-
-Primarily **Rust**, **Go**, and **TypeScript**. I'm obsessed with performance
-and correctness. Postgres over everything. Terminal over GUI.
-
+  Only **HTML**, **Tailwind CSS**, and **Vanilla JavaScript**.\n
+  Don't flood r/madlads please.
 ## Contact
-
-Best reached at [nomu@example.com](mailto:nomu@example.com) or on
-[Instagram](https://instagram.com/akumanomu). I reply to interesting emails.
+  Reach me at [akumanomu@proton.me](mailto:akumanomu@proton.me) or on [Instagram](https://instagram.com/akumanomu).
 `;
 
 /* --- MUSIC ------------------------------------------------------ */
 const MUSIC_DB = [
-  { id: 't1', title: 'No One Ever Said',              artist: 'Session Archive', duration: 214, cover: null, src: null },
-  { id: 't2', title: 'Rises The Moon',                artist: 'Session Archive', duration: 187, cover: null, src: null },
-  { id: 't3', title: 'Sorry, I Like You',             artist: 'Session Archive', duration: 259, cover: null, src: null },
-  { id: 't4', title: 'Wet',                           artist: 'Session Archive', duration: 213, cover: null, src: null },
-  { id: 't5', title: "World's Number One Oden Store", artist: 'Session Archive', duration: 252, cover: null, src: null },
+  { id: 't1', title: 'No One Ever Said',              artist: 'Session Archive', duration: 214, cover: null, src: null, youtubeId: null },
+  { id: 't2', title: 'Rises The Moon',                artist: 'Session Archive', duration: 187, cover: null, src: null, youtubeId: null },
+  { id: 't3', title: 'Sorry, I Like You',             artist: 'Session Archive', duration: 259, cover: null, src: null, youtubeId: null },
+  { id: 't4', title: 'Wet',                           artist: 'Session Archive', duration: 213, cover: null, src: null, youtubeId: null },
+  { id: 't5', title: "World's Number One Oden Store", artist: 'Session Archive', duration: 252, cover: null, src: null, youtubeId: 'h3YnC9qEgcQ' },
 ];
 
 /* --- CONTENT DB ------------------------------------------------- */
