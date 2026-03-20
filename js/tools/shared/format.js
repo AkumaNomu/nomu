@@ -11,6 +11,13 @@
   return `${val.toFixed(val < 10 && idx > 0 ? 2 : 0)} ${units[idx]}`;
 }
 
+export function fmtBytes(bytes) {
+  const num = Number(bytes || 0);
+  if (num < 1024) return `${num} B`;
+  if (num < 1024 * 1024) return `${(num / 1024).toFixed(1)} KB`;
+  return `${(num / (1024 * 1024)).toFixed(2)} MB`;
+}
+
 export function formatNumber(value, digits = 6) {
   const num = Number(value);
   if (!Number.isFinite(num)) return '';

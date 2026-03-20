@@ -1,15 +1,5 @@
-function clamp(value, min, max) {
-  let num = Number(value);
-  if (Number.isNaN(num)) num = min;
-  return Math.min(max, Math.max(min, num));
-}
-
-function fmtBytes(bytes) {
-  const num = Number(bytes || 0);
-  if (num < 1024) return `${num} B`;
-  if (num < 1024 * 1024) return `${(num / 1024).toFixed(1)} KB`;
-  return `${(num / (1024 * 1024)).toFixed(2)} MB`;
-}
+import { clampNumber } from '../shared/dom.js';
+import { fmtBytes } from '../shared/format.js';
 
 function extFromMime(format) {
   const fmt = String(format || '');
@@ -232,7 +222,7 @@ export async function compute(state, runtime) {
   const rendered = await renderBuffer(decoded, targetSampleRate, targetChannels);
 
   const format = state.format || 'audio/webm;codecs=opus';
-  const bitrateKbps = clamp(state.bitrate, 24, 320);
+  const bitrateKbps = clampNumber(state.bitrate, 24, 320);
   let blob;
 
   if (String(format).startsWith('audio/wav')) {

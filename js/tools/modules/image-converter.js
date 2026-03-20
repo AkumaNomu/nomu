@@ -1,15 +1,5 @@
-function clamp(value, min, max) {
-  let num = Number(value);
-  if (Number.isNaN(num)) num = 0;
-  return Math.min(max, Math.max(min, num));
-}
-
-function fmtBytes(bytes) {
-  const num = Number(bytes || 0);
-  if (num < 1024) return `${num} B`;
-  if (num < 1024 * 1024) return `${(num / 1024).toFixed(1)} KB`;
-  return `${(num / (1024 * 1024)).toFixed(2)} MB`;
-}
+import { clampNumber } from '../shared/dom.js';
+import { fmtBytes } from '../shared/format.js';
 
 function getOutputExt(format) {
   const short = String(format || 'image/png').split('/')[1] || 'png';
@@ -60,7 +50,7 @@ export const schema = {
 };
 
 export function render({ state }) {
-  const qualityPct = Math.round(clamp(state.quality, 0.1, 1) * 100);
+  const qualityPct = Math.round(clampNumber(state.quality, 0.1, 1) * 100);
   return `
     <div class="tool-shell-body">
       <div class="tool-settings">
@@ -78,7 +68,7 @@ export function render({ state }) {
         </div>
         <div class="tool-field">
           <label class="tool-field-label" for="img-quality">Quality (JPEG/WebP): ${qualityPct}%</label>
-          <input id="img-quality" type="range" min="0.1" max="1" step="0.01" value="${clamp(state.quality, 0.1, 1)}" data-field-id="quality" />
+          <input id="img-quality" type="range" min="0.1" max="1" step="0.01" value="${clampNumber(state.quality, 0.1, 1)}" data-field-id="quality" />
         </div>
         <div class="tool-field">
           <label class="tool-field-label" for="img-max-width">Max width (px)</label>
@@ -141,7 +131,7 @@ export async function compute(state, runtime) {
   ctx.drawImage(bitmap, 0, 0, targetW, targetH);
 
   const format = state.format || 'image/webp';
-  const quality = clamp(state.quality, 0.1, 1);
+  const quality = clampNumber(state.quality, 0.1, 1);
   const blob = await toBlob(canvas, format, quality);
   if (!blob) {
     resetRuntime(runtime);
