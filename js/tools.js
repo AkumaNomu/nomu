@@ -141,7 +141,7 @@ function renderToolList() {
     tools = tools.filter(tool => TOOL_FAVORITES.has(tool.id));
   }
   const list = document.getElementById('tools-rail-list');
-  if (!list) return;
+  if (!list) return tools;
 
   if (window.CUR_TOOL && !tools.some(tool => tool.id === window.CUR_TOOL)) {
     window.CUR_TOOL = null;
@@ -210,6 +210,8 @@ function renderToolList() {
 
   const favChip = document.getElementById('tools-fav-filter');
   if (favChip) favChip.classList.toggle('active', TOOL_FAV_FILTER);
+
+  return tools;
 }
 
 function renderPanelPlaceholder() {
@@ -502,12 +504,8 @@ function renderTools() {
   if (!TOOL_CATEGORIES.includes(window.TOOL_CATEGORY_FILTER)) {
     window.TOOL_CATEGORY_FILTER = TOOL_CATEGORIES[0];
   }
-  renderToolList();
+  const tools = renderToolList();
 
-  let tools = getFilteredTools();
-  if (TOOL_FAV_FILTER) {
-    tools = tools.filter(tool => TOOL_FAVORITES.has(tool.id));
-  }
   if (!window.CUR_TOOL && tools.length && !AUTO_OPEN_LOCK) {
     AUTO_OPEN_LOCK = true;
     const lastId = TOOL_LAST_BY_CAT[window.TOOL_CATEGORY_FILTER];
