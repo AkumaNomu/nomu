@@ -1,0 +1,52 @@
+export type EntryType = "essay" | "fragment" | "chronicle";
+
+export type ArchiveEntry = {
+  id: string;
+  ref: string;
+  slug: string;
+  title: string;
+  subtitle?: string;
+  excerpt: string;
+  body: string[];
+  markdown: string;
+  html: string;
+  plainText: string;
+  wordCount: number;
+  quote?: string;
+  type: EntryType;
+  category: string;
+  tags: string[];
+  publishedAt: string;
+  year: number;
+  sourcePath: string;
+  soundtrackTitle?: string;
+  soundtrackArtist?: string;
+  soundtrackService?: "youtube" | "soundcloud";
+  soundtrackUrl?: string;
+  soundtrackFallbackSrc?: string;
+  coverImage?: string;
+  coverAlt?: string;
+  featured?: boolean;
+  isPublished?: boolean;
+};
+
+export type SupabasePostRow = {
+  id: string;
+  ref: string | null;
+  slug: string;
+  title: string;
+  subtitle: string | null;
+  excerpt: string;
+  body: string[];
+  quote: string | null;
+  type: EntryType;
+  category: string;
+  tags: string[];
+  published_at: string;
+  cover_image: string | null;
+  cover_alt: string | null;
+  featured: boolean;
+  is_published: boolean;
+  created_at?: string;
+  updated_at?: string;
+};
