@@ -42,6 +42,7 @@ export type MarkdownLookupEntry = {
 type CompileContext = {
   currentFile: string;
   noteIndex: Map<string, MarkdownLookupEntry>;
+  sourceByPath?: Map<string, string>;
 };
 
 export type CompiledMarkdown = {
@@ -336,7 +337,7 @@ async function expandEmbeds(source: string, context: CompileContext, seen = new 
         continue;
       }
 
-      const embeddedSource = await fs.readFile(resolved.absolutePath, "utf8");
+      const embeddedSource = context.sourceByPath?.get(resolved.absolutePath) ?? (await fs.readFile(resolved.absolutePath, "utf8"));
       const embedded = matter(embeddedSource);
       const sectionContent = extractMarkdownSection(embedded.content, reference.section);
       const expanded = await expandEmbeds(

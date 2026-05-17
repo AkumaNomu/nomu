@@ -45,6 +45,11 @@ export type SupabasePostRow = {
   published_at: string;
   cover_image: string | null;
   cover_alt: string | null;
+  soundtrack_title: string | null;
+  soundtrack_artist: string | null;
+  soundtrack_service: "youtube" | "soundcloud" | null;
+  soundtrack_url: string | null;
+  soundtrack_fallback_src: string | null;
   featured: boolean;
   is_published: boolean;
   created_at?: string;

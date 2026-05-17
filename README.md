@@ -20,10 +20,11 @@ This is a full App Router conversion of the provided archive/library HTML mockup
 - `/fragments/[slug]` -- poetic fragment page
 - `/about` -- manifesto/about page
 - `/colophon` -- design system/specimen page
-- `/admin` -- minimal publishing console with Supabase Storage upload
+- `/admin` -- content dashboard with Supabase Storage upload and post editing
 - `/api/posts` -- GET list, POST create
 - `/api/posts/[slug]` -- GET one post
 - `/api/storage/upload` -- POST file upload to Supabase Storage
+- `/api/storage/objects` -- GET/DELETE storage objects for the admin dashboard
 - `/api/health` -- environment readiness check
 - `/api/revalidate` -- optional on-demand path revalidation
 
@@ -73,7 +74,6 @@ vercel
 
 ## Admin publishing
 
-Visit `/admin`, paste the `ADMIN_WRITE_KEY`, upload a cover image if needed, and publish an entry. The write route uses the service role key server-side and never exposes it to the browser.
+Visit `/admin`, paste the `ADMIN_WRITE_KEY`, unlock the dashboard, edit an existing post or publish a new one, and upload a cover image if needed. The write routes use the service role key server-side and never expose it to the browser.
 
 For production, replace the simple admin key with Supabase Auth and protected middleware if multiple editors will use the system.
-
