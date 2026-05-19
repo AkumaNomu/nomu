@@ -11,6 +11,29 @@ export type Database = {
         Update: Partial<Omit<SupabasePostRow, "id">>;
         Relationships: [];
       };
+      comments: {
+        Row: {
+          id: string;
+          post_slug: string;
+          author: string;
+          body: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          post_slug: string;
+          author: string;
+          body: string;
+          created_at?: string;
+        };
+        Update: Partial<{
+          post_slug: string;
+          author: string;
+          body: string;
+          created_at: string;
+        }>;
+        Relationships: [];
+      };
     };
     Views: Record<string, never>;
     Functions: Record<string, never>;
@@ -18,4 +41,3 @@ export type Database = {
     CompositeTypes: Record<string, never>;
   };
 };
-

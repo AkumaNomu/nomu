@@ -12,7 +12,6 @@ import {
   useState
 } from "react";
 import { WPM_STORAGE_KEY } from "@/lib/theme";
-import { SymbolIcon } from "@/components/icons";
 
 type ScrollWordReaderProps = {
   html: string;
@@ -42,17 +41,17 @@ function countWords(value: string) {
 }
 
 function readStoredWpm() {
-  if (typeof window === "undefined") return 140;
+  if (typeof window === "undefined") return 220;
 
   const stored = window.localStorage.getItem(WPM_STORAGE_KEY);
-  if (!stored) return 140;
+  if (!stored) return 220;
 
   const parsed = Number(stored);
-  if (Number.isFinite(parsed) && parsed >= 60 && parsed <= 320) {
+  if (Number.isFinite(parsed) && parsed >= 120 && parsed <= 600) {
     return parsed;
   }
 
-  return 140;
+  return 220;
 }
 
 type PageUnit = {
@@ -348,6 +347,7 @@ export function ScrollWordReader({ html, nextHref, nextLabel }: ScrollWordReader
   const touchStartYRef = useRef<number | null>(null);
   const pendingDirectionRef = useRef<1 | -1>(1);
   const transitioningRef = useRef(false);
+  const transitionUnlockTimeoutRef = useRef<number | null>(null);
   const autoplayRemainderRef = useRef(0);
   const [pages, setPages] = useState<PageDefinition[]>([]);
   const [currentPageIndex, setCurrentPageIndex] = useState(0);
@@ -370,6 +370,32 @@ export function ScrollWordReader({ html, nextHref, nextLabel }: ScrollWordReader
   useEffect(() => {
     pagesRef.current = pages;
   }, [pages]);
+
+  const stopAutoScroll = useEffectEvent(() => {
+    autoplayRemainderRef.current = 0;
+    setAutoScroll(false);
+  });
+
+  const clearTransitionUnlockTimer = useEffectEvent(() => {
+    if (transitionUnlockTimeoutRef.current !== null) {
+      window.clearTimeout(transitionUnlockTimeoutRef.current);
+      transitionUnlockTimeoutRef.current = null;
+    }
+  });
+
+  const armTransitionUnlockFallback = useEffectEvent(() => {
+    clearTransitionUnlockTimer();
+    transitionUnlockTimeoutRef.current = window.setTimeout(() => {
+      transitioningRef.current = false;
+      transitionUnlockTimeoutRef.current = null;
+    }, 1000);
+  });
+
+  useEffect(() => {
+    return () => {
+      clearTransitionUnlockTimer();
+    };
+  }, [clearTransitionUnlockTimer]);
 
   useEffect(() => {
     const root = document.documentElement;
@@ -428,6 +454,7 @@ export function ScrollWordReader({ html, nextHref, nextLabel }: ScrollWordReader
 
     if (!article || !page) return;
 
+    clearTransitionUnlockTimer();
     article.innerHTML = page.html;
     const prepared = prepareAnimatedContent(article);
     preparedRef.current = prepared;
@@ -485,21 +512,28 @@ export function ScrollWordReader({ html, nextHref, nextLabel }: ScrollWordReader
 
     if (!targetPage || transitioningRef.current) return;
 
+    clearTransitionUnlockTimer();
     transitioningRef.current = true;
     pendingDirectionRef.current = direction;
 
-    if (stage && !prefersReducedMotion) {
-      await animate(
-        stage,
-        { opacity: 0, transform: `translateY(${direction > 0 ? "-18px" : "18px"})` },
-        { duration: 0.18, ease: [0.64, 0, 0.78, 0] }
-      ).finished;
+    try {
+      if (stage && !prefersReducedMotion) {
+        await animate(
+          stage,
+          { opacity: 0, transform: `translateY(${direction > 0 ? "-18px" : "18px"})` },
+          { duration: 0.18, ease: [0.64, 0, 0.78, 0] }
+        ).finished;
+      }
+    } catch {
+      // If the animation is interrupted, still commit the page change below.
     }
 
     startTransition(() => {
       setCurrentPageIndex(targetPageIndex);
       setRevealedCount(clamp(targetReveal, 0, targetPage.wordCount));
     });
+
+    armTransitionUnlockFallback();
   });
 
   const applyStepDelta = useEffectEvent((stepDelta: number) => {
@@ -549,27 +583,32 @@ export function ScrollWordReader({ html, nextHref, nextLabel }: ScrollWordReader
   useEffect(() => {
     function onWheel(event: WheelEvent) {
       event.preventDefault();
+      stopAutoScroll();
       handlePointerDelta(event.deltaY);
     }
 
     function onKeyDown(event: KeyboardEvent) {
       if (event.key === "ArrowDown" || event.key === "PageDown") {
         event.preventDefault();
+        stopAutoScroll();
         applyStepDelta(14);
       }
 
       if (event.key === "ArrowUp" || event.key === "PageUp") {
         event.preventDefault();
+        stopAutoScroll();
         applyStepDelta(-14);
       }
 
       if (event.key === " " || event.key === "Enter") {
         event.preventDefault();
+        stopAutoScroll();
         applyStepDelta(event.shiftKey ? -24 : 24);
       }
 
       if (event.key === "Home") {
         event.preventDefault();
+        stopAutoScroll();
         startTransition(() => {
           setCurrentPageIndex(0);
           setRevealedCount(0);
@@ -582,6 +621,7 @@ export function ScrollWordReader({ html, nextHref, nextLabel }: ScrollWordReader
         if (!lastPage) return;
 
         event.preventDefault();
+        stopAutoScroll();
         startTransition(() => {
           setCurrentPageIndex(lastPageIndex);
           setRevealedCount(lastPage.wordCount);
@@ -598,6 +638,7 @@ export function ScrollWordReader({ html, nextHref, nextLabel }: ScrollWordReader
       const currentY = event.touches[0]?.clientY;
       if (typeof currentY !== "number") return;
       event.preventDefault();
+      stopAutoScroll();
       handlePointerDelta(touchStartYRef.current - currentY);
       touchStartYRef.current = currentY;
     }
@@ -678,8 +719,8 @@ export function ScrollWordReader({ html, nextHref, nextLabel }: ScrollWordReader
             </span>
             <input
               type="range"
-              min="60"
-              max="320"
+              min="120"
+              max="600"
               step="10"
               value={wpm}
               onChange={(event) => {

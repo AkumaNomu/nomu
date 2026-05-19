@@ -44,6 +44,34 @@ using (is_published = true);
 -- Writes should use the server-side service role key only.
 -- Do not create anon insert/update/delete policies unless you add real auth.
 
+-- ==============================================================
+-- Comments
+-- ==============================================================
+
+create table if not exists public.comments (
+  id uuid primary key default gen_random_uuid(),
+  post_slug text not null,
+  author text not null check (char_length(author) between 1 and 80),
+  body text not null check (char_length(body) between 1 and 2000),
+  created_at timestamptz not null default now()
+);
+
+create index if not exists comments_post_slug_idx on public.comments (post_slug, created_at desc);
+
+alter table public.comments enable row level security;
+
+drop policy if exists "Public can read comments" on public.comments;
+create policy "Public can read comments"
+on public.comments for select
+to anon, authenticated
+using (true);
+
+drop policy if exists "Public can add comments" on public.comments;
+create policy "Public can add comments"
+on public.comments for insert
+to anon, authenticated
+with check (post_slug <> '' and author <> '' and body <> '');
+
 insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
 values (
   'archive-assets',

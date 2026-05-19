@@ -29,7 +29,7 @@ export function ThemeToggle() {
 
   function toggleTheme() {
     const nextTheme: ThemeMode = mode === "dark" ? "light" : "dark";
-    setTheme(nextTheme);
+    applyTheme(nextTheme);
   }
 
   const isDark = mode === "dark";

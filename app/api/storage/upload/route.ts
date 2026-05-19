@@ -2,11 +2,34 @@ import { NextResponse } from "next/server";
 import { assertAdminRequest } from "@/lib/admin-auth";
 import { getSupabaseEnv } from "@/lib/env";
 import { createAdminSupabaseClient } from "@/lib/supabase/server";
+import sharp from "sharp";
 
 function safeFileName(name: string) {
   const extension = name.includes(".") ? `.${name.split(".").pop()}` : "";
   const base = name.replace(extension, "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)+/g, "");
   return `${base || "asset"}-${Date.now()}${extension}`;
+}
+
+async function compressIfSupported(file: File, buffer: Buffer) {
+  // Images: transcode to WebP to save space. Audio: passthrough (no ffmpeg available).
+  const mime = file.type || "application/octet-stream";
+
+  if (mime.startsWith("image/")) {
+    const transcoded = await sharp(buffer, { failOn: "none" })
+      .rotate()
+      .resize({ width: 1920, height: 1920, fit: "inside", withoutEnlargement: true })
+      .webp({ quality: 82 })
+      .toBuffer();
+
+    return {
+      buffer: transcoded,
+      contentType: "image/webp",
+      extension: ".webp",
+      compressed: true
+    } as const;
+  }
+
+  return { buffer, contentType: mime, extension: null, compressed: false } as const;
 }
 
 export async function POST(request: Request) {
@@ -27,11 +50,16 @@ export async function POST(request: Request) {
 
   const { bucket } = getSupabaseEnv();
   const folder = String(formData.get("folder") ?? "uploads").replace(/[^a-z0-9-_/]/gi, "");
-  const path = `${folder}/${safeFileName(file.name)}`;
-  const buffer = Buffer.from(await file.arrayBuffer());
+  const originalBuffer = Buffer.from(await file.arrayBuffer());
+  const processed = await compressIfSupported(file, originalBuffer);
 
-  const { data, error } = await supabase.storage.from(bucket).upload(path, buffer, {
-    contentType: file.type || "application/octet-stream",
+  const baseName = safeFileName(file.name);
+  const normalizedName =
+    processed.extension && baseName.includes(".") ? `${baseName.replace(/\.[^.]+$/, processed.extension)}` : baseName;
+  const path = `${folder}/${normalizedName}`;
+
+  const { data, error } = await supabase.storage.from(bucket).upload(path, processed.buffer, {
+    contentType: processed.contentType,
     upsert: false
   });
 
@@ -42,6 +70,8 @@ export async function POST(request: Request) {
   return NextResponse.json({
     bucket,
     path: data.path,
-    publicUrl: publicData.publicUrl
+    publicUrl: publicData.publicUrl,
+    compressed: processed.compressed,
+    contentType: processed.contentType
   });
 }

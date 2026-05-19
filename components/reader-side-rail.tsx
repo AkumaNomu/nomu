@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { formatArchiveDate } from "@/data/archive";
-import { SoundtrackPlayer } from "@/components/soundtrack-player";
 import { SymbolIcon } from "@/components/icons";
 import type { ArchiveEntry } from "@/types/archive";
 
@@ -14,7 +13,7 @@ export function ReaderSideRail({
   routeLabel?: string;
 }) {
   return (
-    <aside className="reader-side-rail w-full border-b-[0.5px] border-border-subtle pb-5 lg:w-1/4 lg:shrink-0 lg:sticky lg:top-24 lg:h-[calc(100vh-7rem)] lg:border-b-0 lg:border-r-[0.5px] lg:pr-8">
+    <aside className="reader-side-rail w-full border-b-[0.5px] border-border-subtle pb-5 lg:w-1/4 lg:shrink-0 lg:sticky lg:top-16 lg:h-[calc(100vh-5rem)] lg:border-b-0 lg:border-r-[0.5px] lg:pr-8">
       <div className="flex h-full flex-col gap-4">
         <div className="space-y-2">
           <p className="font-label-caps text-label-caps tracking-[0.2em] text-ink-muted">{entry.ref}</p>
@@ -44,8 +43,6 @@ export function ReaderSideRail({
         </dl>
 
         <p className="line-clamp-2 font-body-md text-body-md text-ink-muted">{entry.excerpt}</p>
-
-        <SoundtrackPlayer entry={entry} />
 
         {routeHref && routeLabel ? (
           <Link

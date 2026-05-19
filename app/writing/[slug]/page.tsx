@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { ReaderLayout } from "@/components/layouts";
 import { ReaderSideRail } from "@/components/reader-side-rail";
 import { ScrollWordReader } from "@/components/scroll-word-reader";
+import { CommentsPanel } from "@/components/comments-panel";
 import { getPostBySlug, getPosts } from "@/lib/posts";
 
 export async function generateStaticParams() {
@@ -30,7 +31,7 @@ export default async function WritingPage({ params }: { params: Promise<{ slug: 
 
   return (
     <ReaderLayout active="archive" footer={false} immersive>
-      <main className="reader-page-shell relative flex min-h-0 flex-1 flex-col gap-8 px-4 py-6 md:px-6 lg:flex-row lg:px-8 lg:py-8">
+      <main className="reader-page-shell relative flex min-h-0 flex-1 flex-col gap-8 px-4 py-4 md:px-6 lg:flex-row lg:px-8 lg:py-6">
         <ReaderSideRail entry={post} />
 
         <section className="flex min-h-0 flex-1 flex-col">
@@ -39,6 +40,10 @@ export default async function WritingPage({ params }: { params: Promise<{ slug: 
             nextHref={next ? `/writing/${next.slug}` : undefined}
             nextLabel={next?.title}
           />
+
+          <div className="mt-10">
+            <CommentsPanel slug={post.slug} />
+          </div>
         </section>
       </main>
     </ReaderLayout>

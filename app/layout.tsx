@@ -1,19 +1,12 @@
 import type { Metadata, Viewport } from "next";
 import type { ReactNode } from "react";
+import { Analytics } from "@vercel/analytics/react";
 import { GeistSans } from "geist/font/sans";
 import { GeistMono } from "geist/font/mono";
-import { Newsreader } from "next/font/google";
 import "katex/dist/katex.min.css";
 import { getThemeBootstrapScript } from "@/lib/theme";
 import "./globals.css";
-
-const newsreader = Newsreader({
-  subsets: ["latin"],
-  weight: ["300", "400", "500", "600"],
-  style: ["normal", "italic"],
-  variable: "--font-newsreader",
-  display: "swap"
-});
+import { GlobalMusicBootstrap } from "@/components/global-music-bootstrap";
 
 export const metadata: Metadata = {
   title: {
@@ -40,13 +33,14 @@ export default function RootLayout({ children }: Readonly<{ children: ReactNode 
     <html
       lang="en"
       suppressHydrationWarning
-      className={`${GeistSans.variable} ${GeistMono.variable} ${newsreader.variable}`}
+      className={`${GeistSans.variable} ${GeistMono.variable}`}
     >
       <head>
         <script dangerouslySetInnerHTML={{ __html: getThemeBootstrapScript() }} />
       </head>
       <body className="grain-overlay">
         {children}
+        <GlobalMusicBootstrap />
         <Analytics />
       </body>
     </html>

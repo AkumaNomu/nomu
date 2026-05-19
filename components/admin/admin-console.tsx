@@ -34,6 +34,7 @@ type StorageAsset = {
   mimeType: string | null;
   createdAt?: string | null;
   updatedAt?: string | null;
+  folder?: "covers" | "media";
 };
 
 const ADMIN_KEY_STORAGE = "archive-admin-key";
@@ -158,6 +159,8 @@ export function AdminConsole() {
   const [deleting, setDeleting] = useState(false);
   const [slugLocked, setSlugLocked] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
+  const [previewHtml, setPreviewHtml] = useState<string>("");
+  const [previewPending, setPreviewPending] = useState(false);
 
   const activePost = useMemo(
     () => posts.find((post) => post.slug === selectedSlug) ?? null,
@@ -174,7 +177,7 @@ export function AdminConsole() {
       setLoadingAssets(true);
 
       try {
-        const [postsResponse, assetsResponse] = await Promise.all([
+        const [postsResponse, coversResponse, mediaResponse] = await Promise.all([
           fetch("/api/posts?scope=admin", {
             headers: { "x-admin-key": sessionKey },
             signal: controller.signal
@@ -182,18 +185,27 @@ export function AdminConsole() {
           fetch("/api/storage/objects?folder=covers", {
             headers: { "x-admin-key": sessionKey },
             signal: controller.signal
+          }),
+          fetch("/api/storage/objects?folder=media", {
+            headers: { "x-admin-key": sessionKey },
+            signal: controller.signal
           })
         ]);
 
         const postsPayload = await postsResponse.json();
-        const assetsPayload = await assetsResponse.json();
+        const coversPayload = await coversResponse.json();
+        const mediaPayload = await mediaResponse.json();
 
         if (!postsResponse.ok) throw new Error(postsPayload.error ?? "Failed to load posts.");
-        if (!assetsResponse.ok) throw new Error(assetsPayload.error ?? "Failed to load assets.");
+        if (!coversResponse.ok) throw new Error(coversPayload.error ?? "Failed to load cover assets.");
+        if (!mediaResponse.ok) throw new Error(mediaPayload.error ?? "Failed to load media assets.");
 
         const loadedPosts = postsPayload.posts as ArchiveEntry[];
         setPosts(loadedPosts);
-        setAssets(assetsPayload.objects as StorageAsset[]);
+        setAssets([
+          ...(coversPayload.objects as StorageAsset[]).map((asset) => ({ ...asset, folder: "covers" as const })),
+          ...(mediaPayload.objects as StorageAsset[]).map((asset) => ({ ...asset, folder: "media" as const }))
+        ]);
 
         if (loadedPosts[0]) {
           setSelectedSlug(loadedPosts[0].slug);
@@ -216,6 +228,39 @@ export function AdminConsole() {
 
     return () => controller.abort();
   }, [sessionKey]);
+
+  useEffect(() => {
+    if (!sessionKey) return;
+
+    const controller = new AbortController();
+    const timeout = window.setTimeout(async () => {
+      setPreviewPending(true);
+      try {
+        const response = await fetch("/api/markdown/preview", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "x-admin-key": sessionKey
+          },
+          body: JSON.stringify({ markdown: form.body }),
+          signal: controller.signal
+        });
+        const payload = await response.json();
+        if (!response.ok) throw new Error(payload.error ?? "Preview failed.");
+        setPreviewHtml(String(payload.html ?? ""));
+      } catch {
+        // Keep last successful preview if the request is aborted or fails mid-typing.
+      } finally {
+        if (!controller.signal.aborted) setPreviewPending(false);
+      }
+    }, 450);
+
+    return () => {
+      controller.abort();
+      window.clearTimeout(timeout);
+      setPreviewPending(false);
+    };
+  }, [form.body, sessionKey]);
 
   function unlockDashboard() {
     const nextKey = adminKey.trim();
@@ -241,12 +286,20 @@ export function AdminConsole() {
 
     setLoadingAssets(true);
     try {
-      const response = await fetch("/api/storage/objects?folder=covers", {
-        headers: { "x-admin-key": sessionKey }
-      });
-      const payload = await response.json();
-      if (!response.ok) throw new Error(payload.error ?? "Failed to load assets.");
-      setAssets(payload.objects as StorageAsset[]);
+      const [coversResponse, mediaResponse] = await Promise.all([
+        fetch("/api/storage/objects?folder=covers", { headers: { "x-admin-key": sessionKey } }),
+        fetch("/api/storage/objects?folder=media", { headers: { "x-admin-key": sessionKey } })
+      ]);
+
+      const [coversPayload, mediaPayload] = await Promise.all([coversResponse.json(), mediaResponse.json()]);
+
+      if (!coversResponse.ok) throw new Error(coversPayload.error ?? "Failed to load cover assets.");
+      if (!mediaResponse.ok) throw new Error(mediaPayload.error ?? "Failed to load media assets.");
+
+      setAssets([
+        ...(coversPayload.objects as StorageAsset[]).map((asset) => ({ ...asset, folder: "covers" as const })),
+        ...(mediaPayload.objects as StorageAsset[]).map((asset) => ({ ...asset, folder: "media" as const }))
+      ]);
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "Failed to refresh assets.");
     } finally {
@@ -299,7 +352,8 @@ export function AdminConsole() {
     try {
       const formData = new FormData();
       formData.append("file", file);
-      formData.append("folder", "covers");
+      const targetFolder = file.type.startsWith("audio/") ? "media" : "covers";
+      formData.append("folder", targetFolder);
 
       const response = await fetch("/api/storage/upload", {
         method: "POST",
@@ -310,8 +364,13 @@ export function AdminConsole() {
       const payload = await response.json();
       if (!response.ok) throw new Error(payload.error ?? "Upload failed.");
 
-      setForm((current) => ({ ...current, coverImage: payload.publicUrl }));
-      setMessage("Asset uploaded and cover URL inserted.");
+      if (targetFolder === "covers") {
+        setForm((current) => ({ ...current, coverImage: payload.publicUrl }));
+        setMessage(`Image uploaded${payload.compressed ? " (compressed)" : ""} and cover URL inserted.`);
+      } else {
+        setMessage(`Audio uploaded${payload.compressed ? " (compressed)" : ""}. Public URL copied to clipboard.`);
+        void navigator.clipboard?.writeText(payload.publicUrl).catch(() => {});
+      }
       await refreshAssets();
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "Upload failed.");
@@ -559,6 +618,20 @@ export function AdminConsole() {
               />
             </label>
 
+            <label className="block">
+              <span className="font-label-caps text-label-caps text-ink-muted">Upload Audio</span>
+              <input
+                className="admin-input"
+                type="file"
+                accept="audio/*"
+                onChange={(event) => {
+                  const file = event.target.files?.[0];
+                  if (file) void uploadFile(file);
+                }}
+                disabled={!sessionKey || uploading}
+              />
+            </label>
+
             <div className="mt-4 space-y-3">
               {assets.map((asset) => (
                 <div key={asset.path} className="border-[0.5px] border-border-subtle bg-background p-3">
@@ -581,7 +654,13 @@ export function AdminConsole() {
                   <div className="mt-3 flex flex-wrap gap-2">
                     <button
                       type="button"
-                      onClick={() => setForm((current) => ({ ...current, coverImage: asset.publicUrl }))}
+                      onClick={() => {
+                        if (asset.mimeType?.startsWith("audio/") || asset.folder === "media") {
+                          setForm((current) => ({ ...current, soundtrackFallbackSrc: asset.publicUrl }));
+                          return;
+                        }
+                        setForm((current) => ({ ...current, coverImage: asset.publicUrl }));
+                      }}
                       className="font-label-caps text-[0.7rem] uppercase tracking-[0.18em] text-primary underline"
                     >
                       Use URL
@@ -811,16 +890,28 @@ export function AdminConsole() {
             </div>
           </div>
 
-          <label className="block">
-            <span className="font-label-caps text-label-caps text-ink-muted">Body</span>
-            <textarea
-              className="admin-textarea mt-3"
-              value={form.body}
-              onChange={(event) => setForm((current) => ({ ...current, body: event.target.value }))}
-              placeholder="Write markdown. Obsidian-style links, embeds, callouts, and math are supported."
-              required
-            />
-          </label>
+          <section className="space-y-3">
+            <div className="flex items-center justify-between gap-4">
+              <span className="font-label-caps text-label-caps text-ink-muted">Body</span>
+              <span className="font-label-caps text-[0.7rem] uppercase tracking-[0.18em] text-ink-muted">
+                {previewPending ? "Previewing…" : "Preview ready"}
+              </span>
+            </div>
+
+            <div className="grid gap-6 md:grid-cols-2">
+              <textarea
+                className="admin-textarea"
+                value={form.body}
+                onChange={(event) => setForm((current) => ({ ...current, body: event.target.value }))}
+                placeholder="Write markdown. Obsidian-style links, embeds, callouts, and math are supported."
+                required
+              />
+              <article
+                className="prose-archive border-[0.5px] border-border-subtle bg-background p-6"
+                dangerouslySetInnerHTML={{ __html: previewHtml }}
+              />
+            </div>
+          </section>
 
           <div className="flex flex-wrap gap-3">
             <button

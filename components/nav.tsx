@@ -4,8 +4,7 @@ import { SymbolIcon } from "@/components/icons";
 import { ThemeToggle } from "@/components/theme-toggle";
 
 const topNavItems = [
-  { label: "Index", href: "/index", icon: "format_list_bulleted", key: "index" },
-  { label: "Archive", href: "/archive", icon: "menu_book", key: "archive" }
+  { label: "Index", href: "/index", icon: "format_list_bulleted", key: "index" }
 ] as const;
 
 export function TopNav({ active }: { active?: string }) {
@@ -17,18 +16,11 @@ export function TopNav({ active }: { active?: string }) {
         </Link>
 
         <nav className="top-nav-links">
-          <Link
-            href="/index"
-            className={`top-nav-link ${active === "index" ? "top-nav-link-active" : ""}`}
-          >
-            Index
-          </Link>
-          <Link
-            href="/archive"
-            className={`top-nav-link ${active === "archive" ? "top-nav-link-active" : ""}`}
-          >
-            Type
-          </Link>
+          {topNavItems.map((item) => (
+            <Link key={item.href} href={item.href} className={`top-nav-link ${active === item.key ? "top-nav-link-active" : ""}`}>
+              {item.label}
+            </Link>
+          ))}
         </nav>
 
         <div className="top-nav-actions">

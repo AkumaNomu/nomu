@@ -7,6 +7,7 @@ type AudioPlayerProps = {
   src: string;
   title?: string;
   artist?: string;
+  onEnded?: () => void;
 };
 
 function formatTime(seconds: number) {
@@ -17,7 +18,7 @@ function formatTime(seconds: number) {
   return `${minutes}:${remainder.toString().padStart(2, "0")}`;
 }
 
-export function AudioPlayer({ src, title, artist }: AudioPlayerProps) {
+export function AudioPlayer({ src, title, artist, onEnded }: AudioPlayerProps) {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const scrubberRef = useRef<HTMLDivElement | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -43,6 +44,7 @@ export function AudioPlayer({ src, title, artist }: AudioPlayerProps) {
     function onEnd() {
       setIsPlaying(false);
       setCurrentTime(0);
+      onEnded?.();
     }
     function onPlay() {
       setIsPlaying(true);
@@ -68,7 +70,7 @@ export function AudioPlayer({ src, title, artist }: AudioPlayerProps) {
       audio.removeEventListener("play", onPlay);
       audio.removeEventListener("pause", onPause);
     };
-  }, [isScrubbing, volume]);
+  }, [isScrubbing, volume, onEnded]);
 
   useEffect(() => {
     const audio = audioRef.current;
