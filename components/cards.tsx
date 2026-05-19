@@ -10,7 +10,7 @@ export function FeaturedArticle({ entry }: { entry: ArchiveEntry }) {
     <article className="group flex cursor-pointer flex-col md:col-span-8">
       <Link href={`/writing/${entry.slug}`} className="focus-ring">
         <SlowHover>
-          <div className="relative mb-6 aspect-[16/9] w-full overflow-hidden border-[0.5px] border-border-subtle bg-surface-container-high">
+          <div className="relative mb-6 aspect-[16/9] w-full overflow-hidden rounded-2xl border-[0.5px] border-border-subtle bg-surface-container-high">
             {entry.coverImage ? (
               <Image
                 src={entry.coverImage}
@@ -47,13 +47,13 @@ export function FeaturedArticle({ entry }: { entry: ArchiveEntry }) {
 
 export function CompactArticleCard({ entry, index }: { entry: ArchiveEntry; index: number }) {
   return (
-    <article className="group flex flex-1 cursor-pointer flex-col border-[0.5px] border-border-subtle bg-surface p-8 transition-colors duration-500 hover:bg-surface-container-low">
+    <article className="group glass glass-sheen glass-radius-lg flex flex-1 cursor-pointer flex-col p-8 transition-all duration-500 hover:-translate-y-1">
       <Link href={`/writing/${entry.slug}`} className="focus-ring flex h-full flex-col">
         <div className="mb-6 flex items-start justify-between border-b-[0.5px] border-border-subtle pb-4">
           <span className="font-label-caps text-label-caps text-ink-muted">
             {String(index + 2).padStart(2, "0")} / {entry.category}
           </span>
-          <SymbolIcon name="north_east" className="text-[16px] text-ink-muted" />
+          <SymbolIcon name="north_east" className="h-4 w-4 text-ink-muted" />
         </div>
         <h3 className="font-headline-md text-headline-md mb-4 text-primary transition-all duration-500 group-hover:italic">
           {entry.title}
@@ -68,7 +68,7 @@ export function SpineItem({ entry, index }: { entry: ArchiveEntry; index: number
   return (
     <Link
       href={entry.type === "fragment" ? `/fragments/${entry.slug}` : `/writing/${entry.slug}`}
-      className="group flex flex-col justify-between border-b-[0.5px] border-border-subtle p-6 transition-colors duration-500 last:border-b-0 hover:bg-surface-container-low focus-ring md:flex-row md:items-center md:px-8 md:py-6"
+      className="group flex flex-col justify-between border-b-[0.5px] border-border-subtle p-6 transition-all duration-500 last:border-b-0 hover:bg-surface-container-low/40 hover:backdrop-blur-md focus-ring md:flex-row md:items-center md:px-8 md:py-6"
     >
       <div className="flex w-full flex-col gap-2 md:w-2/3 md:flex-row md:items-center md:gap-8">
         <span className="font-label-caps text-label-caps w-12 shrink-0 text-ink-muted">{roman(index)}.</span>
@@ -76,7 +76,7 @@ export function SpineItem({ entry, index }: { entry: ArchiveEntry; index: number
       </div>
       <div className="hidden items-center gap-8 md:flex">
         <span className="font-label-caps text-label-caps text-ink-muted">{formatArchiveDate(entry.publishedAt)}</span>
-        <SymbolIcon name="arrow_forward" className="text-ink-muted opacity-0 transition-opacity group-hover:opacity-100" />
+        <SymbolIcon name="arrow_forward" className="h-4 w-4 text-ink-muted opacity-0 transition-opacity group-hover:opacity-100" />
       </div>
     </Link>
   );
@@ -99,7 +99,7 @@ export function ResultItem({ entry }: { entry: ArchiveEntry }) {
             <p className="font-body-md text-body-md line-clamp-2 text-on-surface-variant">{entry.excerpt}</p>
           </div>
           {entry.coverImage ? (
-            <div className="relative aspect-[3/4] w-full overflow-hidden border-[0.5px] border-border-subtle bg-surface-container-low md:w-48">
+            <div className="relative aspect-[3/4] w-full overflow-hidden rounded-xl border-[0.5px] border-border-subtle bg-surface-container-low md:w-48">
               <Image
                 src={entry.coverImage}
                 alt={entry.coverAlt ?? entry.title}
@@ -111,9 +111,9 @@ export function ResultItem({ entry }: { entry: ArchiveEntry }) {
           ) : null}
         </div>
         <div className="font-label-caps text-label-caps mt-6 flex flex-wrap gap-4 text-ink-muted">
-          <span className="border-[0.5px] border-border-subtle px-2 py-1">{entry.type}</span>
+          <span className="rounded-full border-[0.5px] border-border-subtle px-2.5 py-1">{entry.type}</span>
           {entry.tags.slice(0, 3).map((tag) => (
-            <span key={tag} className="border-[0.5px] border-border-subtle px-2 py-1">
+            <span key={tag} className="rounded-full border-[0.5px] border-border-subtle px-2.5 py-1">
               {tag}
             </span>
           ))}

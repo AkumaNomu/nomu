@@ -1,135 +1,268 @@
 "use client";
 
-import { useState } from "react";
+import Link from "next/link";
+import { useMemo, useState } from "react";
+import { motion, useReducedMotion } from "framer-motion";
 import type { ArchiveEntry, EntryType } from "@/types/archive";
-import { ResultItem } from "@/components/cards";
 import { SymbolIcon } from "@/components/icons";
+import { formatArchiveDate, roman } from "@/data/archive";
 
-const types: Array<{ label: string; value: EntryType | "all" }> = [
-  { label: "All", value: "all" },
-  { label: "Essays", value: "essay" },
-  { label: "Fragments", value: "fragment" },
-  { label: "Chronicle", value: "chronicle" }
+type FilterValue = EntryType | "all";
+
+const types: Array<{ label: string; value: FilterValue; icon: string }> = [
+  { label: "All", value: "all", icon: "library" },
+  { label: "Essays", value: "essay", icon: "article" },
+  { label: "Fragments", value: "fragment", icon: "auto_stories" },
+  { label: "Chronicle", value: "chronicle", icon: "history" }
 ];
+
+const SPINE_TONES = [
+  "#3d3a36",
+  "#5b4636",
+  "#4a4a48",
+  "#3a3f3e",
+  "#5a4d3a",
+  "#444451",
+  "#523c3a",
+  "#3a4845"
+];
+
+function spineTone(entry: ArchiveEntry) {
+  const ref = entry.ref || entry.slug;
+  let hash = 0;
+  for (let index = 0; index < ref.length; index += 1) {
+    hash = (hash * 31 + ref.charCodeAt(index)) >>> 0;
+  }
+  return SPINE_TONES[hash % SPINE_TONES.length];
+}
+
+function spineHref(entry: ArchiveEntry) {
+  return entry.type === "fragment" ? `/fragments/${entry.slug}` : `/writing/${entry.slug}`;
+}
 
 export function SearchIndex({ entries }: { entries: ArchiveEntry[] }) {
   const [query, setQuery] = useState("");
-  const [type, setType] = useState<EntryType | "all">("all");
-  const [letter, setLetter] = useState("A");
+  const [type, setType] = useState<FilterValue>("all");
+  const prefersReducedMotion = useReducedMotion();
 
-  const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
+  const filtered = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    return entries.filter((entry) => {
+      const typeOk = type === "all" || entry.type === type;
+      const queryOk =
+        !q ||
+        [entry.title, entry.excerpt, entry.category, entry.tags.join(" "), entry.subtitle ?? ""]
+          .join(" ")
+          .toLowerCase()
+          .includes(q);
+      return typeOk && queryOk;
+    });
+  }, [entries, query, type]);
 
-  const q = query.trim().toLowerCase();
-  const filtered = entries.filter((entry) => {
-    const typeOk = type === "all" || entry.type === type;
-    const letterOk = letter === "All" || entry.title.toUpperCase().startsWith(letter);
-    const queryOk =
-      !q ||
-      [entry.title, entry.excerpt, entry.category, entry.tags.join(" ")]
-        .join(" ")
-        .toLowerCase()
-        .includes(q);
-    return typeOk && queryOk && (query ? true : letterOk || letter === "All");
-  });
+  const grouped = useMemo(() => {
+    const map = new Map<string, ArchiveEntry[]>();
+    for (const entry of filtered) {
+      const letter = (entry.title[0] ?? "#").toUpperCase();
+      const bucket = /[A-Z]/.test(letter) ? letter : "#";
+      const list = map.get(bucket) ?? [];
+      list.push(entry);
+      map.set(bucket, list);
+    }
+    return Array.from(map.entries()).sort(([a], [b]) => a.localeCompare(b));
+  }, [filtered]);
+
+  const decade = useMemo(() => {
+    const counts = new Map<number, number>();
+    for (const entry of entries) {
+      const year = entry.year ?? new Date(entry.publishedAt).getFullYear();
+      const bucket = Math.floor(year / 10) * 10;
+      counts.set(bucket, (counts.get(bucket) ?? 0) + 1);
+    }
+    return Array.from(counts.entries()).sort(([a], [b]) => b - a);
+  }, [entries]);
+
+  const totalCount = entries.length;
+  const showingCount = filtered.length;
 
   return (
-    <>
-      <section className="flex w-full max-w-text-width flex-col gap-8">
-        <h1 className="font-display-lg-mobile md:font-display-lg text-display-lg-mobile md:text-display-lg text-center text-primary">
-          Index Directory
-        </h1>
-        <div className="flex items-center gap-4 border-b-[0.5px] border-border-subtle pb-2 transition-colors focus-within:border-primary">
-          <span className="material-symbols-outlined text-ink-muted">search</span>
+    <div className="library">
+      <header className="library-hero">
+        <div className="library-hero-eyebrow">
+          <SymbolIcon name="library" className="h-3.5 w-3.5" />
+          <span>Vol. I · Card Catalog</span>
+        </div>
+        <h1 className="library-title">The Index</h1>
+        <p className="library-tagline">
+          A reading room of essays, fragments, and chronicles. Browse the stacks by letter or
+          query the catalog.
+        </p>
+
+        <div className="library-search glass glass-sheen glass-radius-pill">
+          <SymbolIcon name="search" className="library-search-icon" />
           <input
-            className="font-ui-label text-ui-label w-full border-none bg-transparent p-0 text-primary outline-none placeholder:text-ink-muted focus:ring-0"
-            placeholder="Query the archive..."
             type="text"
             value={query}
             onChange={(event) => setQuery(event.target.value)}
+            placeholder="Query the catalog…"
+            className="library-search-input"
+            aria-label="Search the catalog"
           />
+          {query ? (
+            <button
+              type="button"
+              onClick={() => setQuery("")}
+              className="library-search-clear"
+              aria-label="Clear search"
+            >
+              <SymbolIcon name="close" className="h-4 w-4" />
+            </button>
+          ) : null}
         </div>
-        <div className="font-label-caps text-label-caps flex flex-wrap justify-center gap-4 text-ink-muted">
-          <span>SUGGESTED:</span>
+
+        <div className="library-filter glass glass-sheen glass-radius-pill">
           {types.map((item) => (
             <button
               key={item.value}
               type="button"
               onClick={() => setType(item.value)}
-              className={`inline-flex items-center gap-2 transition-colors hover:text-primary hover:underline underline-offset-4 ${
-                type === item.value ? "text-primary italic underline" : ""
-              }`}
+              className={`library-filter-pill ${type === item.value ? "library-filter-pill-active" : ""}`}
             >
-              <SymbolIcon
-                name={item.value === "all" ? "apps" : item.value === "essay" ? "article" : item.value === "fragment" ? "auto_stories" : "history"}
-                className="text-[16px]"
-              />
-              {item.label}
+              <SymbolIcon name={item.icon} className="h-3.5 w-3.5" />
+              <span>{item.label}</span>
             </button>
           ))}
         </div>
-      </section>
 
-      <section className="flex w-full justify-center border-y-[0.5px] border-border-subtle py-8">
-        <div className="font-label-caps text-label-caps flex max-w-[800px] flex-wrap justify-center gap-x-6 gap-y-4 text-ink-muted">
-          <button
-            type="button"
-            className={letter === "All" ? "text-primary italic underline underline-offset-4" : "hover:text-primary"}
-            onClick={() => setLetter("All")}
-          >
-            All
-          </button>
-          {letters.map((item) => (
-            <button
-              key={item}
-              type="button"
-              className={letter === item ? "text-primary italic underline underline-offset-4" : "hover:text-primary"}
-              onClick={() => setLetter(item)}
-            >
-              {item}
-            </button>
-          ))}
+        <div className="library-meta">
+          <span className="library-meta-stat">
+            <span className="library-meta-stat-value">{showingCount}</span>
+            <span className="library-meta-stat-label">showing</span>
+          </span>
+          <span className="library-meta-divider" />
+          <span className="library-meta-stat">
+            <span className="library-meta-stat-value">{totalCount}</span>
+            <span className="library-meta-stat-label">in stacks</span>
+          </span>
         </div>
+      </header>
+
+      <section className="library-shelf glass glass-sheen glass-radius-lg">
+        <div className="library-shelf-header">
+          <span className="library-shelf-eyebrow">On the shelf</span>
+          <span className="library-shelf-count">{filtered.length} volumes</span>
+        </div>
+        <div className="library-shelf-rack" role="list">
+          {filtered.length === 0 ? (
+            <p className="library-shelf-empty">No volumes match this query.</p>
+          ) : (
+            filtered.slice(0, 24).map((entry, index) => (
+              <motion.div
+                key={entry.id}
+                role="listitem"
+                initial={prefersReducedMotion ? false : { opacity: 0, y: 16 }}
+                animate={prefersReducedMotion ? undefined : { opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1], delay: index * 0.03 }}
+                className="library-spine-wrap"
+              >
+                <Link
+                  href={spineHref(entry)}
+                  className="library-spine"
+                  style={{ backgroundColor: spineTone(entry) }}
+                  aria-label={entry.title}
+                >
+                  <span className="library-spine-title">{entry.title}</span>
+                  <span className="library-spine-ref">{entry.ref || roman(index)}</span>
+                </Link>
+              </motion.div>
+            ))
+          )}
+        </div>
+        <div className="library-shelf-board" aria-hidden />
       </section>
 
-      <section className="grid w-full grid-cols-1 gap-gutter-grid md:grid-cols-12">
-        <aside className="font-label-caps text-label-caps hidden flex-col gap-12 md:col-span-3 md:flex">
-          <div className="flex flex-col gap-4 border-t-[0.5px] border-border-subtle pt-4">
-            <span className="text-ink-muted">TYPE</span>
-            {types.map((item) => (
-              <label key={item.value} className="group flex cursor-pointer items-center gap-2">
-                <input
-                  checked={type === item.value}
-                  onChange={() => setType(item.value)}
-                  className="h-4 w-4 rounded-none border-border-subtle bg-transparent text-primary focus:ring-0 focus:ring-offset-0"
-                  type="radio"
-                />
-                <span className={`${type === item.value ? "text-primary" : "text-ink-muted"} transition-colors group-hover:text-primary`}>
-                  {item.label}
-                </span>
-              </label>
-            ))}
+      <div className="library-body">
+        <aside className="library-aside">
+          <div className="library-aside-card glass glass-sheen glass-radius-lg">
+            <h3 className="library-aside-heading">Filters</h3>
+            <ul className="library-aside-list">
+              {types.map((item) => (
+                <li key={item.value}>
+                  <button
+                    type="button"
+                    onClick={() => setType(item.value)}
+                    className={`library-aside-button ${type === item.value ? "library-aside-button-active" : ""}`}
+                  >
+                    <SymbolIcon name={item.icon} className="h-3.5 w-3.5" />
+                    <span>{item.label}</span>
+                  </button>
+                </li>
+              ))}
+            </ul>
           </div>
-          <div className="flex flex-col gap-4 border-t-[0.5px] border-border-subtle pt-4">
-            <span className="text-ink-muted">DECADE</span>
-            <div className="flex flex-col gap-2 text-ink-muted">
-              <span>2020s</span>
-              <span>2010s</span>
-              <span>2000s</span>
-            </div>
+
+          <div className="library-aside-card glass glass-sheen glass-radius-lg">
+            <h3 className="library-aside-heading">Decade</h3>
+            <ul className="library-aside-list">
+              {decade.map(([year, count]) => (
+                <li key={year} className="library-aside-row">
+                  <span>{year}s</span>
+                  <span className="library-aside-count">{count}</span>
+                </li>
+              ))}
+            </ul>
           </div>
         </aside>
 
-        <div className="col-span-1 flex flex-col gap-12 md:col-span-9">
-          {filtered.length > 0 ? (
-            filtered.map((entry) => <ResultItem key={entry.id} entry={entry} />)
-          ) : (
-            <div className="border-[0.5px] border-border-subtle bg-surface p-12 text-center">
-              <p className="font-headline-md text-headline-md text-primary">No entries found.</p>
-              <p className="font-body-md text-body-md mt-4 text-ink-muted">Try another search term or switch the type filter.</p>
+        <section className="library-catalog">
+          {grouped.length === 0 ? (
+            <div className="library-empty glass glass-sheen glass-radius-lg">
+              <p className="library-empty-title">Nothing on this shelf.</p>
+              <p className="library-empty-subtitle">Try a different query or filter.</p>
             </div>
+          ) : (
+            grouped.map(([letter, items]) => (
+              <div key={letter} className="library-section">
+                <div className="library-section-header">
+                  <span className="library-section-letter">{letter}</span>
+                  <span className="library-section-rule" aria-hidden />
+                  <span className="library-section-count">
+                    {items.length} {items.length === 1 ? "entry" : "entries"}
+                  </span>
+                </div>
+                <ul className="library-section-list">
+                  {items.map((entry, index) => (
+                    <motion.li
+                      key={entry.id}
+                      initial={prefersReducedMotion ? false : { opacity: 0, y: 10 }}
+                      whileInView={prefersReducedMotion ? undefined : { opacity: 1, y: 0 }}
+                      viewport={{ once: true, margin: "-8%" }}
+                      transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1], delay: index * 0.02 }}
+                    >
+                      <Link href={spineHref(entry)} className="library-card glass glass-sheen glass-radius-md">
+                        <span className="library-card-ref">{entry.ref}</span>
+                        <div className="library-card-body">
+                          <h4 className="library-card-title">{entry.title}</h4>
+                          {entry.subtitle ? (
+                            <p className="library-card-subtitle">{entry.subtitle}</p>
+                          ) : null}
+                          <p className="library-card-excerpt">{entry.excerpt}</p>
+                        </div>
+                        <div className="library-card-meta">
+                          <span className="library-card-chip">{entry.type}</span>
+                          <span className="library-card-date">{formatArchiveDate(entry.publishedAt)}</span>
+                        </div>
+                        <span className="library-card-arrow" aria-hidden>
+                          <SymbolIcon name="north_east" className="h-4 w-4" />
+                        </span>
+                      </Link>
+                    </motion.li>
+                  ))}
+                </ul>
+              </div>
+            ))
           )}
-        </div>
-      </section>
-    </>
+        </section>
+      </div>
+    </div>
   );
 }

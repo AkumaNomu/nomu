@@ -10,34 +10,28 @@ const topNavItems = [
 
 export function TopNav({ active }: { active?: string }) {
   return (
-    <header className="sticky top-0 z-40 w-full border-b-[0.5px] border-border-subtle bg-background/78 backdrop-blur-sm">
-      <div className="mx-auto flex w-full max-w-none items-center justify-between gap-4 px-5 py-4 md:px-8 lg:px-10">
-        <Link href="/" className="font-label-caps text-label-caps tracking-[0.22em] text-ink-black focus-ring">
+    <header className="top-nav">
+      <div className="top-nav-inner">
+        <Link href="/" className="top-nav-brand focus-ring">
           THE ARCHIVE
         </Link>
 
-        <nav className="flex items-center gap-3 md:gap-4">
-          {topNavItems.map((item) => {
-            const isActive = active === item.key;
-
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={`inline-flex items-center gap-2 rounded-full border-[0.5px] px-3 py-2 transition-colors duration-300 focus-ring ${
-                  isActive
-                    ? "border-primary text-primary"
-                    : "border-border-subtle text-ink-muted hover:border-primary hover:text-primary"
-                }`}
-              >
-                <SymbolIcon name={item.icon} className="text-[18px]" />
-                <span className="font-label-caps text-label-caps">{item.label}</span>
-              </Link>
-            );
-          })}
+        <nav className="top-nav-links">
+          <Link
+            href="/index"
+            className={`top-nav-link ${active === "index" ? "top-nav-link-active" : ""}`}
+          >
+            Index
+          </Link>
+          <Link
+            href="/archive"
+            className={`top-nav-link ${active === "archive" ? "top-nav-link-active" : ""}`}
+          >
+            Type
+          </Link>
         </nav>
 
-        <div className="flex items-center gap-3 text-primary">
+        <div className="top-nav-actions">
           <ThemeToggle />
         </div>
       </div>
@@ -66,7 +60,7 @@ export function SideNav({ active }: { active?: string }) {
                 isActive ? "border-b-[0.5px] border-primary text-primary italic" : "text-ink-muted"
               }`}
             >
-              <SymbolIcon name={item.icon} className="text-[18px]" />
+              <SymbolIcon name={item.icon} className="h-[18px] w-[18px]" />
               <span className="font-label-caps text-label-caps">{item.label}</span>
             </Link>
           );

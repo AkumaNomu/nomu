@@ -42,7 +42,7 @@ export default async function ArchivePage() {
           </div>
         </FadeIn>
 
-        <div className="flex flex-col gap-0 border-[0.5px] border-border-subtle bg-surface">
+        <div className="glass glass-sheen glass-radius-lg flex flex-col gap-0 overflow-hidden">
           {spines.map((entry, index) => (
             <SpineItem key={entry.id} entry={entry} index={index} />
           ))}
