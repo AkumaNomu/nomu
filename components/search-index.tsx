@@ -3,6 +3,7 @@
 import { useState } from "react";
 import type { ArchiveEntry, EntryType } from "@/types/archive";
 import { ResultItem } from "@/components/cards";
+import { SymbolIcon } from "@/components/icons";
 
 const types: Array<{ label: string; value: EntryType | "all" }> = [
   { label: "All", value: "all" },
@@ -52,9 +53,16 @@ export function SearchIndex({ entries }: { entries: ArchiveEntry[] }) {
           {types.map((item) => (
             <button
               key={item.value}
+              type="button"
               onClick={() => setType(item.value)}
-              className={`hover:text-primary hover:underline underline-offset-4 ${type === item.value ? "text-primary italic underline" : ""}`}
+              className={`inline-flex items-center gap-2 transition-colors hover:text-primary hover:underline underline-offset-4 ${
+                type === item.value ? "text-primary italic underline" : ""
+              }`}
             >
+              <SymbolIcon
+                name={item.value === "all" ? "apps" : item.value === "essay" ? "article" : item.value === "fragment" ? "auto_stories" : "history"}
+                className="text-[16px]"
+              />
               {item.label}
             </button>
           ))}
@@ -63,10 +71,17 @@ export function SearchIndex({ entries }: { entries: ArchiveEntry[] }) {
 
       <section className="flex w-full justify-center border-y-[0.5px] border-border-subtle py-8">
         <div className="font-label-caps text-label-caps flex max-w-[800px] flex-wrap justify-center gap-x-6 gap-y-4 text-ink-muted">
-          <button className={letter === "All" ? "text-primary italic underline underline-offset-4" : "hover:text-primary"} onClick={() => setLetter("All")}>All</button>
+          <button
+            type="button"
+            className={letter === "All" ? "text-primary italic underline underline-offset-4" : "hover:text-primary"}
+            onClick={() => setLetter("All")}
+          >
+            All
+          </button>
           {letters.map((item) => (
             <button
               key={item}
+              type="button"
               className={letter === item ? "text-primary italic underline underline-offset-4" : "hover:text-primary"}
               onClick={() => setLetter(item)}
             >

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { formatArchiveDate } from "@/data/archive";
 import { SoundtrackPlayer } from "@/components/soundtrack-player";
+import { SymbolIcon } from "@/components/icons";
 import type { ArchiveEntry } from "@/types/archive";
 
 export function ReaderSideRail({
@@ -49,9 +50,10 @@ export function ReaderSideRail({
         {routeHref && routeLabel ? (
           <Link
             href={routeHref}
-            className="mt-auto w-max font-label-caps text-label-caps text-ink-muted underline decoration-border-subtle underline-offset-4 transition-colors hover:text-primary focus-ring"
+            className="mt-auto inline-flex w-max items-center gap-2 border-[0.5px] border-border-subtle px-3 py-2 font-label-caps text-label-caps text-ink-muted transition-colors hover:border-primary hover:text-primary focus-ring"
           >
             {routeLabel}
+            <SymbolIcon name="open_in_new" className="text-[17px]" />
           </Link>
         ) : null}
       </div>

@@ -3,6 +3,11 @@ import { navItems } from "@/data/archive";
 import { SymbolIcon } from "@/components/icons";
 import { ThemeToggle } from "@/components/theme-toggle";
 
+const topNavItems = [
+  { label: "Index", href: "/index", icon: "format_list_bulleted", key: "index" },
+  { label: "Archive", href: "/archive", icon: "menu_book", key: "archive" }
+] as const;
+
 export function TopNav({ active }: { active?: string }) {
   return (
     <header className="sticky top-0 z-40 w-full border-b-[0.5px] border-border-subtle bg-background/78 backdrop-blur-sm">
@@ -11,19 +16,25 @@ export function TopNav({ active }: { active?: string }) {
           THE ARCHIVE
         </Link>
 
-        <nav className="flex items-center gap-5 md:gap-8">
-          <Link
-            href="/index"
-            className={`font-label-caps text-label-caps transition-colors duration-300 hover:text-primary ${active === "index" ? "text-primary underline underline-offset-4" : "text-ink-muted"}`}
-          >
-            Index
-          </Link>
-          <Link
-            href="/archive"
-            className={`font-label-caps text-label-caps transition-colors duration-300 hover:text-primary ${active === "archive" ? "text-primary underline underline-offset-4" : "text-ink-muted"}`}
-          >
-            Type
-          </Link>
+        <nav className="flex items-center gap-3 md:gap-4">
+          {topNavItems.map((item) => {
+            const isActive = active === item.key;
+
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                className={`inline-flex items-center gap-2 rounded-full border-[0.5px] px-3 py-2 transition-colors duration-300 focus-ring ${
+                  isActive
+                    ? "border-primary text-primary"
+                    : "border-border-subtle text-ink-muted hover:border-primary hover:text-primary"
+                }`}
+              >
+                <SymbolIcon name={item.icon} className="text-[18px]" />
+                <span className="font-label-caps text-label-caps">{item.label}</span>
+              </Link>
+            );
+          })}
         </nav>
 
         <div className="flex items-center gap-3 text-primary">
@@ -51,7 +62,7 @@ export function SideNav({ active }: { active?: string }) {
             <Link
               key={item.href}
               href={item.href}
-              className={`group -ml-2 flex w-max items-center gap-4 rounded p-2 transition-colors hover:bg-surface-container-low focus-ring ${
+              className={`group -ml-2 flex w-max items-center gap-4 rounded border-[0.5px] border-transparent p-2 transition-colors hover:border-border-subtle hover:bg-surface-container-low focus-ring ${
                 isActive ? "border-b-[0.5px] border-primary text-primary italic" : "text-ink-muted"
               }`}
             >
@@ -81,10 +92,16 @@ export function Footer({ active }: { active?: string }) {
             <Link
               key={item.href}
               href={item.href}
-              className={`font-label-caps text-label-caps transition-colors hover:text-primary focus-ring ${
+              className={`inline-flex items-center gap-2 font-label-caps text-label-caps transition-colors hover:text-primary focus-ring ${
                 active === item.key ? "text-primary underline" : "text-ink-muted"
               }`}
             >
+              <SymbolIcon
+                name={
+                  item.key === "about" ? "info" : item.key === "archive" ? "menu_book" : item.key === "rss" ? "rss_feed" : "description"
+                }
+                className="text-[17px]"
+              />
               {item.label}
             </Link>
           ))}

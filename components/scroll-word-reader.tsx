@@ -11,6 +11,7 @@ import {
   useState
 } from "react";
 import { WPM_STORAGE_KEY } from "@/lib/theme";
+import { SymbolIcon } from "@/components/icons";
 
 type ScrollWordReaderProps = {
   html: string;
@@ -291,6 +292,14 @@ function prepareAnimatedContent(root: HTMLElement) {
     const element = node as HTMLElement;
 
     if (element.matches(SKIP_SELECTOR)) return;
+
+    if (element.classList.contains("reveal-word")) {
+      element.dataset.wordIndex = String(wordIndex);
+      hideWord(element);
+      words.push(element);
+      wordIndex += 1;
+      return;
+    }
 
     if (element.matches(BLOCK_SELECTOR)) {
       const index = wordIndex;
@@ -640,8 +649,9 @@ export function ScrollWordReader({ html, nextHref, nextLabel }: ScrollWordReader
               autoplayRemainderRef.current = 0;
               setAutoScroll((current) => !current);
             }}
-            className="font-label-caps text-label-caps border-[0.5px] border-border-subtle px-3 py-2 text-ink-muted transition-colors hover:border-primary hover:text-primary focus-ring"
+            className="inline-flex items-center gap-2 border-[0.5px] border-border-subtle px-3 py-2 font-label-caps text-label-caps text-ink-muted transition-colors hover:border-primary hover:text-primary focus-ring"
           >
+            <SymbolIcon name={isAutoScrollActive ? "pause" : "play_arrow"} className="text-[17px]" />
             {isAutoScrollActive ? "Pause Auto" : "Auto Scroll"}
           </button>
         </div>
@@ -688,9 +698,7 @@ export function ScrollWordReader({ html, nextHref, nextLabel }: ScrollWordReader
             className="group flex w-max items-center gap-3 border-[0.5px] border-border-subtle px-4 py-3 text-ink-muted transition-colors hover:border-primary hover:text-primary focus-ring"
           >
             <span className="font-label-caps text-label-caps">Next: {nextLabel}</span>
-            <span className="material-symbols-outlined text-[18px] transition-transform duration-500 group-hover:translate-x-1">
-              east
-            </span>
+            <SymbolIcon name="east" className="text-[18px] transition-transform duration-500 group-hover:translate-x-1" />
           </Link>
         </div>
       ) : null}

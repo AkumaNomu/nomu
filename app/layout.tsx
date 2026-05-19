@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import type { ReactNode } from "react";
+import { Analytics } from "@vercel/analytics/react";
 import "katex/dist/katex.min.css";
 import { getThemeBootstrapScript } from "@/lib/theme";
 import "./globals.css";
@@ -30,7 +31,10 @@ export default function RootLayout({ children }: Readonly<{ children: ReactNode 
       <head>
         <script dangerouslySetInnerHTML={{ __html: getThemeBootstrapScript() }} />
       </head>
-      <body className="grain-overlay">{children}</body>
+      <body className="grain-overlay">
+        {children}
+        <Analytics />
+      </body>
     </html>
   );
 }
