@@ -1,6 +1,5 @@
 import { ReaderLayout } from "@/components/layouts";
 import { SearchIndex } from "@/components/search-index";
-import { FadeIn } from "@/components/motion";
 import { getPosts } from "@/lib/posts";
 
 export const metadata = {
@@ -12,10 +11,8 @@ export default async function IndexPage() {
 
   return (
     <ReaderLayout active="index">
-      <main className="flex w-full flex-grow flex-col items-center gap-section-gap px-6 py-section-gap md:px-margin-page">
-        <FadeIn className="contents">
-          <SearchIndex entries={entries} />
-        </FadeIn>
+      <main className="library-page flex w-full flex-grow flex-col px-4 py-12 md:px-8 md:py-16 lg:px-12 lg:py-20">
+        <SearchIndex entries={entries} />
       </main>
     </ReaderLayout>
   );

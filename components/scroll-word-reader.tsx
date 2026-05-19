@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { animate, useReducedMotion } from "framer-motion";
+import { SymbolIcon } from "@/components/icons";
 import {
   startTransition,
   useEffect,
@@ -56,6 +57,7 @@ function readStoredWpm() {
 type PageUnit = {
   node: HTMLElement;
   path: HTMLElement[];
+  leadingSpace: boolean;
 };
 
 type OpenFrame = {
@@ -113,9 +115,14 @@ function wrapWordsInPlace(root: HTMLElement) {
 
 function collectPaginationUnits(root: HTMLElement) {
   const units: PageUnit[] = [];
+  let pendingWhitespace = false;
 
   function visit(node: Node, path: HTMLElement[]) {
     if (node.nodeType === Node.TEXT_NODE) {
+      const text = node.textContent ?? "";
+      if (text.length > 0 && /\s/.test(text)) {
+        pendingWhitespace = true;
+      }
       return;
     }
 
@@ -127,12 +134,14 @@ function collectPaginationUnits(root: HTMLElement) {
     const nextPath = [...path, element];
 
     if (element.matches(BLOCK_SELECTOR)) {
-      units.push({ node: element, path });
+      units.push({ node: element, path, leadingSpace: pendingWhitespace });
+      pendingWhitespace = false;
       return;
     }
 
     if (element.classList.contains("reveal-word")) {
-      units.push({ node: element, path });
+      units.push({ node: element, path, leadingSpace: pendingWhitespace });
+      pendingWhitespace = false;
       return;
     }
 
@@ -172,8 +181,12 @@ function syncOpenFrames(pageRoot: HTMLElement, frames: OpenFrame[], targetPath: 
 }
 
 function appendUnitToPage(pageRoot: HTMLElement, frames: OpenFrame[], unit: PageUnit) {
+  const isFirstOnPage = pageRoot.firstChild === null;
   syncOpenFrames(pageRoot, frames, unit.path);
   const parent = frames.length > 0 ? frames[frames.length - 1].clone : pageRoot;
+  if (unit.leadingSpace && !isFirstOnPage) {
+    parent.append(document.createTextNode(" "));
+  }
   const node = unit.node.cloneNode(true) as HTMLElement;
   parent.append(node);
   return node;
@@ -631,24 +644,29 @@ export function ScrollWordReader({ html, nextHref, nextLabel }: ScrollWordReader
 
   return (
     <section className="scroll-word-shell min-h-0 flex-1">
-      <div className="mb-4 flex flex-wrap items-center justify-between gap-4">
-        <div className="flex items-center gap-4">
-          <p className="font-label-caps text-label-caps text-ink-muted">Scroll to reveal</p>
+      <div className="reader-toolbar">
+        <div className="reader-toolbar-group">
           <button
             type="button"
             onClick={() => {
               autoplayRemainderRef.current = 0;
               setAutoScroll((current) => !current);
             }}
-            className="font-label-caps text-label-caps border-[0.5px] border-border-subtle px-3 py-2 text-ink-muted transition-colors hover:border-primary hover:text-primary focus-ring"
+            aria-label={isAutoScrollActive ? "Pause auto scroll" : "Start auto scroll"}
+            className="icon-button icon-button-primary"
           >
-            {isAutoScrollActive ? "Pause Auto" : "Auto Scroll"}
+            <SymbolIcon name={isAutoScrollActive ? "pause" : "play_arrow"} className="icon-button-glyph" />
           </button>
+          <span className="reader-toolbar-label">
+            {isAutoScrollActive ? "Auto-reading" : "Scroll to reveal"}
+          </span>
         </div>
 
-        <div className="flex items-center gap-4">
-          <label className="flex items-center gap-3">
-            <span className="font-label-caps text-label-caps text-ink-muted">{wpm} WPM</span>
+        <div className="reader-toolbar-group">
+          <label className="slider-control">
+            <span className="slider-control-icon" aria-hidden="true">
+              <SymbolIcon name="speed" className="icon-button-glyph" />
+            </span>
             <input
               type="range"
               min="60"
@@ -662,11 +680,13 @@ export function ScrollWordReader({ html, nextHref, nextLabel }: ScrollWordReader
                 window.localStorage.setItem(WPM_STORAGE_KEY, String(nextWpm));
               }}
               className="reader-wpm-slider"
+              aria-label="Words per minute"
             />
+            <span className="slider-control-value">{wpm}</span>
           </label>
-          <p className="font-label-caps text-label-caps text-ink-muted">
-            {pageCount > 0 ? `${currentPageIndex + 1} / ${pageCount}` : "loading"}
-          </p>
+          <span className="reader-toolbar-page">
+            {pageCount > 0 ? `${currentPageIndex + 1} / ${pageCount}` : "—"}
+          </span>
         </div>
       </div>
 
@@ -682,14 +702,14 @@ export function ScrollWordReader({ html, nextHref, nextLabel }: ScrollWordReader
       </div>
 
       {nextHref && nextLabel ? (
-        <div className={`mt-6 transition-opacity duration-700 ${isComplete ? "opacity-100" : "opacity-0"}`}>
-          <Link
-            href={nextHref}
-            className="group flex w-max items-center gap-3 border-[0.5px] border-border-subtle px-4 py-3 text-ink-muted transition-colors hover:border-primary hover:text-primary focus-ring"
-          >
-            <span className="font-label-caps text-label-caps">Next: {nextLabel}</span>
-            <span className="material-symbols-outlined text-[18px] transition-transform duration-500 group-hover:translate-x-1">
-              east
+        <div className={`reader-next ${isComplete ? "reader-next-visible" : ""}`}>
+          <Link href={nextHref} className="reader-next-link" aria-label={`Next: ${nextLabel}`}>
+            <span className="reader-next-label">
+              <span className="reader-next-eyebrow">Next</span>
+              <span className="reader-next-title">{nextLabel}</span>
+            </span>
+            <span className="reader-next-arrow" aria-hidden="true">
+              <SymbolIcon name="arrow_forward" className="icon-button-glyph" />
             </span>
           </Link>
         </div>
