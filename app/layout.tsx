@@ -45,7 +45,10 @@ export default function RootLayout({ children }: Readonly<{ children: ReactNode 
       <head>
         <script dangerouslySetInnerHTML={{ __html: getThemeBootstrapScript() }} />
       </head>
-      <body className="grain-overlay">{children}</body>
+      <body className="grain-overlay">
+        {children}
+        <Analytics />
+      </body>
     </html>
   );
 }

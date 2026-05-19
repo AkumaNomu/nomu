@@ -1,3 +1,6 @@
+"use client";
+
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { ArchiveEntry } from "@/types/archive";
 import { AudioPlayer } from "@/components/audio-player";
 import { SymbolIcon } from "@/components/icons";

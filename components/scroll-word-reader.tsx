@@ -12,6 +12,7 @@ import {
   useState
 } from "react";
 import { WPM_STORAGE_KEY } from "@/lib/theme";
+import { SymbolIcon } from "@/components/icons";
 
 type ScrollWordReaderProps = {
   html: string;
@@ -304,6 +305,14 @@ function prepareAnimatedContent(root: HTMLElement) {
     const element = node as HTMLElement;
 
     if (element.matches(SKIP_SELECTOR)) return;
+
+    if (element.classList.contains("reveal-word")) {
+      element.dataset.wordIndex = String(wordIndex);
+      hideWord(element);
+      words.push(element);
+      wordIndex += 1;
+      return;
+    }
 
     if (element.matches(BLOCK_SELECTOR)) {
       const index = wordIndex;

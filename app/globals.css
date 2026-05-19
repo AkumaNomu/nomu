@@ -777,6 +777,20 @@ html[data-theme="dark"] .reader-toolbar {
   text-align: right;
 }
 
+.reader-control-button--primary {
+  width: 3.25rem;
+  height: 3.25rem;
+  background: var(--color-primary);
+  color: var(--color-on-primary);
+}
+
+.reader-control-button--primary:hover {
+  background: color-mix(in srgb, var(--color-primary) 90%, var(--color-background));
+  color: var(--color-on-primary);
+}
+
+.reader-audio-slider,
+.reader-volume-slider,
 .reader-wpm-slider {
   -webkit-appearance: none;
   appearance: none;
@@ -1921,6 +1935,25 @@ html[data-theme="dark"] .library-filter-pill-active {
   font-size: 0.9rem;
   color: var(--color-ink-muted);
   margin: 0;
+}
+
+.reader-audio-slider {
+  margin: 0;
+}
+
+.reader-volume-slider {
+  max-width: 8rem;
+}
+
+.reader-wpm-slider {
+  width: 8.5rem;
+}
+
+.reader-player-frame {
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  border: var(--hairline);
+  background: var(--color-surface-container);
 }
 
 .admin-input,

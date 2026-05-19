@@ -3,6 +3,11 @@ import { navItems } from "@/data/archive";
 import { SymbolIcon } from "@/components/icons";
 import { ThemeToggle } from "@/components/theme-toggle";
 
+const topNavItems = [
+  { label: "Index", href: "/index", icon: "format_list_bulleted", key: "index" },
+  { label: "Archive", href: "/archive", icon: "menu_book", key: "archive" }
+] as const;
+
 export function TopNav({ active }: { active?: string }) {
   return (
     <header className="top-nav">
@@ -51,7 +56,7 @@ export function SideNav({ active }: { active?: string }) {
             <Link
               key={item.href}
               href={item.href}
-              className={`group -ml-2 flex w-max items-center gap-4 rounded p-2 transition-colors hover:bg-surface-container-low focus-ring ${
+              className={`group -ml-2 flex w-max items-center gap-4 rounded border-[0.5px] border-transparent p-2 transition-colors hover:border-border-subtle hover:bg-surface-container-low focus-ring ${
                 isActive ? "border-b-[0.5px] border-primary text-primary italic" : "text-ink-muted"
               }`}
             >
@@ -81,10 +86,16 @@ export function Footer({ active }: { active?: string }) {
             <Link
               key={item.href}
               href={item.href}
-              className={`font-label-caps text-label-caps transition-colors hover:text-primary focus-ring ${
+              className={`inline-flex items-center gap-2 font-label-caps text-label-caps transition-colors hover:text-primary focus-ring ${
                 active === item.key ? "text-primary underline" : "text-ink-muted"
               }`}
             >
+              <SymbolIcon
+                name={
+                  item.key === "about" ? "info" : item.key === "archive" ? "menu_book" : item.key === "rss" ? "rss_feed" : "description"
+                }
+                className="text-[17px]"
+              />
               {item.label}
             </Link>
           ))}

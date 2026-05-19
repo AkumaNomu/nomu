@@ -4,7 +4,7 @@ import { useSyncExternalStore } from "react";
 import { SymbolIcon } from "@/components/icons";
 import { THEME_STORAGE_KEY, type ThemeMode } from "@/lib/theme";
 
-function setTheme(theme: ThemeMode) {
+function applyTheme(theme: ThemeMode) {
   document.documentElement.dataset.theme = theme;
   document.documentElement.style.colorScheme = theme;
   window.localStorage.setItem(THEME_STORAGE_KEY, theme);
