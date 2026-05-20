@@ -27,7 +27,7 @@ export function LibraryLayout({ children, active = "Essays", footerActive = "arc
   return (
     <div className="min-h-screen bg-paper-base text-primary">
       <SideNav active={active} />
-      <main className="flex min-h-screen flex-col md:ml-96">
+      <main className="flex min-h-screen flex-col md:ml-52">
         <TopNav active="archive" />
         {children}
         <Footer active={footerActive} />
