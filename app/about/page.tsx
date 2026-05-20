@@ -9,10 +9,10 @@ export const metadata = {
 export default function AboutPage() {
   return (
     <LibraryLayout active="About" footerActive="about">
-      <div className="mx-auto w-full max-w-content-width px-6 pb-32 pt-12 md:px-margin-page md:pt-32">
+      <div className="mx-auto w-full max-w-content-width px-6 pb-20 pt-10 md:px-margin-page md:pt-20">
         <section className="mb-section-gap grid grid-cols-1 gap-gutter-grid lg:grid-cols-12">
           <FadeIn className="flex flex-col justify-center lg:col-span-7">
-            <p className="font-label-caps text-label-caps mb-8 tracking-[0.2em] text-ink-muted">Manifesto 01</p>
+            <p className="mb-6 text-[0.75rem] tracking-[0.08em] text-ink-muted">Manifesto 01</p>
             <h2 className="font-display-lg-mobile md:font-display-lg text-display-lg-mobile md:text-display-lg mb-8 leading-tight text-ink-black">
               To catalogue is not merely to store, but to assert that a fragment holds intrinsic weight against the void.
             </h2>

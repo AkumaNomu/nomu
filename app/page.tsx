@@ -16,7 +16,7 @@ export default async function HomePage() {
 
   return (
     <ReaderLayout active="archive" footer={false} immersive>
-      <main className="reader-page-shell relative z-10 flex min-h-0 w-full flex-1 flex-col gap-8 px-4 py-4 md:px-6 lg:flex-row lg:px-8 lg:py-6">
+      <main className="reader-page-shell flex min-h-0 w-full flex-1 flex-col gap-6 px-4 py-4 md:px-6 lg:flex-row lg:gap-8 lg:px-8 lg:py-6">
         {current ? (
           <ReaderSideRail
             entry={current}
