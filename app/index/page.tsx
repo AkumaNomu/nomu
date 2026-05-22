@@ -11,7 +11,7 @@ export default async function IndexPage() {
 
   return (
     <ReaderLayout active="index">
-      <main className="library-page flex w-full flex-grow flex-col px-4 py-12 md:px-8 md:py-16 lg:px-12 lg:py-20">
+      <main className="library-page flex w-full flex-grow flex-col px-4 py-10 md:px-8 md:py-14 lg:px-12 lg:py-16">
         <SearchIndex entries={entries} />
       </main>
     </ReaderLayout>

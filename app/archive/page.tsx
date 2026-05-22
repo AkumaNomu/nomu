@@ -17,11 +17,11 @@ export default async function ArchivePage() {
 
   return (
     <LibraryLayout active="Essays">
-      <div className="flex-1 px-6 py-16 md:px-margin-page md:py-24">
+      <div className="flex-1 px-6 py-12 md:px-margin-page md:py-16">
         <FadeIn>
-          <div className="mb-16 flex items-end justify-between border-b-[0.5px] border-border-subtle pb-8">
+          <div className="mb-10 flex items-end justify-between border-b-[0.5px] border-border-subtle pb-6">
             <h2 className="font-display-lg-mobile md:font-display-lg text-display-lg-mobile md:text-display-lg text-primary">Essays</h2>
-            <span className="font-label-caps text-label-caps mb-3 hidden text-ink-muted sm:block">Vol. I — Selection</span>
+            <span className="mb-2 hidden text-sm text-ink-muted sm:block">Vol. I — Selection</span>
           </div>
         </FadeIn>
 
@@ -37,7 +37,7 @@ export default async function ArchivePage() {
         <div className="h-section-gap" />
 
         <FadeIn>
-          <div className="mb-16 flex items-end justify-between border-b-[0.5px] border-border-subtle pb-8">
+          <div className="mb-10 flex items-end justify-between border-b-[0.5px] border-border-subtle pb-6">
             <h2 className="font-display-lg-mobile md:font-display-lg text-display-lg-mobile md:text-display-lg text-primary">Fragments</h2>
           </div>
         </FadeIn>

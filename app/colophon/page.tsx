@@ -8,7 +8,7 @@ export const metadata = {
 export default function ColophonPage() {
   return (
     <LibraryLayout active="About" footerActive="colophon">
-      <main className="mx-auto flex w-full max-w-content-width flex-grow flex-col items-center px-6 pb-section-gap pt-32 md:px-12">
+      <main className="mx-auto flex w-full max-w-content-width flex-grow flex-col items-center px-6 pb-section-gap pt-16 md:px-12">
         <div className="w-full max-w-text-width">
           <FadeIn>
             <header className="mb-16 text-center">

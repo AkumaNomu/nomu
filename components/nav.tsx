@@ -4,7 +4,9 @@ import { SymbolIcon } from "@/components/icons";
 import { ThemeToggle } from "@/components/theme-toggle";
 
 const topNavItems = [
-  { label: "Index", href: "/index", icon: "format_list_bulleted", key: "index" }
+  { label: "Archive", href: "/archive", key: "archive" },
+  { label: "Index", href: "/index", key: "index" },
+  { label: "About", href: "/about", key: "about" }
 ] as const;
 
 export function TopNav({ active }: { active?: string }) {
@@ -12,7 +14,7 @@ export function TopNav({ active }: { active?: string }) {
     <header className="top-nav">
       <div className="top-nav-inner">
         <Link href="/" className="top-nav-brand focus-ring">
-          THE ARCHIVE
+          The Archive
         </Link>
 
         <nav className="top-nav-links">
@@ -33,27 +35,22 @@ export function TopNav({ active }: { active?: string }) {
 
 export function SideNav({ active }: { active?: string }) {
   return (
-    <aside className="fixed inset-y-0 left-0 z-50 hidden h-full w-96 flex-col border-r-[0.5px] border-border-subtle bg-paper-base p-10 md:flex">
-      <div className="mb-12">
-        <Link href="/archive" className="font-headline-md text-headline-md mb-2 block text-primary focus-ring">
-          LIBRARY
-        </Link>
-        <p className="font-label-caps text-label-caps text-ink-muted">Collected Writings</p>
-      </div>
-
-      <nav className="flex flex-1 flex-col gap-6">
+    <aside className="fixed inset-y-0 left-0 z-50 hidden h-full w-52 flex-col border-r-[0.5px] border-border-subtle bg-paper-base/95 backdrop-blur-xl p-5 md:flex">
+      <nav className="flex flex-1 flex-col gap-1 pt-2">
         {navItems.map((item) => {
           const isActive = active?.toLowerCase() === item.label.toLowerCase();
           return (
             <Link
               key={item.href}
               href={item.href}
-              className={`group -ml-2 flex w-max items-center gap-4 rounded border-[0.5px] border-transparent p-2 transition-colors hover:border-border-subtle hover:bg-surface-container-low focus-ring ${
-                isActive ? "border-b-[0.5px] border-primary text-primary italic" : "text-ink-muted"
+              className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors focus-ring ${
+                isActive
+                  ? "bg-surface-container text-primary font-medium"
+                  : "text-ink-muted hover:bg-surface-container-low hover:text-primary"
               }`}
             >
-              <SymbolIcon name={item.icon} className="h-[18px] w-[18px]" />
-              <span className="font-label-caps text-label-caps">{item.label}</span>
+              <SymbolIcon name={item.icon} className="h-[17px] w-[17px] shrink-0" />
+              <span>{item.label}</span>
             </Link>
           );
         })}
@@ -71,30 +68,24 @@ export function Footer({ active }: { active?: string }) {
   ];
 
   return (
-    <footer className="mt-auto w-full border-t-[0.5px] border-border-subtle bg-transparent py-24">
-      <div className="mx-auto flex max-w-text-width flex-col items-center gap-8 px-6">
-        <nav className="flex flex-wrap justify-center gap-6 sm:gap-12">
+    <footer className="mt-auto w-full border-t-[0.5px] border-border-subtle bg-transparent py-10">
+      <div className="mx-auto flex max-w-text-width flex-col items-center gap-5 px-6">
+        <nav className="flex flex-wrap justify-center gap-5 sm:gap-8">
           {items.map((item) => (
             <Link
               key={item.href}
               href={item.href}
-              className={`inline-flex items-center gap-2 font-label-caps text-label-caps transition-colors hover:text-primary focus-ring ${
-                active === item.key ? "text-primary underline" : "text-ink-muted"
+              className={`text-xs tracking-wide transition-colors hover:text-primary focus-ring ${
+                active === item.key ? "text-primary" : "text-ink-muted"
               }`}
             >
-              <SymbolIcon
-                name={
-                  item.key === "about" ? "info" : item.key === "archive" ? "menu_book" : item.key === "rss" ? "rss_feed" : "description"
-                }
-                className="text-[17px]"
-              />
               {item.label}
             </Link>
           ))}
         </nav>
-        <div className="font-label-caps text-label-caps text-center tracking-widest text-ink-muted">
-          © 2026 THE ARCHIVE. BUILT FOR FOCUS.
-        </div>
+        <p className="text-xs tracking-wide text-ink-muted">
+          © 2026 The Archive
+        </p>
       </div>
     </footer>
   );

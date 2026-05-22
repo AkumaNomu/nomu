@@ -31,7 +31,7 @@ export default async function WritingPage({ params }: { params: Promise<{ slug: 
 
   return (
     <ReaderLayout active="archive" footer={false} immersive>
-      <main className="reader-page-shell relative flex min-h-0 flex-1 flex-col gap-8 px-4 py-4 md:px-6 lg:flex-row lg:px-8 lg:py-6">
+      <main className="reader-page-shell flex min-h-0 flex-1 flex-col gap-6 px-4 py-4 md:px-6 lg:flex-row lg:gap-8 lg:px-8 lg:py-6">
         <ReaderSideRail entry={post} />
 
         <section className="flex min-h-0 flex-1 flex-col">
