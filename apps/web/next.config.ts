@@ -14,7 +14,10 @@ const nextConfig: NextConfig = {
     "@personal/design-system",
     "@personal/motion-system",
     "@personal/shared-scenes"
-  ]
+  ],
+  outputFileTracingIncludes: {
+    "/api/tools/youtube-download": ["./node_modules/ffmpeg-static/**", "./node_modules/yt-dlp-exec/bin/**"]
+  }
 };
 
 const withMDX = createMDX({

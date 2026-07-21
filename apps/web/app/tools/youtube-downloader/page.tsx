@@ -8,7 +8,7 @@ export const metadata = {
 
 export default function YoutubePage() {
   return (
-    <ToolShell title="YouTube Downloader" href="/tools/youtube-downloader">
+    <ToolShell title="YouTube Downloader" description="Download audio from YouTube videos in MP3, M4A, or WAV format with metadata.">
       <YoutubeDownloader />
     </ToolShell>
   );

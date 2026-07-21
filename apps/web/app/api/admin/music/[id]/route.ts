@@ -15,24 +15,25 @@ async function requireAdmin() {
   return user;
 }
 
-export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const { id } = await params;
     const user = await requireAdmin();
     if (!commentsDb) return NextResponse.json({ error: "Database not configured" }, { status: 500 });
 
     const track = await commentsDb`
-      SELECT id FROM public.music WHERE id = ${params.id}
+      SELECT id FROM public.music WHERE id = ${id}
     `;
 
     if (!track[0]) return NextResponse.json({ error: "Track not found" }, { status: 404 });
 
     await commentsDb`
-      DELETE FROM public.music WHERE id = ${params.id}
+      DELETE FROM public.music WHERE id = ${id}
     `;
 
     await commentsDb`
       INSERT INTO public.admin_audit (user_id, action, resource_type, resource_id)
-      VALUES (${user.id}, 'delete', 'music', ${params.id})
+      VALUES (${user.id}, 'delete', 'music', ${id})
     `;
 
     return NextResponse.json({ success: true });

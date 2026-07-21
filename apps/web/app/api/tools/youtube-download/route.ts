@@ -1,14 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
-import { exec } from "child_process";
+import { execFile } from "child_process";
 import { promisify } from "util";
 import { createReadStream, unlinkSync } from "fs";
 import { join } from "path";
 import { randomUUID } from "crypto";
+import ffmpegPath from "ffmpeg-static";
+import ytdlp from "yt-dlp-exec";
 
 export const dynamic = "force-dynamic";
-export const config = { maxDuration: 60 };
+export const maxDuration = 60;
 
-const execAsync = promisify(exec);
+const execFileAsync = promisify(execFile);
 
 const FORMATS = {
   mp3_128: { codec: "libmp3lame", bitrate: "128k", extension: "mp3" },
@@ -25,8 +27,12 @@ async function downloadYoutube(url: string, format: Format) {
     throw new Error("Invalid format");
   }
 
-  if (!/^https?:\/\/(www\.)?youtube\.com|youtu\.be/.test(url)) {
+  if (!/^https?:\/\/(www\.)?(youtube\.com|youtu\.be)\//.test(url)) {
     throw new Error("Invalid YouTube URL");
+  }
+
+  if (!ffmpegPath) {
+    throw new Error("ffmpeg binary not available");
   }
 
   const tmpId = randomUUID();
@@ -35,34 +41,32 @@ async function downloadYoutube(url: string, format: Format) {
   const outputFile = join(tmpDir, `${tmpId}.${FORMATS[format].extension}`);
 
   try {
-    // Download audio from YouTube
-    const { stdout: infoJson } = await execAsync(
-      `yt-dlp -f bestaudio --dump-json "${url}" 2>/dev/null`,
-      { timeout: 30000 }
-    );
-
-    const info = JSON.parse(infoJson);
+    // Fetch metadata (execa-based, no shell — safe against untrusted URLs)
+    const info = await ytdlp(url, { dumpJson: true, noWarnings: true }) as { title?: string; uploader?: string };
     const title = info.title || "download";
     const artist = info.uploader || "YouTube";
 
-    await execAsync(
-      `yt-dlp -f bestaudio -o "${audioFile}" "${url}" 2>/dev/null`,
-      { timeout: 45000 }
-    );
+    // Download best audio track
+    await ytdlp(url, { format: "bestaudio", output: audioFile }, { timeout: 45000 });
 
     // Convert to target format with FFmpeg
-    const ffmpegCmd = FORMATS[format].bitrate
-      ? `ffmpeg -i "${audioFile}" -c:a ${FORMATS[format].codec} -b:a ${FORMATS[format].bitrate} -metadata title="${title}" -metadata artist="${artist}" "${outputFile}" -y 2>/dev/null`
-      : `ffmpeg -i "${audioFile}" -c:a ${FORMATS[format].codec} -metadata title="${title}" -metadata artist="${artist}" "${outputFile}" -y 2>/dev/null`;
-
-    await execAsync(ffmpegCmd, { timeout: 45000 });
+    const fmt = FORMATS[format];
+    const ffmpegArgs = [
+      "-i", audioFile,
+      "-c:a", fmt.codec,
+      ...(fmt.bitrate ? ["-b:a", fmt.bitrate] : []),
+      "-metadata", `title=${title}`,
+      "-metadata", `artist=${artist}`,
+      "-y", outputFile,
+    ];
+    await execFileAsync(ffmpegPath, ffmpegArgs, { timeout: 45000 });
 
     // Read file and return
     const stream = createReadStream(outputFile);
     const chunks: Buffer[] = [];
 
     return new Promise<Buffer>((resolve, reject) => {
-      stream.on("data", (chunk) => chunks.push(chunk));
+      stream.on("data", (chunk) => chunks.push(chunk as Buffer));
       stream.on("end", () => resolve(Buffer.concat(chunks)));
       stream.on("error", reject);
     });
@@ -85,7 +89,7 @@ export async function POST(request: NextRequest) {
     const buffer = await downloadYoutube(body.url, body.format);
     const fmt = FORMATS[body.format];
 
-    return new NextResponse(buffer, {
+    return new NextResponse(new Uint8Array(buffer), {
       headers: {
         "Content-Type": fmt.extension === "mp3" ? "audio/mpeg" : `audio/${fmt.extension}`,
         "Content-Disposition": `attachment; filename="download.${fmt.extension}"`,

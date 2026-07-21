@@ -1,0 +1,7 @@
+{
+  "tool_name": "Bash",
+  "tool_input_preview": "{\"command\":\"cat scripts/build.sh 2>/dev/null; echo \\\"---vercel.json---\\\"; cat vercel.json 2>/dev/null; echo \\\"---apps/web vercel---\\\"; cat apps/web/vercel.json 2>/dev/null\",\"description\":\"Check build ...",
+  "error": "Exit code 1\n#!/bin/bash\nset -e\n\necho \"Installing system dependencies...\"\napt-get update -qq\napt-get install -y -qq python3 python3-pip ffmpeg > /dev/null 2>&1\n\necho \"Installing yt-dlp...\"\npip3 install -q yt-dlp\n\necho \"Building Next.js app...\"\npnpm --filter web build\n\necho \"Build complete!\"\n---vercel.json---\n{\n  \"buildCommand\": \"bash scripts/build.sh\",\n  \"installCommand\": \"pnpm install\",\n  \"framework\": \"nextjs\",\n  \"env\": {\n    \"NODE_ENV\": \"production\"\n  }\n}\n---apps/web vercel---",
+  "timestamp": "2026-07-21T23:11:12.808Z",
+  "retry_count": 1
+}

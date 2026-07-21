@@ -133,7 +133,6 @@ export function ToolGlyph({ kind, large = false }: { kind: ToolKind; large?: boo
       {kind === "timer" && <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8" /><path d="M12 4v8l2-5" /></svg>}
       {kind === "contrast" && <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8" /><path d="M12 4v16" /><path className={styles.fill} d="M12 4a8 8 0 0 1 0 16z" /></svg>}
       {kind === "split" && <svg viewBox="0 0 24 24"><path d="M4 8h6l4 8h6M4 16h6l4-8h6" /></svg>}
-      {kind === "read" && <svg viewBox="0 0 24 24"><path d="M4 5c3-1 5 0 8 2v12c-3-2-5-3-8-2zM20 5c-3-1-5 0-8 2v12c3-2 5-3 8-2z" /></svg>}
       {kind === "palette" && <svg viewBox="0 0 24 24"><rect x="4" y="4" width="6" height="6" /><rect x="14" y="4" width="6" height="6" /><rect x="4" y="14" width="6" height="6" /><rect className={styles.fill} x="14" y="14" width="6" height="6" /></svg>}
     </span>
   );

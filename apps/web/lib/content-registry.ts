@@ -10,7 +10,6 @@ import ContrastCheckerTool from "@/content/tools/contrast-checker.mdx";
 import FocusTimerTool from "@/content/tools/focus-timer.mdx";
 import PaletteRatioCheckerTool from "@/content/tools/palette-ratio-checker.mdx";
 import PromptSplitterTool from "@/content/tools/prompt-splitter.mdx";
-import ReadingTimeCalculatorTool from "@/content/tools/reading-time-calculator.mdx";
 import KatexSupport from "@/content/writing/katex-support.mdx";
 import MarkdownTestPost from "@/content/writing/markdown-test-post.mdx";
 import MergingPaginationMusicSupport from "@/content/writing/merging-pagination-music-support.mdx";
@@ -48,7 +47,6 @@ export const toolRegistry = {
   "focus-timer": FocusTimerTool,
   "contrast-checker": ContrastCheckerTool,
   "prompt-splitter": PromptSplitterTool,
-  "reading-time-calculator": ReadingTimeCalculatorTool,
   "palette-ratio-checker": PaletteRatioCheckerTool,
 } satisfies Record<string, MdxContent>;
 

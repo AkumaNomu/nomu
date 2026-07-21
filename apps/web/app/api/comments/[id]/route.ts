@@ -14,13 +14,14 @@ function unavailable() {
   );
 }
 
-export async function DELETE(request: Request, { params }: { params: { id: string } }) {
+export async function DELETE(request: Request, { params }: { params: Promise<{ id: string }> }) {
   if (!commentsDb) return unavailable();
 
   const user = await getCurrentUser();
   if (!user) return NextResponse.json({ error: "Log in to delete comments." }, { status: 401 });
 
-  const idResult = idSchema.safeParse(params.id);
+  const { id } = await params;
+  const idResult = idSchema.safeParse(id);
   if (!idResult.success) {
     return NextResponse.json({ error: "Invalid comment ID." }, { status: 400 });
   }

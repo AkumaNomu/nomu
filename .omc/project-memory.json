@@ -1,6 +1,6 @@
 {
   "version": "1.0.0",
-  "lastScanned": 1784582575840,
+  "lastScanned": 1784674947293,
   "projectRoot": "C:\\Users\\ROCDZ\\Documents\\Projects\\Webdev\\Nomu's site",
   "techStack": {
     "languages": [
@@ -38,7 +38,10 @@
   "structure": {
     "isMonorepo": true,
     "workspaces": [],
-    "mainDirectories": [],
+    "mainDirectories": [
+      "assets",
+      "scripts"
+    ],
     "gitBranches": null
   },
   "customNotes": [],
@@ -47,14 +50,32 @@
       "path": "apps",
       "purpose": null,
       "fileCount": 0,
-      "lastAccessed": 1784582575786,
+      "lastAccessed": 1784674947015,
       "keyFiles": []
+    },
+    "archives": {
+      "path": "archives",
+      "purpose": null,
+      "fileCount": 1,
+      "lastAccessed": 1784674947028,
+      "keyFiles": [
+        "nomuold.zip"
+      ]
+    },
+    "assets": {
+      "path": "assets",
+      "purpose": "Static assets",
+      "fileCount": 1,
+      "lastAccessed": 1784674947088,
+      "keyFiles": [
+        "nomu telegram.jpg"
+      ]
     },
     "output": {
       "path": "output",
       "purpose": null,
-      "fileCount": 6,
-      "lastAccessed": 1784582575787,
+      "fileCount": 8,
+      "lastAccessed": 1784674947090,
       "keyFiles": [
         "dev-3100.err.log",
         "dev-3100.log",
@@ -67,8 +88,17 @@
       "path": "packages",
       "purpose": null,
       "fileCount": 0,
-      "lastAccessed": 1784582575788,
+      "lastAccessed": 1784674947091,
       "keyFiles": []
+    },
+    "scripts": {
+      "path": "scripts",
+      "purpose": "Build/utility scripts",
+      "fileCount": 1,
+      "lastAccessed": 1784674947093,
+      "keyFiles": [
+        "build.sh"
+      ]
     }
   },
   "hotPaths": [
@@ -80,8 +110,8 @@
     },
     {
       "path": "apps\\web",
-      "accessCount": 16,
-      "lastAccessed": 1784585684916,
+      "accessCount": 20,
+      "lastAccessed": 1784676295536,
       "type": "directory"
     },
     {
@@ -92,44 +122,56 @@
     },
     {
       "path": "apps\\web\\app\\writing\\[slug]\\page.tsx",
-      "accessCount": 13,
-      "lastAccessed": 1784583548169,
-      "type": "file"
-    },
-    {
-      "path": "apps\\web\\components\\mdx\\MdxComponents.tsx",
-      "accessCount": 13,
-      "lastAccessed": 1784583620039,
-      "type": "file"
-    },
-    {
-      "path": "apps\\web\\components\\music\\MusicWidget.tsx",
-      "accessCount": 12,
-      "lastAccessed": 1784585705595,
-      "type": "file"
-    },
-    {
-      "path": "apps\\web\\components\\SiteHeader.tsx",
-      "accessCount": 12,
-      "lastAccessed": 1784588877490,
-      "type": "file"
-    },
-    {
-      "path": "apps\\web\\components\\music\\MusicPlayer.module.css",
-      "accessCount": 11,
-      "lastAccessed": 1784585711688,
-      "type": "file"
-    },
-    {
-      "path": "apps\\web\\app\\article.module.css",
-      "accessCount": 10,
-      "lastAccessed": 1784583572612,
+      "accessCount": 15,
+      "lastAccessed": 1784677265188,
       "type": "file"
     },
     {
       "path": "apps\\web\\app\\collections.module.css",
+      "accessCount": 14,
+      "lastAccessed": 1784675744761,
+      "type": "file"
+    },
+    {
+      "path": "apps\\web\\components\\mdx\\MdxComponents.tsx",
+      "accessCount": 14,
+      "lastAccessed": 1784677279322,
+      "type": "file"
+    },
+    {
+      "path": "apps\\web\\components\\SiteHeader.tsx",
+      "accessCount": 13,
+      "lastAccessed": 1784677240589,
+      "type": "file"
+    },
+    {
+      "path": "apps\\web\\components\\music\\MusicWidget.tsx",
+      "accessCount": 13,
+      "lastAccessed": 1784677242525,
+      "type": "file"
+    },
+    {
+      "path": "apps\\web\\components\\music\\MusicPlayer.module.css",
+      "accessCount": 12,
+      "lastAccessed": 1784677250324,
+      "type": "file"
+    },
+    {
+      "path": "apps\\web\\app\\article.module.css",
+      "accessCount": 11,
+      "lastAccessed": 1784677263466,
+      "type": "file"
+    },
+    {
+      "path": "apps\\web\\components\\ProjectExplorer.tsx",
       "accessCount": 10,
-      "lastAccessed": 1784585043830,
+      "lastAccessed": 1784675559101,
+      "type": "file"
+    },
+    {
+      "path": "apps\\web\\app\\tools\\ToolExplorer.tsx",
+      "accessCount": 10,
+      "lastAccessed": 1784676306469,
       "type": "file"
     },
     {
@@ -139,21 +181,21 @@
       "type": "file"
     },
     {
-      "path": "apps\\web\\app\\tools\\ToolExplorer.tsx",
-      "accessCount": 9,
-      "lastAccessed": 1784584975489,
-      "type": "file"
-    },
-    {
-      "path": "apps\\web\\components\\ProjectExplorer.tsx",
-      "accessCount": 9,
-      "lastAccessed": 1784585066626,
-      "type": "file"
-    },
-    {
       "path": "apps\\web\\app\\projects\\[slug]\\page.tsx",
+      "accessCount": 9,
+      "lastAccessed": 1784677282145,
+      "type": "file"
+    },
+    {
+      "path": "apps\\web\\components\\WritingSearch.tsx",
       "accessCount": 8,
-      "lastAccessed": 1784583582250,
+      "lastAccessed": 1784675696995,
+      "type": "file"
+    },
+    {
+      "path": "apps\\web\\lib\\content-registry.ts",
+      "accessCount": 8,
+      "lastAccessed": 1784676305021,
       "type": "file"
     },
     {
@@ -163,9 +205,9 @@
       "type": "file"
     },
     {
-      "path": "apps\\web\\components\\WritingSearch.tsx",
-      "accessCount": 6,
-      "lastAccessed": 1784585023491,
+      "path": "apps\\web\\next.config.ts",
+      "accessCount": 7,
+      "lastAccessed": 1784676063217,
       "type": "file"
     },
     {
@@ -175,15 +217,21 @@
       "type": "file"
     },
     {
-      "path": "apps\\web\\app\\layout.tsx",
-      "accessCount": 5,
-      "lastAccessed": 1784416959703,
+      "path": "apps\\web\\package.json",
+      "accessCount": 6,
+      "lastAccessed": 1784675918796,
       "type": "file"
     },
     {
-      "path": "apps\\web\\lib\\content-registry.ts",
-      "accessCount": 5,
-      "lastAccessed": 1784417868244,
+      "path": "apps\\web\\components\\music\\MusicPlayer.tsx",
+      "accessCount": 6,
+      "lastAccessed": 1784677242937,
+      "type": "file"
+    },
+    {
+      "path": "apps\\web\\app\\layout.tsx",
+      "accessCount": 6,
+      "lastAccessed": 1784677300297,
       "type": "file"
     },
     {
@@ -193,33 +241,33 @@
       "type": "file"
     },
     {
-      "path": "apps\\web\\next.config.ts",
-      "accessCount": 5,
-      "lastAccessed": 1784419152433,
-      "type": "file"
-    },
-    {
-      "path": "apps\\web\\components\\music\\MusicPlayer.tsx",
-      "accessCount": 5,
-      "lastAccessed": 1784583628528,
-      "type": "file"
-    },
-    {
       "path": "apps\\web\\lib\\tracks.ts",
       "accessCount": 5,
       "lastAccessed": 1784646553757,
       "type": "directory"
     },
     {
-      "path": "apps\\web\\app\\projects\\page.tsx",
-      "accessCount": 4,
-      "lastAccessed": 1784416906130,
+      "path": "apps\\web\\app\\writing\\page.tsx",
+      "accessCount": 5,
+      "lastAccessed": 1784675568964,
       "type": "file"
     },
     {
-      "path": "apps\\web\\app\\writing\\page.tsx",
-      "accessCount": 4,
-      "lastAccessed": 1784416970068,
+      "path": "apps\\web\\app\\projects\\page.tsx",
+      "accessCount": 5,
+      "lastAccessed": 1784675569059,
+      "type": "file"
+    },
+    {
+      "path": "apps\\web\\components\\SiteHeader.module.css",
+      "accessCount": 5,
+      "lastAccessed": 1784677242133,
+      "type": "directory"
+    },
+    {
+      "path": "apps\\web\\components\\mdx\\MdxComponents.module.css",
+      "accessCount": 5,
+      "lastAccessed": 1784677281878,
       "type": "file"
     },
     {
@@ -235,27 +283,9 @@
       "type": "file"
     },
     {
-      "path": "apps\\web\\package.json",
-      "accessCount": 4,
-      "lastAccessed": 1784582961466,
-      "type": "file"
-    },
-    {
-      "path": "apps\\web\\components\\SiteHeader.module.css",
-      "accessCount": 4,
-      "lastAccessed": 1784583499467,
-      "type": "directory"
-    },
-    {
-      "path": "apps\\web\\components\\mdx\\MdxComponents.module.css",
-      "accessCount": 4,
-      "lastAccessed": 1784583621845,
-      "type": "file"
-    },
-    {
       "path": "apps\\web\\components\\music\\AudioProvider.tsx",
-      "accessCount": 3,
-      "lastAccessed": 1784416660861,
+      "accessCount": 4,
+      "lastAccessed": 1784677251705,
       "type": "file"
     },
     {

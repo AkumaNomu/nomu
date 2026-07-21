@@ -9,3 +9,5 @@ allowBuilds:
   esbuild: true
   sharp: true
   unrs-resolver: true
+  ffmpeg-static: true
+  yt-dlp-exec: true
