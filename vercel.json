@@ -1,5 +1,8 @@
 {
-  "buildCommand": "pnpm --filter web build",
+  "buildCommand": "bash scripts/build.sh",
   "installCommand": "pnpm install",
-  "framework": "nextjs"
+  "framework": "nextjs",
+  "env": {
+    "NODE_ENV": "production"
+  }
 }
