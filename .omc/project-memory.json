@@ -104,8 +104,8 @@
   "hotPaths": [
     {
       "path": "apps\\web\\styles\\globals.css",
-      "accessCount": 20,
-      "lastAccessed": 1784585809864,
+      "accessCount": 21,
+      "lastAccessed": 1784677310060,
       "type": "file"
     },
     {
@@ -235,16 +235,16 @@
       "type": "file"
     },
     {
+      "path": "apps\\web\\lib\\tracks.ts",
+      "accessCount": 6,
+      "lastAccessed": 1784677310539,
+      "type": "directory"
+    },
+    {
       "path": "apps\\web\\lib\\content-schema.ts",
       "accessCount": 5,
       "lastAccessed": 1784419142410,
       "type": "file"
-    },
-    {
-      "path": "apps\\web\\lib\\tracks.ts",
-      "accessCount": 5,
-      "lastAccessed": 1784646553757,
-      "type": "directory"
     },
     {
       "path": "apps\\web\\app\\writing\\page.tsx",
