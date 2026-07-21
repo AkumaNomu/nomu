@@ -4,6 +4,7 @@ export const tools = [
   { slug: "prompt-splitter", name: "Prompt Splitter", description: "Split long prompts into clear sections.", status: "Experimental", category: "Writing", icon: "split" },
   { slug: "reading-time-calculator", name: "Reading Time Calculator", description: "Estimate how long an article will take to read.", status: "Live", category: "Writing", icon: "read" },
   { slug: "palette-ratio-checker", name: "Palette Ratio Checker", description: "Check contrast balance across a palette.", status: "Experimental", category: "Design", icon: "palette" },
+  { slug: "youtube-downloader", name: "YouTube Downloader", description: "Download audio from YouTube in MP3, M4A, or WAV format.", status: "Live", category: "Media", icon: "download" },
 ] as const;
 
 export type ToolKind = (typeof tools)[number]["icon"];
