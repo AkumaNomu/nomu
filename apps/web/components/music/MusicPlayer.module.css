@@ -1,0 +1,198 @@
+.widget {
+  --player-ink: #171512;
+  --player-muted: rgba(23, 21, 18, 0.62);
+  --player-surface: rgba(250, 247, 240, 0.84);
+  --player-border: rgba(255, 255, 255, 0.66);
+  --player-track: rgba(23, 21, 18, 0.16);
+  --player-shadow: 0 1rem 2.6rem rgba(36, 29, 19, 0.12), 0 0.2rem 0.65rem rgba(36, 29, 19, 0.06);
+  position: fixed;
+  right: max(var(--page-padding), env(safe-area-inset-right));
+  bottom: max(var(--page-padding), env(safe-area-inset-bottom));
+  z-index: calc(var(--z-menu) + 1);
+  color: var(--player-ink);
+  transform-origin: bottom right;
+}
+
+.compact { width: 3.75rem; height: 3.75rem; }
+.floating { width: min(21.5rem, calc(100vw - var(--page-padding) - var(--page-padding))); height: 10.5rem; }
+.expanded { width: min(48rem, calc(100vw - var(--page-padding) - var(--page-padding))); height: 6.5rem; }
+
+.compactButton {
+  display: grid;
+  width: 3.75rem;
+  height: 3.75rem;
+  place-items: center;
+  padding: 0;
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 50%;
+  background: #0b0b0b;
+  box-shadow: 0 0.85rem 2rem rgba(0, 0, 0, 0.24), inset 0 1px rgba(255, 255, 255, 0.09);
+  transition: background-color 180ms ease, box-shadow 180ms ease;
+}
+
+.compactButton:hover { background: #171717; box-shadow: 0 1rem 2.25rem rgba(0, 0, 0, 0.28), inset 0 1px rgba(255, 255, 255, 0.11); }
+.compactButton:active { background: #050505; }
+
+.waveform { display: flex; height: 1.25rem; align-items: center; gap: 0.16rem; }
+.waveform i { width: 0.13rem; height: 34%; border-radius: 999px; background: currentColor; animation: waveform 1.45s ease-in-out infinite alternate; }
+.waveform i:nth-child(2) { height: 68%; animation-delay: -440ms; }
+.waveform i:nth-child(3) { height: 100%; animation-delay: -180ms; }
+.waveform i:nth-child(4) { height: 58%; animation-delay: -620ms; }
+.waveform i:nth-child(5) { height: 30%; animation-delay: -320ms; }
+.waveformPlaying .waveform i { animation-duration: 760ms; }
+
+.playerSurface {
+  display: grid;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  border: 1px solid var(--player-border);
+  background: var(--player-surface);
+  box-shadow: var(--player-shadow);
+  backdrop-filter: blur(24px) saturate(118%);
+  -webkit-backdrop-filter: blur(24px) saturate(118%);
+  animation: panel-in 220ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.floating .playerSurface {
+  grid-template-columns: 6rem minmax(0, 1fr);
+  grid-template-rows: auto 1fr auto;
+  grid-template-areas:
+    "artwork copy"
+    "artwork timeline"
+    "controls controls";
+  gap: 0 0.85rem;
+  padding: 0.75rem;
+  border-radius: 1.65rem;
+}
+
+.expanded .playerSurface {
+  grid-template-columns: 4.75rem minmax(7.5rem, 0.85fr) minmax(8rem, 1.4fr) auto minmax(6rem, 0.6fr);
+  grid-template-areas: "artwork copy timeline controls volume";
+  align-items: center;
+  gap: 0.8rem;
+  padding: 0.75rem;
+  border-radius: 1.45rem;
+}
+
+.artwork { position: relative; grid-area: artwork; align-self: stretch; overflow: hidden; border-radius: 1rem; background: var(--player-track); }
+.artwork img { object-fit: cover; }
+.floating .artwork { aspect-ratio: 1; }
+.expanded .artwork { width: 4.75rem; height: 4.75rem; }
+
+.trackCopy { grid-area: copy; display: grid; min-width: 0; align-content: center; gap: 0.12rem; }
+.trackCopy strong, .trackCopy span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.trackCopy strong { font-size: 0.84rem; font-weight: 620; letter-spacing: -0.01em; }
+.trackCopy span { color: var(--player-muted); font-size: 0.72rem; }
+
+.timeline { grid-area: timeline; display: flex; min-width: 0; align-items: center; }
+.timeline input, .volume input {
+  width: 100%;
+  height: 44px;
+  margin: 0;
+  appearance: none;
+  -webkit-appearance: none;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  cursor: pointer;
+}
+
+.timeline input::-webkit-slider-runnable-track, .volume input::-webkit-slider-runnable-track {
+  height: 1px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--player-ink) var(--progress), var(--player-track) var(--progress));
+}
+
+.timeline input::-moz-range-track, .volume input::-moz-range-track {
+  height: 1px;
+  border: 0;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--player-ink) var(--progress), var(--player-track) var(--progress));
+}
+
+.timeline input::-webkit-slider-thumb, .volume input::-webkit-slider-thumb {
+  width: 0.55rem;
+  height: 0.55rem;
+  margin-top: calc((1px - 0.55rem) / 2);
+  appearance: none;
+  -webkit-appearance: none;
+  border: 0;
+  border-radius: 50%;
+  background: var(--player-ink);
+  box-shadow: 0 1px 0.2rem rgba(0, 0, 0, 0.18);
+}
+
+.timeline input::-moz-range-thumb, .volume input::-moz-range-thumb { width: 0.55rem; height: 0.55rem; border: 0; border-radius: 50%; background: var(--player-ink); }
+
+.controlRail { grid-area: controls; display: flex; min-width: 0; align-items: center; justify-content: center; gap: 0.25rem; }
+.floating .controlRail { justify-content: space-between; }
+.controlRail button {
+  display: grid;
+  flex: none;
+  width: 44px;
+  height: 44px;
+  place-items: center;
+  padding: 0;
+  color: var(--player-ink);
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  transition: background-color 160ms ease, opacity 160ms ease;
+}
+
+.controlRail button:hover { background: rgba(23, 21, 18, 0.065); }
+.controlRail button:active { opacity: 0.58; }
+.controlRail button svg { width: 0.9rem; height: 0.9rem; }
+.controlRail .playButton { width: 48px; height: 48px; color: #fdfbf7; background: var(--player-ink); }
+.controlRail .playButton:hover { background: #28241f; }
+.controlRail .playButton svg { width: 1rem; height: 1rem; }
+
+.volume { grid-area: volume; display: flex; min-width: 0; align-items: center; gap: 0.25rem; }
+.volume > svg { flex: none; width: 0.85rem; height: 0.85rem; color: var(--player-muted); stroke-width: 1.6; }
+.floating .volume { display: none; }
+
+.widget button:focus-visible, .widget input:focus-visible { outline: 2px solid var(--player-ink); outline-offset: 3px; }
+.compactButton:focus-visible { outline-color: var(--foreground); }
+
+.srOnly { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+
+.inlineCue { display: grid; width: 100%; grid-template-columns: auto 1fr auto; align-items: center; gap: .75rem; padding: .55rem 0; color: var(--foreground); text-align: left; border: 0; border-block: 1px solid var(--line); background: transparent; }
+.inlineCue img { border-radius: 0.65rem; }
+.inlineCue span { display: grid; gap: .05rem; }
+.inlineCue small, .inlineCue em { color: var(--muted); font-size: .68rem; font-style: normal; }
+.inlineCue strong { font-size: .86rem; }
+.inlineCue b { display: inline-flex; align-items: center; gap: .2rem; font-size: .68rem; font-weight: 500; }
+.compactCue { padding-block: .4rem; }
+.inlineCue:focus-visible { outline: 2px solid var(--foreground); outline-offset: 3px; }
+
+@keyframes panel-in { from { opacity: 0; transform: scale(0.96) translateY(0.35rem); } }
+@keyframes waveform { from { transform: scaleY(0.45); } to { transform: scaleY(1); } }
+
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .playerSurface { background: rgba(250, 247, 240, 0.97); }
+}
+
+@media (max-width: 767px) {
+  .widget { right: max(1rem, env(safe-area-inset-right)); bottom: max(1rem, env(safe-area-inset-bottom)); }
+  .floating { width: min(21.5rem, calc(100vw - 2rem)); }
+  .expanded { width: min(25rem, calc(100vw - 2rem)); height: 12rem; }
+  .expanded .playerSurface {
+    grid-template-columns: 4.75rem minmax(0, 1fr);
+    grid-template-rows: auto auto 1fr auto;
+    grid-template-areas:
+      "artwork copy"
+      "artwork timeline"
+      "controls controls"
+      "volume volume";
+    gap: 0 0.8rem;
+    padding: 0.75rem;
+  }
+  .expanded .controlRail { align-self: center; }
+  .expanded .volume { gap: 0.65rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .widget, .widget * { animation: none !important; transition: none !important; }
+}

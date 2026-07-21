@@ -1,0 +1,16 @@
+node_modules
+.next
+out
+dist
+.turbo
+.DS_Store
+*.log
+coverage
+.env
+.env.local
+.env.*.local
+!.env.example
+apps/web/public/search-index.json
+apps/video/build
+output
+.playwright-cli

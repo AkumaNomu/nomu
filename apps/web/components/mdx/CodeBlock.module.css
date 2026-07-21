@@ -1,0 +1,35 @@
+.wrapper {
+  position: relative;
+  margin-block: 2rem;
+}
+
+.copyButton {
+  position: absolute;
+  top: 0.7rem;
+  right: 0.7rem;
+  z-index: 1;
+  padding: 0.3rem 0.6rem;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 0.45rem;
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.82);
+  font-family: var(--font-geist-sans), sans-serif;
+  font-size: 0.72rem;
+  letter-spacing: 0.04em;
+  opacity: 0;
+  transition: opacity 160ms var(--ease-out), background 160ms var(--ease-out);
+}
+
+.wrapper:hover .copyButton,
+.copyButton:focus-visible {
+  opacity: 1;
+}
+
+.copyButton:hover {
+  background: rgba(255, 255, 255, 0.16);
+  color: #fff;
+}
+
+.wrapper pre {
+  margin-block: 0;
+}

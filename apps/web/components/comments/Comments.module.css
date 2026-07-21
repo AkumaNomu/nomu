@@ -1,0 +1,162 @@
+.comments {
+  width: min(100%, 70rem);
+  margin-block: clamp(3.5rem, 7vw, 5.5rem);
+  padding-top: clamp(2rem, 4vw, 2.75rem);
+  border-top: 1px solid var(--soft-line);
+}
+
+.accountRow { margin: -0.4rem 0 1.25rem; }
+.account { position: relative; display: flex; align-items: center; gap: 0.55rem; min-height: 2rem; color: var(--muted); font-size: 0.78rem; }
+.avatar { display: inline-grid; flex: none; width: 2rem; height: 2rem; place-items: center; border-radius: 50%; color: var(--background); background: var(--foreground); font-size: 0.68rem; font-weight: 700; }
+.accountLink { padding: 0; color: var(--foreground); font: inherit; font-size: 0.76rem; font-weight: 650; border: 0; background: transparent; }
+.accountLink:hover { color: var(--accent); }
+.modalBackdrop { position: fixed; inset: 0; z-index: 80; display: grid; place-items: center; padding: var(--page-padding); background: rgba(9,9,9,.32); backdrop-filter: blur(5px); }
+.accountPanel { position: relative; display: grid; gap: .65rem; width: min(22rem, 100%); padding: 1.35rem; border: 1px solid var(--line); border-radius: 1.2rem; background: var(--paper); box-shadow: 0 1rem 3rem rgba(9,9,9,.2); }
+.modalClose { position: absolute; top: .45rem; right: .55rem; width: 2rem; height: 2rem; padding: 0; color: var(--muted); font-size: 1.25rem; border: 0; background: transparent; }
+.accountPanel input { width: 100%; padding: 0.55rem 0.65rem; color: var(--foreground); font: inherit; font-size: 0.8rem; border: 1px solid var(--line); border-radius: 0.5rem; outline: 0; background: transparent; }
+.accountPanel label { margin-bottom: -.45rem; color: var(--muted); font-size: .72rem; font-weight: 600; }
+.accountPanel input:focus { border-color: var(--foreground); }
+.accountTabs { display: flex; gap: 0.8rem; border-bottom: 1px solid var(--soft-line); }
+.accountTabs button { padding: 0 0 0.45rem; color: var(--muted); font: inherit; font-size: 0.72rem; border: 0; border-bottom: 1px solid transparent; background: transparent; }
+.accountTabs .activeTab { color: var(--foreground); border-bottom-color: var(--foreground); }
+.composer { display: flex; align-items: flex-start; gap: 0.7rem; }
+.composerMain { min-width: 0; flex: 1; }
+.composer textarea { display: block; width: 100%; min-height: 2.15rem; padding: 0.55rem 0; color: var(--foreground); font: inherit; font-size: 0.9rem; line-height: 1.4; border: 0; border-bottom: 1px solid var(--line); outline: 0; resize: vertical; background: transparent; }
+.composer textarea:focus { border-bottom-color: var(--foreground); }
+.composer textarea::placeholder { color: var(--muted); }
+.composer textarea:disabled { cursor: not-allowed; opacity: 0.7; }
+.composerActions { display: flex; align-items: center; justify-content: space-between; min-height: 2.4rem; color: var(--muted); font-size: 0.68rem; }
+
+.headingRow {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.headingRow h2 {
+  margin: 0;
+  font-size: clamp(1.35rem, 2.5vw, 1.8rem);
+  font-weight: 600;
+  letter-spacing: -0.035em;
+  line-height: 1;
+}
+
+.headingRow span,
+.commentHeader time,
+.storageNote { color: var(--muted); font-size: 0.72rem; }
+
+.form fieldset {
+  display: grid;
+  gap: 0.75rem;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.form legend {
+  margin-bottom: 0.65rem;
+  padding: 0;
+  font-size: 0.65rem;
+  font-weight: 650;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+}
+
+.field { display: grid; gap: 0.2rem; }
+.field label { color: var(--muted); font-size: 0.7rem; font-weight: 550; }
+
+.field input,
+.field textarea {
+  width: 100%;
+  padding: 0.7rem 0.8rem;
+  color: var(--foreground);
+  font: inherit;
+  border: 1px solid var(--line);
+  border-radius: 0.65rem;
+  outline: 0;
+  background: transparent;
+}
+
+.field input:focus,
+.field textarea:focus { border-color: var(--foreground); }
+.field textarea { min-height: 5.5rem; resize: vertical; }
+.error { margin: 0; color: #9d352c; font-size: 0.8rem; }
+.actions { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.15rem; }
+
+.primaryAction,
+.secondaryAction,
+.replyButton {
+  min-height: 38px;
+  padding: 0.45rem 0.75rem;
+  color: var(--foreground);
+  font: inherit;
+  font-size: 0.74rem;
+  font-weight: 600;
+  border-radius: 0;
+}
+
+.primaryAction { color: var(--background); border: 1px solid var(--foreground); border-radius: 999px; background: var(--foreground); }
+.secondaryAction { border: 1px solid var(--line); border-radius: 999px; background: transparent; }
+
+.replyButton {
+  min-height: 32px;
+  padding: 0.25rem 0;
+  color: var(--muted);
+  border: 0;
+  border-bottom: 1px solid transparent;
+  background: transparent;
+}
+
+.replyButton:hover { color: var(--foreground); border-bottom-color: currentColor; }
+.primaryAction:focus-visible,
+.secondaryAction:focus-visible,
+.replyButton:focus-visible { outline: 2px solid var(--foreground); outline-offset: 2px; }
+.list,
+.replies { margin: 0; padding: 0; list-style: none; }
+.list { margin-top: 2.25rem; border-top: 1px solid var(--soft-line); }
+.comment { padding-block: 1.1rem; border-bottom: 1px solid var(--soft-line); }
+
+.commentHeader {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 1rem;
+  font-size: 0.86rem;
+}
+
+.commentHeader > div { display: flex; align-items: baseline; gap: 0.55rem; }
+.commentHeader time { font-size: 0.68rem; }
+
+.commentBody {
+  margin: 0.6rem 0 0.45rem 2.7rem;
+  font-size: 0.94rem;
+  line-height: 1.55;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.comment .form {
+  margin-top: 0.75rem;
+  padding: 0.75rem 0 0.25rem;
+  border-top: 1px solid var(--soft-line);
+}
+
+.comment > article > .composer { margin: 0.75rem 0 0 2.7rem; }
+.comment > article > .composer .avatar { display: none; }
+
+.replies {
+  margin-top: 0.65rem;
+  margin-left: clamp(0.5rem, 2vw, 1.25rem);
+  padding-left: clamp(0.65rem, 2vw, 1.25rem);
+  border-left: 1px solid var(--line);
+}
+
+.replies .comment:last-child { padding-bottom: 0; border-bottom: 0; }
+.empty { margin-block: 1.75rem 0; color: var(--muted); font-size: 0.9rem; }
+
+@media (max-width: 560px) {
+  .commentHeader { align-items: flex-start; flex-direction: column; gap: 0.1rem; }
+  .replies { margin-left: 0.15rem; padding-left: 0.65rem; }
+}

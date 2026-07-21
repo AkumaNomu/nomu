@@ -1,0 +1,377 @@
+{
+  "version": "1.0.0",
+  "lastScanned": 1784582575840,
+  "projectRoot": "C:\\Users\\ROCDZ\\Documents\\Projects\\Webdev\\Nomu's site",
+  "techStack": {
+    "languages": [
+      {
+        "name": "JavaScript/TypeScript",
+        "version": null,
+        "confidence": "high",
+        "markers": [
+          "package.json"
+        ]
+      }
+    ],
+    "frameworks": [],
+    "packageManager": "pnpm",
+    "runtime": null
+  },
+  "build": {
+    "buildCommand": "pnpm build",
+    "testCommand": null,
+    "lintCommand": "pnpm lint",
+    "devCommand": "pnpm dev",
+    "scripts": {
+      "dev": "pnpm --filter web dev",
+      "build": "pnpm -r build",
+      "lint": "pnpm -r lint",
+      "typecheck": "pnpm -r typecheck"
+    }
+  },
+  "conventions": {
+    "namingStyle": null,
+    "importStyle": null,
+    "testPattern": null,
+    "fileOrganization": null
+  },
+  "structure": {
+    "isMonorepo": true,
+    "workspaces": [],
+    "mainDirectories": [],
+    "gitBranches": null
+  },
+  "customNotes": [],
+  "directoryMap": {
+    "apps": {
+      "path": "apps",
+      "purpose": null,
+      "fileCount": 0,
+      "lastAccessed": 1784582575786,
+      "keyFiles": []
+    },
+    "output": {
+      "path": "output",
+      "purpose": null,
+      "fileCount": 6,
+      "lastAccessed": 1784582575787,
+      "keyFiles": [
+        "dev-3100.err.log",
+        "dev-3100.log",
+        "server-3100.err.log",
+        "server-3100.log",
+        "server.err.log"
+      ]
+    },
+    "packages": {
+      "path": "packages",
+      "purpose": null,
+      "fileCount": 0,
+      "lastAccessed": 1784582575788,
+      "keyFiles": []
+    }
+  },
+  "hotPaths": [
+    {
+      "path": "apps\\web\\styles\\globals.css",
+      "accessCount": 20,
+      "lastAccessed": 1784585809864,
+      "type": "file"
+    },
+    {
+      "path": "apps\\web",
+      "accessCount": 16,
+      "lastAccessed": 1784585684916,
+      "type": "directory"
+    },
+    {
+      "path": "apps\\web\\app\\tools\\page.module.css",
+      "accessCount": 15,
+      "lastAccessed": 1784585797121,
+      "type": "file"
+    },
+    {
+      "path": "apps\\web\\app\\writing\\[slug]\\page.tsx",
+      "accessCount": 13,
+      "lastAccessed": 1784583548169,
+      "type": "file"
+    },
+    {
+      "path": "apps\\web\\components\\mdx\\MdxComponents.tsx",
+      "accessCount": 13,
+      "lastAccessed": 1784583620039,
+      "type": "file"
+    },
+    {
+      "path": "apps\\web\\components\\music\\MusicWidget.tsx",
+      "accessCount": 12,
+      "lastAccessed": 1784585705595,
+      "type": "file"
+    },
+    {
+      "path": "apps\\web\\components\\SiteHeader.tsx",
+      "accessCount": 12,
+      "lastAccessed": 1784588877490,
+      "type": "file"
+    },
+    {
+      "path": "apps\\web\\components\\music\\MusicPlayer.module.css",
+      "accessCount": 11,
+      "lastAccessed": 1784585711688,
+      "type": "file"
+    },
+    {
+      "path": "apps\\web\\app\\article.module.css",
+      "accessCount": 10,
+      "lastAccessed": 1784583572612,
+      "type": "file"
+    },
+    {
+      "path": "apps\\web\\app\\collections.module.css",
+      "accessCount": 10,
+      "lastAccessed": 1784585043830,
+      "type": "file"
+    },
+    {
+      "path": "apps\\web\\lib\\content.ts",
+      "accessCount": 9,
+      "lastAccessed": 1784417886426,
+      "type": "file"
+    },
+    {
+      "path": "apps\\web\\app\\tools\\ToolExplorer.tsx",
+      "accessCount": 9,
+      "lastAccessed": 1784584975489,
+      "type": "file"
+    },
+    {
+      "path": "apps\\web\\components\\ProjectExplorer.tsx",
+      "accessCount": 9,
+      "lastAccessed": 1784585066626,
+      "type": "file"
+    },
+    {
+      "path": "apps\\web\\app\\projects\\[slug]\\page.tsx",
+      "accessCount": 8,
+      "lastAccessed": 1784583582250,
+      "type": "file"
+    },
+    {
+      "path": "apps\\web\\components\\comments\\Comments.module.css",
+      "accessCount": 7,
+      "lastAccessed": 1784583526126,
+      "type": "file"
+    },
+    {
+      "path": "apps\\web\\components\\WritingSearch.tsx",
+      "accessCount": 6,
+      "lastAccessed": 1784585023491,
+      "type": "file"
+    },
+    {
+      "path": "apps\\web\\components\\ProjectExplorer.module.css",
+      "accessCount": 6,
+      "lastAccessed": 1784585077641,
+      "type": "file"
+    },
+    {
+      "path": "apps\\web\\app\\layout.tsx",
+      "accessCount": 5,
+      "lastAccessed": 1784416959703,
+      "type": "file"
+    },
+    {
+      "path": "apps\\web\\lib\\content-registry.ts",
+      "accessCount": 5,
+      "lastAccessed": 1784417868244,
+      "type": "file"
+    },
+    {
+      "path": "apps\\web\\lib\\content-schema.ts",
+      "accessCount": 5,
+      "lastAccessed": 1784419142410,
+      "type": "file"
+    },
+    {
+      "path": "apps\\web\\next.config.ts",
+      "accessCount": 5,
+      "lastAccessed": 1784419152433,
+      "type": "file"
+    },
+    {
+      "path": "apps\\web\\components\\music\\MusicPlayer.tsx",
+      "accessCount": 5,
+      "lastAccessed": 1784583628528,
+      "type": "file"
+    },
+    {
+      "path": "apps\\web\\lib\\tracks.ts",
+      "accessCount": 5,
+      "lastAccessed": 1784646553757,
+      "type": "directory"
+    },
+    {
+      "path": "apps\\web\\app\\projects\\page.tsx",
+      "accessCount": 4,
+      "lastAccessed": 1784416906130,
+      "type": "file"
+    },
+    {
+      "path": "apps\\web\\app\\writing\\page.tsx",
+      "accessCount": 4,
+      "lastAccessed": 1784416970068,
+      "type": "file"
+    },
+    {
+      "path": "apps\\web\\mdx-components.tsx",
+      "accessCount": 4,
+      "lastAccessed": 1784417527158,
+      "type": "file"
+    },
+    {
+      "path": "apps\\web\\components\\comments\\Comments.tsx",
+      "accessCount": 4,
+      "lastAccessed": 1784419178248,
+      "type": "file"
+    },
+    {
+      "path": "apps\\web\\package.json",
+      "accessCount": 4,
+      "lastAccessed": 1784582961466,
+      "type": "file"
+    },
+    {
+      "path": "apps\\web\\components\\SiteHeader.module.css",
+      "accessCount": 4,
+      "lastAccessed": 1784583499467,
+      "type": "directory"
+    },
+    {
+      "path": "apps\\web\\components\\mdx\\MdxComponents.module.css",
+      "accessCount": 4,
+      "lastAccessed": 1784583621845,
+      "type": "file"
+    },
+    {
+      "path": "apps\\web\\components\\music\\AudioProvider.tsx",
+      "accessCount": 3,
+      "lastAccessed": 1784416660861,
+      "type": "file"
+    },
+    {
+      "path": "apps\\web\\app\\tools\\page.tsx",
+      "accessCount": 3,
+      "lastAccessed": 1784416927111,
+      "type": "file"
+    },
+    {
+      "path": "apps\\web\\app\\sitemap.ts",
+      "accessCount": 3,
+      "lastAccessed": 1784417585501,
+      "type": "file"
+    },
+    {
+      "path": "apps\\web\\app",
+      "accessCount": 2,
+      "lastAccessed": 1784416382909,
+      "type": "directory"
+    },
+    {
+      "path": "apps\\web\\components\\PresenceBadge.tsx",
+      "accessCount": 2,
+      "lastAccessed": 1784416404522,
+      "type": "file"
+    },
+    {
+      "path": ".env.example",
+      "accessCount": 2,
+      "lastAccessed": 1784416704615,
+      "type": "file"
+    },
+    {
+      "path": ".env.local",
+      "accessCount": 2,
+      "lastAccessed": 1784416707012,
+      "type": "file"
+    },
+    {
+      "path": "content\\posts\\NomuSite\\NomuSite.md",
+      "accessCount": 2,
+      "lastAccessed": 1784416876954,
+      "type": "file"
+    },
+    {
+      "path": "content\\projects\\Mai\\mai.md",
+      "accessCount": 2,
+      "lastAccessed": 1784416883816,
+      "type": "file"
+    },
+    {
+      "path": "content\\resources\\Guides\\Piracy Guide\\piracy-guide.md",
+      "accessCount": 2,
+      "lastAccessed": 1784416884670,
+      "type": "file"
+    },
+    {
+      "path": "content\\resources\\Sites\\FMHY\\FMHY.md",
+      "accessCount": 2,
+      "lastAccessed": 1784416884840,
+      "type": "file"
+    },
+    {
+      "path": "apps\\web\\content\\projects\\trace.mdx",
+      "accessCount": 2,
+      "lastAccessed": 1784416895727,
+      "type": "file"
+    },
+    {
+      "path": "CONTENT_GUIDE.md",
+      "accessCount": 2,
+      "lastAccessed": 1784419151319,
+      "type": "file"
+    },
+    {
+      "path": "ARCHITECTURE.md",
+      "accessCount": 1,
+      "lastAccessed": 1784416148199,
+      "type": "file"
+    },
+    {
+      "path": "apps\\web\\components",
+      "accessCount": 1,
+      "lastAccessed": 1784416271752,
+      "type": "directory"
+    },
+    {
+      "path": "apps\\web\\components\\editorial\\Editorial.tsx",
+      "accessCount": 1,
+      "lastAccessed": 1784416295719,
+      "type": "file"
+    },
+    {
+      "path": "apps\\web\\content\\writing\\why-constraints-make-better-work.mdx",
+      "accessCount": 1,
+      "lastAccessed": 1784416311796,
+      "type": "file"
+    },
+    {
+      "path": "apps\\web\\app\\feed.xml\\route.ts",
+      "accessCount": 1,
+      "lastAccessed": 1784416334376,
+      "type": "file"
+    },
+    {
+      "path": "apps\\web\\styles",
+      "accessCount": 1,
+      "lastAccessed": 1784416411795,
+      "type": "directory"
+    },
+    {
+      "path": "content\\posts\\MAIV1\\MAIV1.md",
+      "accessCount": 1,
+      "lastAccessed": 1784416875352,
+      "type": "file"
+    }
+  ],
+  "userDirectives": []
+}

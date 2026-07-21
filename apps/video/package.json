@@ -1,0 +1,25 @@
+{
+  "name": "video",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "remotion studio src/index.ts",
+    "build": "remotion bundle src/index.ts",
+    "lint": "tsc --noEmit",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@personal/shared-scenes": "workspace:*",
+    "@remotion/cli": "4.0.490",
+    "react": "19.2.0",
+    "react-dom": "19.2.0",
+    "remotion": "4.0.490",
+    "zod": "4.3.6"
+  },
+  "devDependencies": {
+    "@types/react": "^19.2.0",
+    "@types/react-dom": "^19.2.0",
+    "typescript": "5.9.3"
+  }
+}

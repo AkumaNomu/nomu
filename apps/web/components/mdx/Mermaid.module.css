@@ -1,0 +1,22 @@
+.mermaid {
+  display: flex;
+  justify-content: center;
+  margin: clamp(2rem, 6vw, 4rem) 0;
+  padding: clamp(1rem, 3vw, 1.75rem);
+  overflow-x: auto;
+  border: 1px solid var(--line);
+  border-radius: 0.85rem;
+  background: rgba(255, 255, 255, 0.28);
+}
+
+.mermaid :global(svg) {
+  max-width: 100%;
+  height: auto;
+}
+
+.error {
+  margin: 0;
+  color: var(--danger);
+  font-size: 0.82rem;
+  white-space: pre-wrap;
+}

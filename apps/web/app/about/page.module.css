@@ -1,0 +1,26 @@
+.about { position: relative; padding-top: clamp(3rem, 6vw, 5rem); padding-bottom: var(--section-gap); }
+.about header { position: relative; padding: clamp(3rem, 6vw, 5rem) 0 clamp(3rem, 5vw, 4rem); }
+.about header h1 { position: relative; z-index: 1; margin: 0; font-size: clamp(1.75rem, 3vw, 2.5rem); font-weight: 620; letter-spacing: -0.045em; line-height: 1; }
+.about header p { position: relative; z-index: 1; max-width: 42rem; margin: 1rem 0 0; color: var(--muted); font-size: clamp(1.05rem, 1.6vw, 1.3rem); line-height: 1.5; }
+.grid { display: grid; grid-template-columns: minmax(0, 1.08fr) minmax(0, 0.92fr); gap: clamp(3rem, 6vw, 6rem) clamp(2.5rem, 6vw, 5.5rem); width: min(100%, 68rem); }
+.sectionItem { min-width: 0; }
+.sectionItem section { height: 100%; }
+.grid section { position: relative; border-top: 1px solid var(--line); padding-top: 1rem; }
+.grid section h2 { margin: 0; padding-right: 3rem; font-size: clamp(1.25rem, 2vw, 1.65rem); font-weight: 620; letter-spacing: -0.03em; line-height: 1.15; }
+.grid section p { max-width: 38rem; margin: 1.3rem 0 0; color: #44413d; font-size: 1.03rem; line-height: 1.62; }
+.grid section[data-section="what-i-do"] p { color: var(--foreground); font-size: clamp(1.15rem, 1.8vw, 1.35rem); line-height: 1.5; }
+.grid section[data-section="approach"] { margin-left: clamp(1rem, 4vw, 3rem); }
+.grid section[data-section="approach"] p { max-width: 28rem; }
+.index { position: absolute; top: 1.15rem; right: 0; color: #55524d; font-size: 0.7rem; font-variant-numeric: tabular-nums; letter-spacing: 0.12em; }
+.grid ul { margin: 0; padding: 0; list-style: none; }
+.grid li { border-bottom: 1px solid var(--soft-line); }
+.grid li a { display: flex; align-items: center; justify-content: space-between; min-height: 46px; font-weight: 560; }
+.grid svg { width: 1.1rem; }
+
+@media (max-width: 767px) {
+  .about { padding-top: 3rem; }
+  .about header { padding: 2.75rem 0 3rem; }
+  .about header p { max-width: 100%; font-size: 1.05rem; }
+  .grid { grid-template-columns: 1fr; gap: 3.5rem; width: 100%; }
+  .grid section[data-section="approach"] { margin-left: 0; }
+}

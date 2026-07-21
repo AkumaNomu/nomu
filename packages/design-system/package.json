@@ -1,0 +1,21 @@
+{
+  "name": "@personal/design-system",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "exports": { ".": "./src/index.ts" },
+  "scripts": {
+    "build": "tsc --noEmit",
+    "lint": "eslint src",
+    "typecheck": "tsc --noEmit"
+  },
+  "peerDependencies": { "react": ">=19" },
+  "dependencies": {
+    "lucide-react": "^0.545.0"
+  },
+  "devDependencies": {
+    "@types/react": "^19.2.0",
+    "eslint": "9.39.5",
+    "typescript": "5.9.3"
+  }
+}

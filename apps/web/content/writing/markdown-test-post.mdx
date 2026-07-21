@@ -1,0 +1,93 @@
+---
+title: Markdown Test Post
+slug: markdown-test-post
+description: A living playground for every writing feature supported by Nomu.
+publishedAt: "2026-07-19"
+updatedAt: "2026-07-19"
+category: Development
+tags: [development, markdown]
+featured: false
+draft: false
+cover: /covers/markdown-test-post.png
+---
+
+This is the site’s living Markdown test post. It keeps the writing surface honest: every example below is rendered by the same pipeline as a real post.
+
+## Text and structure
+
+Paragraphs support *italics*, **bold**, ~~strikethrough~~, inline `code`, [links](https://nomu.dev), and automatic URLs like https://nomu.dev.
+
+### Headings stay anchorable
+
+The floating contents list shows only top-level H2 sections. H3 and H4 headings still get anchors, but stay out of the way.
+
+> Good writing UI should make structure visible without turning the page into a dashboard.
+
+## Lists and tables
+
+- Unordered lists
+- Nested items
+  - One level deep
+  - Still readable
+
+1. Ordered lists
+2. Task lists
+   - [x] Render Markdown
+   - [ ] Keep testing it
+
+| Feature | Status | Notes |
+| :--- | :---: | ---: |
+| Headings | ✓ | H2-only contents |
+| Tables | ✓ | GFM alignment |
+| Code | ✓ | Syntax highlighting |
+
+## Code and math
+
+```typescript
+const post = { title: "Markdown Test Post", published: true };
+console.log(post.title);
+```
+
+Inline math: $E = mc^2$.
+
+$$
+f(x) = \frac{1}{1 + e^{-x}}
+$$
+
+## Rich blocks
+
+<Callout title="Living document">Update this post whenever a new content component lands.</Callout>
+
+<PullQuote cite="Nomu">The best test post is the one you keep using.</PullQuote>
+
+<Figure
+  src="https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=1200&h=800&fit=crop"
+  alt="Colorful computer hardware on a desk"
+  caption="Images are responsive and zoomable."
+/>
+
+<DataTable
+  caption="Supported content primitives"
+  columns={[{ key: "primitive", label: "Primitive" }, { key: "status", label: "Status" }, { key: "note", label: "Note" }]}
+  rows={[
+    { primitive: "Callout", status: "Live", note: "Inline context" },
+    { primitive: "Chart", status: "Live", note: "Data stories" },
+    { primitive: "Gallery", status: "Live", note: "Responsive grid" },
+  ]}
+/>
+
+## Data stories
+
+<MetricGrid items={[{ label: "Rendered", value: "100%", note: "From MDX" }, { label: "Dependencies", value: "0", note: "No new package" }, { label: "H2 sections", value: "6", note: "In this post" }]} />
+
+<BarChart title="Example signal" unit="%" data={[{ label: "Text", value: 92 }, { label: "Media", value: 68 }, { label: "Code", value: 84 }]} />
+
+## Footnotes and HTML
+
+Markdown footnotes work[^one]. Inline HTML works too:
+
+<div style={{ padding: "1rem", border: "1px solid #2a2a2a", margin: "1rem 0" }}>
+  Custom HTML remains available when a post needs a small bespoke detail.
+</div>
+
+[^one]: Footnotes remain linked and readable.

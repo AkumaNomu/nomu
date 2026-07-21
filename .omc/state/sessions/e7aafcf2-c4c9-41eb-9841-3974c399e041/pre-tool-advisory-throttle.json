@@ -1,0 +1,50 @@
+{
+  "version": 1,
+  "entries": {
+    "66e7bf8faa51bf8f6b085cfc11c705e0de8b7d8017861782f699cef2e7ec0dd2": {
+      "last_emitted_at_ms": 1784419169298,
+      "message": "Spawning agent: oh-my-claudecode:executor (opus) | Task: Comments redesign + simple accounts"
+    },
+    "94a789471fc832637eb31f1730b4548215bf3d77c10e835675eb5fe1466dadb9": {
+      "last_emitted_at_ms": 1784419134627,
+      "message": "Spawning agent: oh-my-claudecode:executor (opus) | Task: Rewrite markdown-test-post showcase"
+    },
+    "459c54e5f35d6a58dcd90d2aecc21fa6d1f35d241bc5b134c506f87dc7b6d67b": {
+      "last_emitted_at_ms": 1784419050252,
+      "message": "Combine searches in parallel when investigating multiple patterns."
+    },
+    "445ed27a3872b681d98190bae61ccb84954e1bc4e140df5370be958dee776b3a": {
+      "last_emitted_at_ms": 1784418987788,
+      "message": "Verify changes work after editing. Test functionality before marking complete."
+    },
+    "79a93d4a2f8f50b95f852280616242fee1855dc99a3c75211917f55e72e95fae": {
+      "last_emitted_at_ms": 1784418929355,
+      "message": "Use parallel execution for independent tasks. Use run_in_background for long operations (npm install, builds, tests)."
+    },
+    "466399dafa2d20f60587180bad0a07358eb7f2bce724df0ff682f038ad33f5ad": {
+      "last_emitted_at_ms": 1784418928034,
+      "message": "Read multiple files in parallel when possible for faster analysis."
+    },
+    "808cb04420bcb368ab4716038ddd950b51198d0402b6cf8e965d66ca42ebccbe": {
+      "last_emitted_at_ms": 1784417085994,
+      "message": "[SLOP WARNING] Detected fallback/workaround language in this tool input. Do not make potential slop: avoid ad-hoc fallback layers, workaround shims, or environment-specific patches unless explicitly justified. For architecture concerns, consult the architect for a concrete design first. If this seems environment-specific, ask the user to confirm constraints before proceeding.\n\nVerify changes work after editing. Test functionality before marking complete."
+    },
+    "31918ceba2b99790d23c363ec37846284211f02c6e56fdffb0773977dd250d79": {
+      "last_emitted_at_ms": 1784416930428,
+      "message": "Spawning agent: oh-my-claudecode:executor (opus) | Task: Overhaul TOC and MDX rendering pipeline"
+    },
+    "3f4a3a40979477ff59d1b9a127bec196034f4165d434a9db680adeb7c95ad78e": {
+      "last_emitted_at_ms": 1784416881821,
+      "message": "Spawning agent: oh-my-claudecode:executor (opus) | Task: Restyle projects/tools/comments UI"
+    },
+    "cbbaaf35430646a08ed07654b266653f6783c4c1d6a8c374a22e176e4f4cb5ae": {
+      "last_emitted_at_ms": 1784416852193,
+      "message": "Spawning agent: oh-my-claudecode:executor (opus) | Task: Migrate legacy blog content into site"
+    },
+    "f2594b4997c45e1990a32425fa34efb4a790f6548a51750268a1de1423e3b86b": {
+      "last_emitted_at_ms": 1784416187950,
+      "message": "Spawning agent: Explore (inherit) | Task: Map site components for redesign task"
+    }
+  },
+  "updated_at": "2026-07-18T23:59:29.298Z"
+}

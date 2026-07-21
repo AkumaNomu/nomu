@@ -1,0 +1,63 @@
+---
+title: Data-rich article title
+slug: data-rich-article-title
+cover: /covers/markdown-test-post.png
+description: State the article's specific question or conclusion.
+publishedAt: "2026-07-18"
+category: Research
+tags: [research, systems]
+draft: true
+---
+
+Open with the observation, not the process used to discover it.
+
+<MetricGrid
+  items={[
+    { label: "Cycle time", value: "2 days", note: "From idea to test." },
+    { label: "Signals", value: "14", note: "Observed this month." },
+  ]}
+/>
+
+## Show the evidence
+
+Explain what the reader needs to understand before presenting data.
+
+<BarChart
+  title="Time to feedback"
+  unit="h"
+  data={[
+    { label: "Prototype", value: 2 },
+    { label: "Pilot", value: 12 },
+    { label: "Launch", value: 48 },
+  ]}
+/>
+
+<LineChart
+  id="weekly-signal-volume"
+  title="Signal volume by week"
+  description="Signal volume increased from four to fourteen observations."
+  data={[
+    { label: "Week 1", value: 4 },
+    { label: "Week 2", value: 7 },
+    { label: "Week 3", value: 11 },
+    { label: "Week 4", value: 14 },
+  ]}
+/>
+
+<DataTable
+  caption="Feedback signals"
+  columns={[
+    { key: "signal", label: "Signal" },
+    { key: "cadence", label: "Cadence" },
+    { key: "count", label: "Count", align: "right" },
+  ]}
+  rows={[
+    { signal: "User notes", cadence: "Weekly", count: 12 },
+    { signal: "Build failures", cadence: "Daily", count: 3 },
+  ]}
+/>
+
+## Interpret the result
+
+Close by stating what changed, what remains uncertain, and what you will test
+next.

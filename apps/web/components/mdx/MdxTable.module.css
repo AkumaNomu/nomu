@@ -1,0 +1,108 @@
+.container {
+  margin-block: clamp(2rem, 6vw, 4rem);
+  border: 1px solid var(--line);
+  border-radius: 0.85rem;
+  overflow: hidden;
+  font-family: var(--font-geist-sans), sans-serif;
+}
+
+.bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.55rem 0.9rem;
+  border-bottom: 1px solid var(--soft-line);
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.count {
+  color: #55524d;
+  font-size: 0.72rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.collapse {
+  padding: 0.3rem 0.65rem;
+  border: 1px solid var(--line);
+  border-radius: 0.45rem;
+  background: transparent;
+  color: #55524d;
+  font-size: 0.74rem;
+}
+
+.collapse:hover {
+  color: var(--foreground);
+  background: rgba(64, 118, 70, 0.08);
+}
+
+.collapsible {
+  overflow: hidden;
+}
+
+.scroll {
+  overflow: auto;
+  max-height: min(70vh, 40rem);
+}
+
+.table {
+  width: 100%;
+  min-width: 30rem;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+.table th,
+.table td {
+  padding: 0.7rem 1rem;
+  border-top: 1px solid var(--soft-line);
+  text-align: left;
+  vertical-align: top;
+}
+
+.table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  border-top: 0;
+  padding: 0;
+  background: var(--paper);
+}
+
+.sortButton {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  width: 100%;
+  padding: 0.7rem 1rem;
+  border: 0;
+  background: transparent;
+  color: var(--foreground);
+  font-size: 0.7rem;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+  text-align: left;
+}
+
+.sortButton:hover {
+  background: rgba(64, 118, 70, 0.08);
+}
+
+.indicator {
+  display: inline-flex;
+  color: #8a877f;
+  opacity: 0;
+  transition: opacity 150ms ease;
+}
+
+.sortButton:hover .indicator,
+.sortButton:focus-visible .indicator,
+.indicatorActive {
+  opacity: 1;
+}
+
+.table tbody tr:hover {
+  background: rgba(64, 118, 70, 0.05);
+}

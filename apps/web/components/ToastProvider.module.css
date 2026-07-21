@@ -1,0 +1,3 @@
+.stack { position: fixed; right: var(--page-padding); bottom: var(--page-padding); z-index: 100; display: grid; gap: .5rem; width: min(22rem, calc(100vw - 2 * var(--page-padding))); pointer-events: none; }
+.toast { padding: .75rem .9rem; color: var(--background); font-size: .8rem; box-shadow: 0 .75rem 1.75rem rgba(9,9,9,.2); background: var(--foreground); }
+.toast[data-tone="error"] { background: var(--danger); }

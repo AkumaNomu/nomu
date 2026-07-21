@@ -1,0 +1,13 @@
+.wipe {
+  position: fixed;
+  inset: 0;
+  z-index: calc(var(--z-menu) + 2);
+  pointer-events: none;
+  background: var(--foreground);
+  will-change: clip-path;
+  contain: strict;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .wipe { display: none; }
+}

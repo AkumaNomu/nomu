@@ -1,0 +1,58 @@
+.page {
+  width: min(100%, var(--content-width, 1440px));
+  margin-inline: auto;
+  padding: clamp(3rem, 6vw, 5rem) var(--page-padding, clamp(1.25rem, 4vw, 4.5rem)) 6rem;
+}
+
+.header {
+  max-width: 64rem;
+  margin-bottom: clamp(2rem, 4vw, 3rem);
+}
+
+.back {
+  display: inline-flex;
+  min-height: 44px;
+  align-items: center;
+  gap: 0.55rem;
+  color: var(--muted, #6f6b65);
+  text-decoration: none;
+}
+
+.back svg { width: 1rem; transition: transform 180ms ease; }
+.back:hover { color: var(--foreground, #090909); }
+.back:hover svg { transform: translateX(-0.2rem); }
+
+.kicker {
+  margin: clamp(2rem, 4vw, 3rem) 0 0.85rem;
+  font-size: 0.72rem;
+  font-weight: 650;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.header h1 {
+  max-width: 20ch;
+  margin: 0;
+  font-size: clamp(1.75rem, 3vw, 2.5rem);
+  font-weight: 620;
+  letter-spacing: -0.045em;
+  line-height: 1;
+}
+
+.description {
+  max-width: 42rem;
+  margin: clamp(1.5rem, 3vw, 2.5rem) 0 0;
+  color: var(--muted, #6f6b65);
+  font-size: clamp(1.05rem, 2vw, 1.45rem);
+  line-height: 1.55;
+}
+
+.workbench {
+  max-width: 70rem;
+  border-top: 1px solid var(--line, rgba(9, 9, 9, 0.18));
+  padding-top: clamp(2rem, 5vw, 4rem);
+}
+
+@media (max-width: 640px) {
+  .page { padding-top: 3rem; }
+}

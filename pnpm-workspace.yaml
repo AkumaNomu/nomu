@@ -1,0 +1,11 @@
+packages:
+  - "apps/*"
+  - "packages/*"
+
+overrides:
+  electron-to-chromium: 1.5.392
+
+allowBuilds:
+  esbuild: true
+  sharp: true
+  unrs-resolver: true

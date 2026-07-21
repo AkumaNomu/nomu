@@ -1,0 +1,7 @@
+{
+  "tool_name": "Bash",
+  "tool_input_preview": "{\"command\":\"tail -20 \\\"$TEMP/nextdev.log\\\" 2>/dev/null; echo \\\"=== curl once ===\\\"; curl -s -o /dev/null -w \\\"HTTP %{http_code} time %{time_total}s\\\\n\\\" --max-time 8 http://localhost:3939/ 2>&1\",\"time...",
+  "error": "Exit code 7\n▲ Next.js 16.2.10 (Turbopack)\n- Local:         http://localhost:3939\n- Network:       http://192.168.1.75:3939\n- Environments: .env.local\n✓ Ready in 1944ms\n⨯ Another next dev server is already running.\n\n- Local:        http://localhost:3001\n- PID:          4148\n- Dir:          C:\\Users\\ROCDZ\\Documents\\Projects\\Webdev\\Nomu's site\\apps\\web\n- Log:          .next\\dev\\logs\\next-development.log\n\nRun taskkill /PID 4148 /F to stop it.\n\u001b[?25h\n=== curl once ===\nHTTP 000 time 2.254423s",
+  "timestamp": "2026-07-18T23:42:17.685Z",
+  "retry_count": 2
+}

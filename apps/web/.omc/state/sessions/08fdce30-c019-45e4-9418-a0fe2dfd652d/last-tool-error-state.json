@@ -1,0 +1,7 @@
+{
+  "tool_name": "mcp__Claude_Browser__javascript_tool",
+  "tool_input_preview": "{\"action\":\"javascript_exec\",\"tabId\":\"tab-1\",\"text\":\"new Promise(resolve => { requestAnimationFrame(() => requestAnimationFrame(() => { resolve(JSON.stringify({s0hidden: document.getElementById('S:0')?...",
+  "error": "javascript_tool timed out after 30s. The Browser pane may be stuck (modal dialog, navigation hang, or unresponsive renderer). Check preview_console_logs for errors.",
+  "timestamp": "2026-07-20T22:13:41.947Z",
+  "retry_count": 1
+}
