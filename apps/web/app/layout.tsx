@@ -9,6 +9,7 @@ import { ToastProvider } from "@/components/ToastProvider";
 import "@/styles/globals.css";
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://nomu.dev";
+const appearanceScript = `try{const p=JSON.parse(localStorage.getItem("nomu-appearance")||"{}");const r=document.documentElement;if(p.theme)r.dataset.theme=p.theme;if(p.accent)r.dataset.accent=p.accent;if(p.fontSize)r.dataset.fontSize=p.fontSize}catch{}`;
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
@@ -20,7 +21,8 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en" className={GeistSans.variable}>
+    <html lang="en" className={GeistSans.variable} suppressHydrationWarning>
+      <head><script dangerouslySetInnerHTML={{ __html: appearanceScript }} /></head>
       <body>
         <a className="skip-link" href="#main-content">Skip to content</a>
         <MotionProvider>

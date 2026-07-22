@@ -6,10 +6,10 @@ import { join } from "path";
 import { randomUUID } from "crypto";
 
 export const dynamic = "force-dynamic";
-export const config = { api: { bodyParser: { sizeLimit: "100mb" } } };
 
 const ALLOWED_AUDIO_TYPES = ["audio/mpeg", "audio/wav", "audio/ogg"];
 const ALLOWED_IMAGE_TYPES = ["image/svg+xml", "image/png", "image/jpeg", "image/webp"];
+const MAX_REQUEST_SIZE = 100 * 1024 * 1024; // 100MB
 const MAX_AUDIO_SIZE = 50 * 1024 * 1024; // 50MB
 const MAX_IMAGE_SIZE = 5 * 1024 * 1024; // 5MB
 
@@ -29,6 +29,11 @@ async function requireAdmin() {
 export async function POST(request: NextRequest) {
   try {
     await requireAdmin();
+
+    const contentLength = request.headers.get("content-length");
+    if (contentLength && Number(contentLength) > MAX_REQUEST_SIZE) {
+      return NextResponse.json({ error: "Request too large" }, { status: 413 });
+    }
 
     const formData = await request.formData();
     const file = formData.get("file") as File | null;
