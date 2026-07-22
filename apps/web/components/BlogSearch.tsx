@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { useEffect, useDeferredValue, useMemo, useState } from "react";
+import { useDeferredValue, useMemo, useState } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { SearchIcon } from "@personal/design-system";
 import styles from "@/app/collections.module.css";
@@ -18,13 +18,12 @@ export function BlogSearch({ articles }: { articles: SearchArticle[] }) {
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState("all");
   const [page, setPage] = useState(1);
+  const [view, setView] = useState<"grid" | "list">("grid");
   const deferredQuery = useDeferredValue(query.trim().toLocaleLowerCase());
   const categories = useMemo(() => [...new Set(articles.map((article) => article.category))], [articles]);
   const results = useMemo(() => {
     return articles.filter((article) => (category === "all" || article.category === category) && (!deferredQuery || article.searchableText.toLocaleLowerCase().includes(deferredQuery)));
   }, [articles, category, deferredQuery]);
-
-  useEffect(() => { setPage(1); }, [deferredQuery, category]);
 
   const totalPages = Math.max(1, Math.ceil(results.length / PAGE_SIZE));
   const currentPage = Math.min(page, totalPages);
@@ -34,15 +33,25 @@ export function BlogSearch({ articles }: { articles: SearchArticle[] }) {
     <div className={styles.search}>
       <SearchIcon />
       <label htmlFor="blog-search">Search blog</label>
-      <input id="blog-search" type="search" placeholder="Search blog…" value={query} onChange={(event) => setQuery(event.target.value)} autoComplete="off" />
+      <input id="blog-search" type="search" placeholder="Search blog…" value={query} onChange={(event) => { setQuery(event.target.value); setPage(1); }} autoComplete="off" />
     </div>
-    <nav className={styles.categoryList} aria-label="Filter blog by category">
-      <ul>
-        <li><button type="button" aria-pressed={category === "all"} onClick={() => setCategory("all")}>All topics</button></li>
-        {categories.map((item) => <li key={item}><button type="button" aria-pressed={category === item} onClick={() => setCategory(item)}>{item}</button></li>)}
-      </ul>
-    </nav>
-    <motion.ul layout={!reducedMotion} className={styles.grid} aria-live="polite">
+    <div className={styles.collectionControls}>
+      <nav className={styles.categoryList} aria-label="Filter blog by category">
+        <ul>
+          <li><button type="button" aria-pressed={category === "all"} onClick={() => { setCategory("all"); setPage(1); }}>All topics</button></li>
+          {categories.map((item) => <li key={item}><button type="button" aria-pressed={category === item} onClick={() => { setCategory(item); setPage(1); }}>{item}</button></li>)}
+        </ul>
+      </nav>
+      <div className={styles.viewToggle} aria-label="Post view">
+        <button type="button" aria-label="Grid view" title="Grid view" aria-pressed={view === "grid"} onClick={() => setView("grid")}>
+          <svg aria-hidden="true" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+        </button>
+        <button type="button" aria-label="List view" title="List view" aria-pressed={view === "list"} onClick={() => setView("list")}>
+          <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>
+        </button>
+      </div>
+    </div>
+    <motion.ul layout={!reducedMotion} className={`${styles.grid} ${view === "list" ? styles.list : ""}`} aria-live="polite">
       <AnimatePresence initial={false}>
         {paged.map((article, index) => <motion.li layout={reducedMotion ? false : "position"} key={article.slug} className={styles.card} initial={reducedMotion ? false : { opacity: 0, y: 12, scale: .985 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={reducedMotion ? undefined : { opacity: 0, y: -8, scale: .985 }} transition={{ duration: reducedMotion ? 0 : .24, delay: reducedMotion ? 0 : (index % PAGE_SIZE) * 0.03, ease: [0.16, 1, .3, 1], layout: { duration: .32, ease: [0.16, 1, .3, 1] } }}>
           <Link className={styles.cardLink} href={`/blog/${article.slug}`}>

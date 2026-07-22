@@ -6,7 +6,7 @@
   --pill-shadow: 0 1.1rem 2.8rem rgba(0, 0, 0, 0.34), 0 0.25rem 0.7rem rgba(0, 0, 0, 0.22);
   --track-dim: rgba(245, 243, 239, 0.26);
   position: fixed;
-  bottom: max(var(--page-padding), env(safe-area-inset-bottom));
+  bottom: max(0.75rem, env(safe-area-inset-bottom));
   z-index: calc(var(--z-menu) + 1);
   color: var(--ink);
 }
@@ -28,18 +28,22 @@
 }
 
 /* ---------- MINI ---------- */
-.miniPill { gap: 0.6rem; height: 3.75rem; padding: 0.35rem 0.4rem 0.35rem 0.45rem; }
+.miniPill { height: 3.25rem; padding: 0.25rem; border-radius: 50%; }
 
 .miniOpen {
-  display: flex;
-  align-items: center;
-  gap: 0.65rem;
-  height: 100%;
-  padding: 0 0.15rem 0 0;
+  display: grid;
+  width: 2.75rem;
+  height: 2.75rem;
+  place-items: center;
+  padding: 0;
   border: 0;
+  border-radius: 50%;
   background: transparent;
   color: inherit;
+  transition: background-color 160ms ease, transform 160ms var(--ease-out);
 }
+.miniOpen:hover { background: rgba(255, 255, 255, 0.1); transform: scale(1.04); }
+.miniOpen svg { width: 1.1rem; height: 1.1rem; }
 
 .miniArt {
   display: block;
@@ -65,23 +69,6 @@
 .wave > .waveRow { color: var(--track-dim); }
 .waveFill { position: absolute; inset: 0; overflow: hidden; color: var(--ink); }
 .wavePlaying .waveRow i { animation: wave 900ms ease-in-out infinite alternate; animation-delay: calc(var(--i) * -110ms); }
-
-.miniPlay {
-  display: grid;
-  width: 2.85rem;
-  height: 2.85rem;
-  flex: none;
-  place-items: center;
-  padding: 0;
-  color: #0d0d0d;
-  border: 0;
-  border-radius: 50%;
-  background: var(--ink);
-  transition: transform 160ms var(--ease-out), background-color 160ms ease;
-}
-.miniPlay:hover { background: #fff; }
-.miniPlay:active { transform: scale(0.94); }
-.miniPlay svg { width: 0.95rem; height: 0.95rem; }
 
 /* ---------- EXPANDED ---------- */
 .expandedPill {

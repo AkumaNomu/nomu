@@ -6,12 +6,23 @@
 .search input { width: 100%; min-width: 0; padding: 0.6rem 0.75rem; }
 .search input::placeholder { color: var(--muted); opacity: 0.8; }
 .search:focus-within { border-color: var(--line); }
-.categoryList { margin: 0 0 1.5rem; }
-.categoryList ul { display: flex; flex-wrap: wrap; gap: 0.35rem 1.5rem; margin: 0; padding: 0 0 0.85rem; list-style: none; border-bottom: 1px solid var(--soft-line); }
+.collectionControls { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; margin: 0 0 1.5rem; border-bottom: 1px solid var(--soft-line); }
+.categoryList { min-width: 0; }
+.categoryList ul { display: flex; flex-wrap: wrap; gap: 0.35rem 1.5rem; margin: 0; padding: 0 0 0.85rem; list-style: none; }
 .categoryList button { padding: 0.3rem 0; border: 0; background: transparent; color: var(--muted); font: inherit; font-size: 0.88rem; font-weight: 550; cursor: pointer; }
 .categoryList button:hover { color: var(--foreground); }
 .categoryList button[aria-pressed="true"] { color: var(--foreground); font-weight: 650; }
+.viewToggle { display: inline-flex; flex: none; gap: .15rem; padding-bottom: .65rem; }
+.viewToggle button { display: grid; width: 2rem; height: 2rem; place-items: center; padding: 0; border: 1px solid transparent; border-radius: .5rem; background: transparent; color: var(--muted); }
+.viewToggle button:hover, .viewToggle button[aria-pressed="true"] { border-color: var(--soft-line); background: var(--hover-fill); color: var(--foreground); }
+.viewToggle svg { width: 1rem; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
 .grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1.5rem 1.25rem; margin: 0; padding: 0; list-style: none; }
+.list { grid-template-columns: 1fr; gap: 0; }
+.list .card { border-bottom: 1px solid var(--soft-line); }
+.list .cardLink { grid-template-columns: 9rem minmax(7rem, .4fr) minmax(12rem, 1fr) minmax(16rem, 1.4fr) auto; grid-template-rows: 1fr; align-items: center; gap: clamp(.8rem, 2vw, 1.5rem); min-height: 7.5rem; padding: .75rem 0; }
+.list .cover { align-self: stretch; height: 100%; }
+.list .cover img { height: 100%; aspect-ratio: auto; }
+.list .category { justify-self: end; }
 .card { min-width: 0; }
 .cardLink { display: grid; grid-template-rows: auto auto auto 1fr auto; gap: 0.4rem; color: var(--foreground); }
 .cover { display: block; border-radius: 0.85rem; overflow: hidden; border: 1px solid var(--soft-line); }
@@ -58,6 +69,9 @@
   .viewToggle { padding-right: .2rem; }
   .viewToggle button { width: 40px; }
   .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1.25rem 1rem; }
+  .list { grid-template-columns: 1fr; gap: 0; }
+  .list .cardLink { grid-template-columns: 7rem minmax(0, 1fr) auto; gap: .8rem; }
+  .list .date, .list .description { display: none; }
   .featured { width: 100%; margin: 0 0 4rem; }
   .featuredBody { grid-template-columns: auto 1fr; }
   .featuredBody .metaGrid { grid-column: 1 / -1; }
@@ -73,5 +87,8 @@
   .featuredIcon { width: 4.5rem; }
   .featuredBody .metaGrid { grid-column: auto; }
   .projectLink .description { display: none; }
+  .collectionControls { gap: .5rem; }
+  .categoryList ul { gap: .3rem 1rem; }
+  .list .cardLink { grid-template-columns: 5.5rem minmax(0, 1fr) auto; min-height: 5.5rem; }
 }
 @media (prefers-reduced-motion: reduce) { .featuredBody { animation: none; } .cover img, .title, .projectLink { transition: none; } }

@@ -128,16 +128,20 @@ img, svg, video { display: block; max-width: 100%; }
 }
 
 #main-content {
+  min-height: 100dvh;
   min-width: 0;
   overflow-anchor: none;
   scroll-padding-top: var(--header-height);
 }
 
 .site-shell {
+  min-height: 100%;
   width: min(100%, var(--content-width));
   margin-inline: auto;
   padding-inline: var(--page-padding);
 }
+
+#main-content > .site-shell { min-height: 100dvh; }
 
 .eyebrow {
   margin: 0;
