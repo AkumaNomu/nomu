@@ -6,13 +6,17 @@
 }
 
 .accountRow { margin: -0.4rem 0 1.25rem; }
-.account { position: relative; display: flex; align-items: center; gap: 0.55rem; min-height: 2rem; color: var(--muted); font-size: 0.78rem; }
+.account { display: flex; flex-wrap: wrap; align-items: center; gap: 0.55rem; min-height: 2rem; color: var(--muted); font-size: 0.78rem; }
 .avatar { display: inline-grid; flex: none; width: 2rem; height: 2rem; place-items: center; border-radius: 50%; color: var(--background); background: var(--foreground); font-size: 0.68rem; font-weight: 700; }
 .accountLink { padding: 0; color: var(--foreground); font: inherit; font-size: 0.76rem; font-weight: 650; border: 0; background: transparent; }
 .accountLink:hover { color: var(--accent); }
-.modalBackdrop { position: fixed; inset: 0; z-index: 80; display: grid; place-items: center; padding: var(--page-padding); background: rgba(9,9,9,.32); backdrop-filter: blur(5px); }
-.accountPanel { position: relative; display: grid; gap: .65rem; width: min(22rem, 100%); padding: 1.35rem; border: 1px solid var(--line); border-radius: 1.2rem; background: var(--paper); box-shadow: 0 1rem 3rem rgba(9,9,9,.2); }
-.modalClose { position: absolute; top: .45rem; right: .55rem; width: 2rem; height: 2rem; padding: 0; color: var(--muted); font-size: 1.25rem; border: 0; background: transparent; }
+.accountPanel { display: grid; flex-basis: min(100%, 22rem); gap: .65rem; margin-top: .7rem; padding: 1.15rem; border: 1px solid var(--line); border-radius: .85rem; background: var(--paper); }
+.accountPanelHeader { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; }
+.accountPanelHeader p, .accountPanelHeader h3 { margin: 0; }
+.accountPanelHeader p { color: var(--muted); font-size: .68rem; font-weight: 650; letter-spacing: .12em; text-transform: uppercase; }
+.accountPanelHeader h3 { margin-top: .15rem; color: var(--foreground); font-size: 1.1rem; letter-spacing: -.03em; }
+.modalClose { padding: .2rem 0; color: var(--muted); font: inherit; font-size: .72rem; border: 0; background: transparent; }
+.modalClose:hover { color: var(--foreground); }
 .accountPanel input { width: 100%; padding: 0.55rem 0.65rem; color: var(--foreground); font: inherit; font-size: 0.8rem; border: 1px solid var(--line); border-radius: 0.5rem; outline: 0; background: transparent; }
 .accountPanel label { margin-bottom: -.45rem; color: var(--muted); font-size: .72rem; font-weight: 600; }
 .accountPanel input:focus { border-color: var(--foreground); }

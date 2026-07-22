@@ -1,4 +1,4 @@
-.article { position: relative; padding: 0 0 var(--section-gap); }
+.article { position: relative; margin-top: calc(-1 * var(--header-height)); padding: 0 0 var(--section-gap); }
 .coverHero { position: relative; min-height: clamp(20rem, 52vh, 30rem); overflow: hidden; color: #fff; background: #171714; border-radius: 0 0 1.75rem 1.75rem; }
 .heroInner { position: relative; z-index: 2; display: flex; min-height: inherit; flex-direction: column; padding-top: clamp(1.25rem, 3vw, 2.5rem); }
 .backLink { display: inline-flex; align-items: center; gap: 0.7rem; width: fit-content; min-height: 44px; color: rgba(255,255,255,.82); font-size: 0.88rem; }

@@ -47,13 +47,14 @@ function AccountPanel({ user, onChange }: { user: User | null; onChange: (user: 
   if (user) return <div className={styles.account}><span className={styles.avatar}>{user.username[0].toUpperCase()}</span><strong>@{user.username}</strong><button className={styles.accountLink} type="button" onClick={logout}>Log out</button></div>;
   return <div className={styles.account}>
     <span className={styles.avatar}>?</span>
-    <button className={styles.accountLink} type="button" onClick={() => setOpen((value) => !value)}>{open ? "Close" : "Log in to comment"}</button>
-    {open ? <div className={styles.modalBackdrop} role="presentation" onClick={() => setOpen(false)}><form className={styles.accountPanel} role="dialog" aria-modal="true" aria-label="Account" onClick={(event) => event.stopPropagation()} onSubmit={(event) => { event.preventDefault(); void submit(); }}>
-      <button className={styles.modalClose} type="button" aria-label="Close account popup" onClick={() => setOpen(false)}>×</button><div className={styles.accountTabs}><button className={mode === "login" ? styles.activeTab : ""} type="button" onClick={() => setMode("login")}>Log in</button><button className={mode === "signup" ? styles.activeTab : ""} type="button" onClick={() => setMode("signup")}>Sign up</button></div>
-      <label htmlFor="account-username">Username</label><input id="account-username" autoComplete="username" value={username} onChange={(event) => setUsername(event.target.value)} />
-      <label htmlFor="account-password">Password</label><input id="account-password" autoComplete={mode === "signup" ? "new-password" : "current-password"} type="password" value={password} onChange={(event) => setPassword(event.target.value)} />
+    <button className={styles.accountLink} type="button" aria-expanded={open} onClick={() => setOpen((value) => !value)}>{open ? "Close" : "Log in to comment"}</button>
+    {open ? <form className={styles.accountPanel} aria-label="Account" onSubmit={(event) => { event.preventDefault(); void submit(); }}>
+      <div className={styles.accountPanelHeader}><div><p>Join conversation</p><h3>{mode === "login" ? "Welcome back" : "Create your account"}</h3></div><button className={styles.modalClose} type="button" aria-label="Close account form" onClick={() => setOpen(false)}>Close</button></div>
+      <div className={styles.accountTabs} role="tablist" aria-label="Account action"><button className={mode === "login" ? styles.activeTab : ""} type="button" role="tab" aria-selected={mode === "login"} onClick={() => setMode("login")}>Log in</button><button className={mode === "signup" ? styles.activeTab : ""} type="button" role="tab" aria-selected={mode === "signup"} onClick={() => setMode("signup")}>Sign up</button></div>
+      <label htmlFor="account-username">Username</label><input id="account-username" autoComplete="username" required value={username} onChange={(event) => setUsername(event.target.value)} />
+      <label htmlFor="account-password">Password</label><input id="account-password" autoComplete={mode === "signup" ? "new-password" : "current-password"} required type="password" value={password} onChange={(event) => setPassword(event.target.value)} />
       {error ? <p className={styles.error} role="alert">{error}</p> : null}<button className={styles.primaryAction} type="submit">{mode === "login" ? "Log in" : "Create account"}</button>
-    </form></div> : null}
+    </form> : null}
   </div>;
 }
 
