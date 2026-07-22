@@ -3,19 +3,17 @@
 import Image from "next/image";
 import type { CSSProperties } from "react";
 import { useState } from "react";
-import { Maximize2, Minimize2, Volume2 } from "lucide-react";
+import { ChevronDown, Volume2, VolumeX } from "lucide-react";
 import { motion, useReducedMotion } from "motion/react";
 import { PauseIcon, PlayIcon, SkipIcon } from "@personal/design-system";
+import { sound } from "@/lib/audio/soundEngine";
 import type { Track } from "@/lib/tracks";
 import styles from "./MusicPlayer.module.css";
 
-function formatTime(value: number) {
-  return Number.isFinite(value)
-    ? `${Math.floor(value / 60)}:${String(Math.floor(value % 60)).padStart(2, "0")}`
-    : "0:00";
-}
+type PlayerState = "mini" | "expanded";
 
-type PlayerState = "compact" | "floating" | "expanded";
+// Static waveform silhouette (percent heights) reused by the mini progress bars.
+const WAVE = [42, 68, 100, 58, 84, 46, 92, 54, 76, 38, 88, 50, 96, 62, 44, 70];
 
 export type MusicWidgetProps = {
   currentTrack: Track;
@@ -30,107 +28,93 @@ export type MusicWidgetProps = {
   setVolume: (value: number) => void;
 };
 
-export function MusicWidget({ currentTrack, duration, playing, time, volume, next, playPause, previous, seek, setVolume }: MusicWidgetProps) {
+export function MusicWidget({ currentTrack, duration, playing, time, volume, next, playPause, previous, setVolume }: MusicWidgetProps) {
   const reducedMotion = useReducedMotion();
-  const [playerState, setPlayerState] = useState<PlayerState>("compact");
+  const [state, setState] = useState<PlayerState>("mini");
   const progress = duration ? `${(Math.min(time, duration) / duration) * 100}%` : "0%";
-  const modeClass = playerState === "expanded" ? styles.expanded : playerState === "floating" ? styles.floating : styles.compact;
-  const rangeStyle = { "--progress": progress } as CSSProperties;
 
-  if (playerState === "compact") {
+  const enter = reducedMotion ? { duration: 0 } : { duration: 0.26, ease: [0.16, 1, 0.3, 1] as const };
+
+  if (state === "mini") {
     return (
       <motion.aside
-        className={`${styles.widget} ${modeClass}`}
+        className={`${styles.widget} ${styles.mini}`}
         aria-label="Site music player"
-        layout={!reducedMotion}
-        initial={reducedMotion ? false : { opacity: 0, scale: 0.88, y: 12 }}
+        data-state="mini"
+        initial={reducedMotion ? false : { opacity: 0, scale: 0.9, y: 10 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
-        transition={reducedMotion ? { duration: 0 } : { layout: { type: "spring", stiffness: 420, damping: 38 }, duration: 0.28, ease: [0.16, 1, 0.3, 1] }}
+        transition={enter}
       >
-        <button
-          className={`${styles.compactButton} ${playing ? styles.waveformPlaying : ""}`}
-          type="button"
-          aria-controls="site-music-panel"
-          aria-expanded="false"
-          aria-label={`Open music player: ${currentTrack.title} by ${currentTrack.artist}`}
-          onClick={() => setPlayerState("floating")}
-        >
-          <span className={styles.waveform} aria-hidden="true">
-            <i /><i /><i /><i /><i />
-          </span>
-        </button>
+        <div className={styles.miniPill}>
+          <button
+            className={styles.miniOpen}
+            type="button"
+            aria-controls="site-music-panel"
+            aria-expanded="false"
+            aria-label={`Expand music player: ${currentTrack.title} by ${currentTrack.artist}`}
+            onClick={() => { sound.play("open"); setState("expanded"); }}
+          >
+            <span className={styles.miniArt}>
+              <Image src={currentTrack.artwork} width={40} height={40} alt={`${currentTrack.album} album cover`} />
+            </span>
+            <span className={`${styles.wave} ${playing ? styles.wavePlaying : ""}`} aria-hidden="true">
+              <span className={styles.waveRow}>
+                {WAVE.map((h, i) => <i key={i} style={{ "--h": `${h}%`, "--i": i } as CSSProperties} />)}
+              </span>
+              <span className={styles.waveFill} style={{ width: progress }}>
+                <span className={styles.waveRow}>
+                  {WAVE.map((h, i) => <i key={i} style={{ "--h": `${h}%`, "--i": i } as CSSProperties} />)}
+                </span>
+              </span>
+            </span>
+          </button>
+          <button
+            className={styles.miniPlay}
+            type="button"
+            onClick={playPause}
+            aria-label={playing ? "Pause" : "Play"}
+            aria-pressed={playing}
+          >
+            {playing ? <PauseIcon /> : <PlayIcon />}
+          </button>
+        </div>
       </motion.aside>
     );
   }
 
   return (
     <motion.aside
-      className={`${styles.widget} ${modeClass}`}
+      className={`${styles.widget} ${styles.expanded}`}
       aria-label="Site music player"
-      data-state={playerState}
-      layout={!reducedMotion}
-      initial={reducedMotion ? false : { opacity: 0, scale: 0.94, y: 10 }}
-      animate={{ opacity: 1, scale: 1, y: 0 }}
-      transition={reducedMotion ? { duration: 0 } : { layout: { type: "spring", stiffness: 420, damping: 38 }, duration: 0.22 }}
+      data-state="expanded"
+      initial={reducedMotion ? false : { opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={enter}
     >
-      <div className={styles.playerSurface} id="site-music-panel">
-        <div className={styles.artwork}>
-          <Image
-            src={currentTrack.artwork}
-            fill
-            sizes="(max-width: 700px) 96px, 112px"
-            priority
-            alt={`${currentTrack.album} album cover`}
-          />
-        </div>
+      <div className={styles.expandedPill} id="site-music-panel">
+        <span className={styles.exArt}>
+          <Image src={currentTrack.artwork} width={48} height={48} priority alt={`${currentTrack.album} album cover`} />
+        </span>
 
-        <div className={styles.trackCopy} aria-live="polite">
+        <div className={styles.exCopy} aria-live="polite">
           <strong>{currentTrack.title}</strong>
           <span>{currentTrack.artist}</span>
         </div>
 
-        <label className={styles.timeline}>
-          <span className={styles.srOnly}>Track progress</span>
-          <input
-            type="range"
-            min="0"
-            max={duration || 0}
-            step="0.1"
-            value={Math.min(time, duration || 0)}
-            aria-valuetext={`${formatTime(time)} of ${formatTime(duration)}`}
-            style={rangeStyle}
-            onChange={(event) => seek(Number(event.target.value))}
-          />
-        </label>
-
-        <div className={styles.controlRail}>
+        <div className={styles.exControls}>
           <button type="button" onClick={previous} aria-label="Previous track">
             <SkipIcon style={{ transform: "scaleX(-1)" }} />
           </button>
-          <button className={styles.playButton} type="button" onClick={playPause} aria-label={playing ? "Pause" : "Play"} aria-pressed={playing}>
+          <button className={styles.exPlay} type="button" onClick={playPause} aria-label={playing ? "Pause" : "Play"} aria-pressed={playing}>
             {playing ? <PauseIcon /> : <PlayIcon />}
           </button>
           <button type="button" onClick={next} aria-label="Next track">
             <SkipIcon />
           </button>
-          {playerState === "floating" ? (
-            <>
-              <button type="button" onClick={() => setPlayerState("compact")} aria-label="Collapse music player">
-                <Minimize2 aria-hidden="true" />
-              </button>
-              <button type="button" onClick={() => setPlayerState("expanded")} aria-label="Expand music player">
-                <Maximize2 aria-hidden="true" />
-              </button>
-            </>
-          ) : (
-            <button type="button" onClick={() => setPlayerState("floating")} aria-label="Switch to floating music player">
-              <Minimize2 aria-hidden="true" />
-            </button>
-          )}
         </div>
 
-        <label className={styles.volume}>
-          <Volume2 aria-hidden="true" />
+        <label className={styles.exVolume}>
+          {volume === 0 ? <VolumeX aria-hidden="true" /> : <Volume2 aria-hidden="true" />}
           <span className={styles.srOnly}>Volume</span>
           <input
             type="range"
@@ -142,6 +126,10 @@ export function MusicWidget({ currentTrack, duration, playing, time, volume, nex
             onChange={(event) => setVolume(Number(event.target.value))}
           />
         </label>
+
+        <button className={styles.exCollapse} type="button" onClick={() => { sound.play("close"); setState("mini"); }} aria-label="Collapse music player">
+          <ChevronDown aria-hidden="true" />
+        </button>
       </div>
     </motion.aside>
   );

@@ -107,7 +107,7 @@ export default async function ArticlePage({ params }: Props) {
             <TableOfContents nodes={headings} />
           </div>
         ) : <div />}
-        <div className={styles.body}><Content /></div>
+        <div className={`${styles.body} prose`}><Content /></div>
       </div>
 
       {related.length ? (

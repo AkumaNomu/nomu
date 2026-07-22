@@ -84,7 +84,7 @@ export default async function ProjectPage({ params }: Props) {
         <figure className={styles.frame}><strong>{project.metadata.title} / interface</strong><span /><span /><span /></figure>
         <figure className={styles.frame}><strong>Working study</strong><span /><span /></figure>
       </div>
-      <div className={styles.body}><Content /></div>
+      <div className={`${styles.body} prose`}><Content /></div>
       {related.length ? (
         <aside className={styles.related}>
           <SectionRule title="Related Writing" />

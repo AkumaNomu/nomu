@@ -115,6 +115,126 @@ img, svg, video { display: block; max-width: 100%; }
 .arrow-link svg { width: 1.1rem; transition: transform 180ms var(--ease-out); }
 .arrow-link:hover svg { transform: translateX(0.3rem); }
 
+/* Shared long-form markdown styling — used by writing, projects, and resources.
+   Element typography lives here; page modules only own width/positioning. */
+.prose {
+  font-family: var(--font-geist-sans), "Helvetica Neue", sans-serif;
+  font-size: clamp(1.02rem, 0.55rem + 0.62vw, 1.14rem);
+  line-height: 1.72;
+  color: #26241f;
+}
+.prose > :first-child { margin-top: 0; }
+.prose > :last-child { margin-bottom: 0; }
+.prose p { margin: 0 0 1.35em; }
+.prose h2 {
+  scroll-margin-top: calc(var(--header-height) + 2rem);
+  margin: 3.2rem 0 1rem;
+  font-size: clamp(1.5rem, 2.4vw, 2.05rem);
+  font-weight: 640;
+  letter-spacing: -0.035em;
+  line-height: 1.12;
+  color: var(--foreground);
+}
+.prose h2::after {
+  content: "";
+  display: block;
+  width: 2.25rem;
+  height: 2px;
+  margin-top: 0.7rem;
+  border-radius: 999px;
+  background: var(--accent);
+  opacity: 0.85;
+}
+.prose h3 {
+  scroll-margin-top: calc(var(--header-height) + 2rem);
+  margin: 2.4rem 0 0.7rem;
+  font-size: clamp(1.18rem, 1.7vw, 1.4rem);
+  font-weight: 650;
+  letter-spacing: -0.022em;
+  line-height: 1.2;
+  color: var(--foreground);
+}
+.prose h4, .prose h5, .prose h6 {
+  scroll-margin-top: calc(var(--header-height) + 2rem);
+  margin: 2rem 0 0.55rem;
+  font-weight: 660;
+  line-height: 1.25;
+  color: var(--foreground);
+}
+.prose h4 { font-size: 1.05rem; }
+.prose h5, .prose h6 { font-size: 0.82rem; letter-spacing: 0.06em; text-transform: uppercase; color: #55524d; }
+.prose a {
+  color: inherit;
+  text-decoration: underline;
+  text-decoration-color: color-mix(in srgb, var(--accent) 55%, transparent);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.2em;
+  transition: text-decoration-color 160ms var(--ease-out);
+}
+.prose a:hover { text-decoration-color: var(--accent); }
+.prose strong { font-weight: 660; }
+.prose ul, .prose ol { margin: 0 0 1.35em; padding-left: 1.4rem; }
+.prose li { margin: 0.35em 0; padding-left: 0.25rem; }
+.prose li::marker { color: var(--accent); }
+.prose ul ul, .prose ul ol, .prose ol ul, .prose ol ol { margin: 0.35em 0; }
+.prose blockquote {
+  margin: 1.8rem 0;
+  padding: 0.4rem 0 0.4rem 1.15rem;
+  border-left: 2.5px solid var(--accent);
+  color: #45423c;
+  font-style: italic;
+}
+.prose blockquote p:last-child { margin-bottom: 0; }
+.prose hr { margin: 2.75rem auto; width: 4rem; height: 0; border: 0; border-top: 1px solid var(--line); }
+.prose :not(pre) > code {
+  padding: 0.12em 0.4em;
+  border: 1px solid var(--soft-line);
+  border-radius: 0.4rem;
+  background: rgba(9, 9, 9, 0.045);
+  font-size: 0.86em;
+}
+.prose pre {
+  overflow-x: auto;
+  padding: 1.25rem;
+  border-radius: 0.8rem;
+  background: var(--foreground);
+  color: var(--background);
+  font-size: 0.88rem;
+  line-height: 1.55;
+  tab-size: 2;
+}
+.prose pre code { display: grid; padding: 0; border: 0; border-radius: 0; background: transparent; font-size: inherit; }
+.prose pre code > [data-line] { padding-inline: 0.1rem; }
+.prose code[data-line-numbers] { counter-reset: line; }
+
+/* rehype-pretty-code figure wrapper + title */
+.prose figure[data-rehype-pretty-code-figure] { margin: 2rem 0; }
+.prose [data-rehype-pretty-code-title] {
+  margin-bottom: -0.5rem;
+  padding: 0.6rem 1rem;
+  border: 1px solid var(--line);
+  border-bottom: 0;
+  border-radius: 0.7rem 0.7rem 0 0;
+  background: rgba(9, 9, 9, 0.04);
+  font-size: 0.78rem;
+  color: #55524d;
+}
+
+/* GFM task lists */
+.prose li:has(> input[type="checkbox"]) { list-style: none; }
+.prose input[type="checkbox"] { margin-right: 0.5rem; }
+
+/* GFM footnotes */
+.prose .footnotes { margin-top: 3rem; padding-top: 1.5rem; border-top: 1px solid var(--line); font-size: 0.9rem; color: #55524d; }
+.prose .footnotes h2 { margin: 0 0 0.75rem; font-size: 0.72rem; letter-spacing: 0.14em; text-transform: uppercase; }
+.prose .footnotes h2::after { display: none; }
+.prose .footnotes ol { padding-left: 1.1rem; }
+.prose .data-footnote-backref { margin-left: 0.35rem; text-decoration: none; }
+
+/* KaTeX math */
+.prose .katex-display { margin: 1.75rem 0; overflow-x: auto; overflow-y: hidden; padding-bottom: 0.25rem; }
+.prose .katex { font-size: 1.05em; }
+
 @media (max-width: 767px) {
   :root {
     --page-padding: clamp(1.5rem, 5vw, 2rem);

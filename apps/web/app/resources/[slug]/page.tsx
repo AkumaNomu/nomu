@@ -58,7 +58,7 @@ export default async function ResourcePage({ params }: Props) {
           <a href={resource.metadata.url} target="_blank" rel="noreferrer">Visit resource <ArrowUpRight aria-hidden="true" size={16} /></a>
         </div>
       </header>
-      <div className={styles.body}><Content /></div>
+      <div className={`${styles.body} prose`}><Content /></div>
     </article>
   );
 }

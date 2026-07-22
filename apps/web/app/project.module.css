@@ -20,10 +20,8 @@
 .frame + .frame { border-left: 0; }
 .frame span { display: block; height: 1px; margin-top: clamp(1.5rem, 3vw, 2rem); background: currentColor; opacity: 0.4; }
 .frame strong { display: block; max-width: 16ch; font-size: clamp(1.5rem, 2.6vw, 2.5rem); font-weight: 620; letter-spacing: -0.04em; line-height: 1.05; }
-.body { width: min(48rem, 100%); margin-inline: auto; font-family: ui-serif, Georgia, serif; font-size: 1.15rem; line-height: 1.75; }
-.body :global(h2) { margin: 3.5rem 0 1rem; font-family: var(--font-geist-sans), sans-serif; font-size: clamp(1.75rem, 3vw, 2.5rem); font-weight: 620; letter-spacing: -0.035em; line-height: 1.08; }
-.body :global(h3),
-.body :global(h4) { font-family: var(--font-geist-sans), sans-serif; font-weight: 650; line-height: 1.2; }
+/* Long-form typography is shared via the global `.prose` class (globals.css). */
+.body { width: min(48rem, 100%); margin-inline: auto; }
 .related { width: min(60rem, 100%); margin: var(--section-gap) auto 0; }
 .related ul { margin: 0; padding: 0; list-style: none; }
 .related li { border-bottom: 1px solid var(--soft-line); }

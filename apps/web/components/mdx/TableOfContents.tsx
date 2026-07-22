@@ -8,7 +8,7 @@ export function TableOfContents({ nodes }: { nodes: readonly TocNode[] }) {
     <nav className={styles.toc} aria-label="Table of contents">
       <p className={styles.headerLabel}>On this page</p>
       <ul className={styles.list}>
-        {nodes.map((node) => <li className={styles.item} key={node.id}><a className={styles.link} href={`#${node.id}`} title={node.text}>{node.text}</a></li>)}
+        {nodes.map((node) => <li className={styles.item} data-level={node.level} key={node.id}><a className={styles.link} href={`#${node.id}`} title={node.text}>{node.text}</a></li>)}
       </ul>
     </nav>
   );

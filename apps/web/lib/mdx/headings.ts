@@ -17,16 +17,17 @@ export type TocNode = {
   children: TocNode[];
 };
 
-// Parse h2 headings out of a raw MDX body string. The TOC intentionally only
-// surfaces h2s (top-level sections) — h3/h4 still get anchor ids for direct
-// linking, but don't clutter the table of contents.
+// Parse h2 and h3 headings out of a raw MDX body string. h2s are top-level
+// sections, h3s are their subsections — the TOC renders the two levels with
+// distinct styling. h4+ still get anchor ids for direct linking but stay out
+// of the TOC to avoid clutter.
 // Fenced code blocks are stripped first so `##` comments inside code are ignored.
 export function parseHeadings(body: string): TocNode[] {
   const withoutCode = body
     .replace(/```[\s\S]*?```/g, "")
     .replace(/~~~[\s\S]*?~~~/g, "");
 
-  const headingPattern = /^(#{2})\s+(.+?)\s*#*$/gm;
+  const headingPattern = /^(#{2,3})\s+(.+?)\s*#*$/gm;
   const flat: TocNode[] = [];
 
   let match: RegExpExecArray | null;
@@ -37,7 +38,7 @@ export function parseHeadings(body: string): TocNode[] {
       .replace(/[*_`~]/g, "")
       .trim();
     if (!text) continue;
-    flat.push({ level: 2, text, id: slugifyHeading(text), children: [] });
+    flat.push({ level: match[1].length, text, id: slugifyHeading(text), children: [] });
   }
 
   return flat;

@@ -4,6 +4,7 @@ import type { Route } from "next";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
+import { sound } from "@/lib/audio/soundEngine";
 import styles from "./SiteHeader.module.css";
 
 const links = [
@@ -70,7 +71,7 @@ export function SiteHeader() {
       <nav className={styles.desktop} aria-label="Primary navigation">
         {links.map((link) => {
           const active = pathname === "/" ? link.href === "/writing" : pathname.startsWith(link.href);
-          return <Link key={link.href} href={link.href as Route} className={active ? styles.active : undefined} aria-current={active ? "page" : undefined}>{link.label}</Link>;
+          return <Link key={link.href} href={link.href as Route} className={active ? styles.active : undefined} aria-current={active ? "page" : undefined} onPointerEnter={() => sound.play("hover")}>{link.label}</Link>;
         })}
       </nav>
     </header>

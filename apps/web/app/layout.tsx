@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { GeistSans } from "geist/font/sans";
 import { MotionProvider } from "@/components/MotionProvider";
+import { SoundProvider } from "@/components/audio/SoundProvider";
 import { AudioProvider } from "@/components/music/AudioProvider";
 import { RouteTransition } from "@/components/RouteTransition";
 import { SiteHeader } from "@/components/SiteHeader";
@@ -23,7 +24,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
       <body>
         <a className="skip-link" href="#main-content">Skip to content</a>
         <MotionProvider>
-          <ToastProvider><AudioProvider><RouteTransition><SiteHeader /><main id="main-content">{children}</main></RouteTransition></AudioProvider></ToastProvider>
+          <SoundProvider><ToastProvider><AudioProvider><RouteTransition><SiteHeader /><main id="main-content">{children}</main></RouteTransition></AudioProvider></ToastProvider></SoundProvider>
         </MotionProvider>
       </body>
     </html>

@@ -1,5 +1,5 @@
 .article { position: relative; padding: 0 0 var(--section-gap); }
-.coverHero { position: relative; min-height: clamp(32rem, 72vh, 48rem); overflow: hidden; color: #fff; background: #171714; }
+.coverHero { position: relative; min-height: clamp(20rem, 52vh, 30rem); overflow: hidden; color: #fff; background: #171714; border-radius: 0 0 1.75rem 1.75rem; }
 .heroInner { position: relative; z-index: 2; display: flex; min-height: inherit; flex-direction: column; padding-top: clamp(1.25rem, 3vw, 2.5rem); }
 .backLink { display: inline-flex; align-items: center; gap: 0.7rem; width: fit-content; min-height: 44px; color: rgba(255,255,255,.82); font-size: 0.88rem; }
 .backLink svg { width: 1rem; transition: transform 180ms var(--ease-out); }
@@ -8,44 +8,15 @@
 .coverFrame { position: absolute; inset: 0; overflow: hidden; background: #d8d3c9; }
 .coverImage { object-fit: cover; filter: saturate(0.76) contrast(1.04) brightness(.72); }
 .coverFade { position: absolute; inset: 0; background: linear-gradient(180deg, rgba(9,9,9,.22) 0%, transparent 30%, rgba(9,9,9,.22) 58%, var(--background) 100%), linear-gradient(90deg, rgba(9,9,9,.48), transparent 68%); pointer-events: none; }
-.headerInner { width: min(100%, 70rem); margin: auto auto 0; padding: clamp(6rem, 12vw, 10rem) 0 clamp(2.5rem, 5vw, 4rem); }
+.headerInner { width: min(100%, 70rem); margin: auto auto 0; padding: clamp(3rem, 6vw, 5rem) 0 clamp(2rem, 3.5vw, 3rem); }
 .meta { display: flex; flex-wrap: wrap; align-items: center; gap: 0.55rem; margin: 0 0 1.2rem; color: rgba(255,255,255,.78); font-size: 0.69rem; font-weight: 650; letter-spacing: 0.14em; text-transform: uppercase; }
 .category { color: #d9e8d5; }
 .headerInner h1 { max-width: 70rem; margin: 0; font-size: clamp(2.1rem, 4.5vw, 3.75rem); font-weight: 620; letter-spacing: -0.05em; line-height: 1.02; text-wrap: balance; }
 .dek { max-width: 60rem; margin: 0.9rem 0 0; color: rgba(255,255,255,.78); font-size: clamp(1rem, 1.4vw, 1.18rem); line-height: 1.55; }
 .articleGrid { position: relative; width: min(100%, 70rem); margin-inline: auto; padding-top: clamp(2rem, 4vw, 3.5rem); }
 .tocColumn { position: absolute; top: clamp(2rem, 4vw, 3.5rem); right: calc(100% + clamp(1.5rem, 3vw, 3rem)); width: 14rem; }
-.body { min-width: 0; font-family: var(--font-geist-sans), sans-serif; font-size: clamp(1rem, 1.25vw, 1.1rem); line-height: 1.7; }
-.body :global(h2) { scroll-margin-top: calc(var(--header-height) + 2rem); margin: 3rem 0 0.9rem; font-size: clamp(1.45rem, 2.4vw, 2rem); font-weight: 620; letter-spacing: -0.035em; line-height: 1.1; }
-.body :global(h3) { margin: 2.25rem 0 0.7rem; font-size: clamp(1.15rem, 1.7vw, 1.35rem); font-weight: 650; letter-spacing: -0.02em; line-height: 1.2; }
-.body :global(h4),
-.body :global(h5),
-.body :global(h6) { font-family: var(--font-geist-sans), sans-serif; font-weight: 650; line-height: 1.25; }
-.body :global(blockquote) { margin-inline: 0; }
-.body :global(a) { text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 0.18em; }
-.body :global(pre) { overflow-x: auto; padding: 1.25rem; border-radius: 0.8rem; background: var(--foreground); color: var(--background); font-size: 0.88rem; line-height: 1.55; tab-size: 2; }
-.body :global(code) { font-size: 0.88em; }
-
-/* rehype-pretty-code figure wrapper: spacing handled by the CodeBlock wrapper. */
-.body :global(figure[data-rehype-pretty-code-figure]) { margin: 2rem 0; }
-.body :global([data-rehype-pretty-code-title]) { margin-bottom: -0.5rem; padding: 0.6rem 1rem; border: 1px solid var(--line); border-bottom: 0; border-radius: 0.7rem 0.7rem 0 0; background: rgba(9, 9, 9, 0.04); font-family: var(--font-geist-sans), sans-serif; font-size: 0.78rem; color: #55524d; }
-.body :global(code[data-line-numbers]) { counter-reset: line; }
-.body :global(pre code) { display: grid; background: transparent; }
-.body :global(pre code > [data-line]) { padding-inline: 0.1rem; }
-
-/* GFM task lists */
-.body :global(li:has(> input[type="checkbox"])) { list-style: none; }
-.body :global(input[type="checkbox"]) { margin-right: 0.5rem; }
-
-/* GFM footnotes */
-.body :global(.footnotes) { margin-top: 3rem; padding-top: 1.5rem; border-top: 1px solid var(--line); font-size: 0.9rem; color: #55524d; }
-.body :global(.footnotes h2) { margin: 0 0 0.75rem; font-size: 0.72rem; letter-spacing: 0.14em; text-transform: uppercase; }
-.body :global(.footnotes ol) { padding-left: 1.1rem; }
-.body :global(.data-footnote-backref) { margin-left: 0.35rem; text-decoration: none; }
-
-/* KaTeX math: keep block equations scrollable, never blow out the column */
-.body :global(.katex-display) { margin: 1.75rem 0; overflow-x: auto; overflow-y: hidden; padding-bottom: 0.25rem; }
-.body :global(.katex) { font-size: 1.05em; }
+/* Long-form typography is shared via the global `.prose` class (globals.css). */
+.body { min-width: 0; }
 .related { width: min(100%, 70rem); margin-top: var(--section-gap); }
 .related ul { margin: 0; padding: 0; list-style: none; }
 .related li { border-bottom: 1px solid var(--soft-line); }
@@ -59,9 +30,8 @@
 }
 
 @media (max-width: 767px) {
-  .coverHero { min-height: clamp(32rem, 82dvh, 42rem); }
+  .coverHero { min-height: clamp(17rem, 44dvh, 24rem); border-radius: 0 0 1.25rem 1.25rem; }
   .heroInner { padding-top: .75rem; }
-  .headerInner { padding: 7rem 0 2.5rem; }
+  .headerInner { padding: 2.5rem 0 1.75rem; }
   .headerInner h1 { font-size: clamp(2rem, 9vw, 3.2rem); }
-  .body { font-size: 1rem; }
 }
