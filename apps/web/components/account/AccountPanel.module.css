@@ -18,3 +18,58 @@
 .primaryAction { min-height: 38px; padding: 0.45rem 0.75rem; color: var(--background); font: inherit; font-size: 0.74rem; font-weight: 600; border: 1px solid var(--foreground); border-radius: 999px; background: var(--foreground); }
 .primaryAction:focus-visible { outline: 2px solid var(--foreground); outline-offset: 2px; }
 .error { margin: 0; color: #9d352c; font-size: 0.8rem; }
+
+.accountSettings { width: 100%; gap: 1.15rem; color: var(--foreground); }
+.accountSettings .avatar {
+  width: clamp(4rem, 10vw, 4.6rem);
+  height: clamp(4rem, 10vw, 4.6rem);
+  color: #181613;
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  background: linear-gradient(145deg, rgba(255, 252, 245, 0.98), rgba(237, 232, 220, 0.88));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.55);
+  font-size: clamp(1.8rem, 4vw, 2.1rem);
+}
+.accountSettings strong { font-size: clamp(1.25rem, 3vw, 1.8rem); font-weight: 520; letter-spacing: -0.04em; }
+.accountAction {
+  min-height: 4.25rem;
+  padding: 0.95rem 1.8rem;
+  color: rgba(252, 247, 239, 0.96);
+  font: inherit;
+  font-size: clamp(1rem, 2vw, 1.2rem);
+  font-weight: 520;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 999px;
+  background: linear-gradient(180deg, rgba(36, 35, 34, 0.92), rgba(26, 25, 24, 0.92));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  transition: transform 180ms var(--ease-out), border-color 180ms var(--ease-out), background-color 180ms var(--ease-out);
+}
+.accountAction:hover, .accountAction:focus-visible { border-color: rgba(255, 255, 255, 0.22); transform: translateY(-1px); }
+.accountAction:focus-visible { outline: 2px solid rgba(255, 255, 255, 0.18); outline-offset: 3px; }
+.accountSettings .accountAction { margin-left: auto; }
+
+.accountPanelSettings {
+  width: 100%;
+  gap: 1rem;
+  margin-top: 0;
+  padding: 1.2rem;
+  border-color: rgba(255, 255, 255, 0.08);
+  border-radius: 1.15rem;
+  background: linear-gradient(180deg, rgba(28, 28, 28, 0.82), rgba(20, 20, 20, 0.82));
+}
+.accountPanelSettings .accountTabs { gap: 1rem; border-bottom: 1px solid rgba(255, 255, 255, 0.08); }
+.accountPanelSettings .accountTabs button { padding-bottom: 0.65rem; color: rgba(214, 206, 196, 0.7); font-size: 0.88rem; }
+.accountPanelSettings .accountTabs .activeTab { color: rgba(255, 248, 239, 0.98); border-bottom-color: rgba(255, 248, 239, 0.98); }
+.accountPanelSettings label { margin-bottom: -0.25rem; color: rgba(214, 206, 196, 0.74); font-size: 0.78rem; }
+.accountPanelSettings input {
+  padding: 0.78rem 0.9rem;
+  border-color: rgba(255, 255, 255, 0.08);
+  border-radius: 0.9rem;
+  background: rgba(255, 255, 255, 0.02);
+}
+.accountPanelSettings input:focus { border-color: rgba(255, 255, 255, 0.28); }
+.formGrid { display: grid; gap: 0.65rem; }
+
+@media (max-width: 640px) {
+  .accountSettings { align-items: center; }
+  .accountSettings .accountAction { width: 100%; margin-left: 0; }
+}

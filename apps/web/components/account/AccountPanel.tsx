@@ -6,7 +6,7 @@ import { useToasts } from "@/components/ToastProvider";
 import styles from "./AccountPanel.module.css";
 
 /** Login/signup/logout UI, shared by the header settings panel and the comments section. */
-export function AccountPanel() {
+export function AccountPanel({ kind = "default" }: { kind?: "default" | "settings" }) {
   const { user, setUser } = useAccount();
   const { showToast } = useToasts();
   const [open, setOpen] = useState(false);
@@ -27,7 +27,18 @@ export function AccountPanel() {
     setUser(null); showToast("Logged out.");
   }
 
-  if (user) return <div className={styles.account}><span className={styles.avatar}>{user.username[0].toUpperCase()}</span><strong>@{user.username}</strong><button className={styles.accountLink} type="button" onClick={logout}>Log out</button></div>;
+  if (user) return <div className={`${styles.account} ${kind === "settings" ? styles.accountSettings : ""}`}><span className={styles.avatar}>{user.username[0].toUpperCase()}</span><strong>@{user.username}</strong><button className={kind === "settings" ? styles.accountAction : styles.accountLink} type="button" onClick={logout}>Log out</button></div>;
+
+  if (kind === "settings") return <form className={`${styles.accountPanel} ${styles.accountPanelSettings}`} aria-label="Account" onSubmit={(event) => { event.preventDefault(); void submit(); }}>
+    <div className={styles.accountTabs} role="tablist" aria-label="Account action"><button className={mode === "login" ? styles.activeTab : ""} type="button" role="tab" aria-selected={mode === "login"} onClick={() => setMode("login")}>Log in</button><button className={mode === "signup" ? styles.activeTab : ""} type="button" role="tab" aria-selected={mode === "signup"} onClick={() => setMode("signup")}>Sign up</button></div>
+    <div className={styles.formGrid}>
+      <label htmlFor="settings-account-username">Username</label><input id="settings-account-username" autoComplete="username" required value={username} onChange={(event) => setUsername(event.target.value)} />
+      <label htmlFor="settings-account-password">Password</label><input id="settings-account-password" autoComplete={mode === "signup" ? "new-password" : "current-password"} required type="password" value={password} onChange={(event) => setPassword(event.target.value)} />
+    </div>
+    {error ? <p className={styles.error} role="alert">{error}</p> : null}
+    <button className={styles.accountAction} type="submit">{mode === "login" ? "Log in" : "Create account"}</button>
+  </form>;
+
   return <div className={styles.account}>
     <span className={styles.avatar}>?</span>
     <button className={styles.accountLink} type="button" aria-expanded={open} onClick={() => setOpen((value) => !value)}>{open ? "Close" : "Log in"}</button>

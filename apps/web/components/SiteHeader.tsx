@@ -4,6 +4,7 @@ import type { Route } from "next";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
+import { Check, Moon } from "lucide-react";
 import { AccountPanel } from "@/components/account/AccountPanel";
 import { sound } from "@/lib/audio/soundEngine";
 import styles from "./SiteHeader.module.css";
@@ -68,23 +69,29 @@ function AppearanceSettings() {
         <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M12 3v2m0 14v2M3 12h2m14 0h2M5.6 5.6 7 7m10 10 1.4 1.4M18.4 5.6 17 7M7 17l-1.4 1.4"/><circle cx="12" cy="12" r="4"/></svg>
       </summary>
       <section className={styles.settingsPanel} aria-label="Site settings">
-        <div className={styles.settingsTitle}><strong>Account</strong><span>Sign in to comment and react to posts</span></div>
-        <AccountPanel />
+        <div className={styles.settingsGroup}>
+          <div className={styles.settingsTitle}><strong>Account</strong></div>
+          <AccountPanel kind="settings" />
+        </div>
 
         <div className={styles.settingsDivider} />
 
-        <div className={styles.settingsTitle}><strong>Appearance</strong><span>Saved on this device</span></div>
-        <label className={styles.toggle}>
-          <span>Dark theme</span>
-          <input type="checkbox" checked={preferences.theme === "dark"} onChange={(event) => update({ theme: event.target.checked ? "dark" : "light" })} />
-        </label>
-        <fieldset>
+        <div className={styles.settingsGroup}>
+          <div className={styles.settingsTitle}><strong>Appearance</strong></div>
+          <button className={styles.themeToggle} type="button" aria-pressed={preferences.theme === "dark"} onClick={() => update({ theme: preferences.theme === "dark" ? "light" : "dark" })}>
+            <span className={styles.themeIcon}><Moon aria-hidden="true" /></span>
+            <span className={styles.themeLabel}>Dark theme</span>
+            <span className={styles.themeSwitch} aria-hidden="true"><span>{preferences.theme === "dark" ? <Check /> : null}</span></span>
+          </button>
+        </div>
+
+        <fieldset className={styles.settingsFieldset}>
           <legend>Accent color</legend>
           <div className={styles.swatches}>
-            {accents.map((accent) => <button key={accent} type="button" data-color={accent} aria-label={accent} aria-pressed={preferences.accent === accent} onClick={() => update({ accent })} />)}
+            {accents.map((accent) => <button key={accent} type="button" data-color={accent} aria-label={accent} title={accent} aria-pressed={preferences.accent === accent} onClick={() => update({ accent })} />)}
           </div>
         </fieldset>
-        <fieldset>
+        <fieldset className={styles.settingsFieldset}>
           <legend>Font size</legend>
           <div className={styles.fontSizes}>
             {fontSizes.map((fontSize) => <button key={fontSize} type="button" aria-pressed={preferences.fontSize === fontSize} onClick={() => update({ fontSize })}>{fontSize[0].toUpperCase() + fontSize.slice(1)}</button>)}
