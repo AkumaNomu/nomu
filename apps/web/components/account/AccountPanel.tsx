@@ -27,27 +27,27 @@ export function AccountPanel({ kind = "default" }: { kind?: "default" | "setting
     setUser(null); showToast("Logged out.");
   }
 
+  const openAuth = (nextMode: "login" | "signup") => {
+    setMode(nextMode);
+    setError(null);
+    setOpen(true);
+  };
+
   if (user) return <div className={`${styles.account} ${kind === "settings" ? styles.accountSettings : ""}`}><span className={styles.avatar}>{user.username[0].toUpperCase()}</span><strong>@{user.username}</strong><button className={kind === "settings" ? styles.accountAction : styles.accountLink} type="button" onClick={logout}>Log out</button></div>;
 
-  if (kind === "settings") return <form className={`${styles.accountPanel} ${styles.accountPanelSettings}`} aria-label="Account" onSubmit={(event) => { event.preventDefault(); void submit(); }}>
-    <div className={styles.accountTabs} role="tablist" aria-label="Account action"><button className={mode === "login" ? styles.activeTab : ""} type="button" role="tab" aria-selected={mode === "login"} onClick={() => setMode("login")}>Log in</button><button className={mode === "signup" ? styles.activeTab : ""} type="button" role="tab" aria-selected={mode === "signup"} onClick={() => setMode("signup")}>Sign up</button></div>
-    <div className={styles.formGrid}>
-      <label htmlFor="settings-account-username">Username</label><input id="settings-account-username" autoComplete="username" required value={username} onChange={(event) => setUsername(event.target.value)} />
-      <label htmlFor="settings-account-password">Password</label><input id="settings-account-password" autoComplete={mode === "signup" ? "new-password" : "current-password"} required type="password" value={password} onChange={(event) => setPassword(event.target.value)} />
+  return <div className={styles.accountAuth}>
+    <div className={`${styles.account} ${kind === "settings" ? styles.accountSettings : ""}`}>
+      <span className={styles.avatar}>?</span>
+      {kind === "settings" ? <><strong>Join conversation</strong><span className={styles.accountActions}><button className={styles.accountAction} type="button" onClick={() => openAuth("login")}>Log in</button><button className={styles.accountAction} type="button" onClick={() => openAuth("signup")}>Sign up</button></span></> : <button className={styles.accountLink} type="button" aria-expanded={open} onClick={() => openAuth("login")}>Log in</button>}
     </div>
-    {error ? <p className={styles.error} role="alert">{error}</p> : null}
-    <button className={styles.accountAction} type="submit">{mode === "login" ? "Log in" : "Create account"}</button>
-  </form>;
-
-  return <div className={styles.account}>
-    <span className={styles.avatar}>?</span>
-    <button className={styles.accountLink} type="button" aria-expanded={open} onClick={() => setOpen((value) => !value)}>{open ? "Close" : "Log in"}</button>
-    {open ? <form className={styles.accountPanel} aria-label="Account" onSubmit={(event) => { event.preventDefault(); void submit(); }}>
+    {open ? <div className={styles.authBackdrop} role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) setOpen(false); }}>
+      <form className={styles.authModal} role="dialog" aria-modal="true" aria-label="Account" onSubmit={(event) => { event.preventDefault(); void submit(); }}>
       <div className={styles.accountPanelHeader}><div><p>Account</p><h3>{mode === "login" ? "Welcome back" : "Create your account"}</h3></div><button className={styles.modalClose} type="button" aria-label="Close account form" onClick={() => setOpen(false)}>Close</button></div>
       <div className={styles.accountTabs} role="tablist" aria-label="Account action"><button className={mode === "login" ? styles.activeTab : ""} type="button" role="tab" aria-selected={mode === "login"} onClick={() => setMode("login")}>Log in</button><button className={mode === "signup" ? styles.activeTab : ""} type="button" role="tab" aria-selected={mode === "signup"} onClick={() => setMode("signup")}>Sign up</button></div>
       <label htmlFor="account-username">Username</label><input id="account-username" autoComplete="username" required value={username} onChange={(event) => setUsername(event.target.value)} />
       <label htmlFor="account-password">Password</label><input id="account-password" autoComplete={mode === "signup" ? "new-password" : "current-password"} required type="password" value={password} onChange={(event) => setPassword(event.target.value)} />
       {error ? <p className={styles.error} role="alert">{error}</p> : null}<button className={styles.primaryAction} type="submit">{mode === "login" ? "Log in" : "Create account"}</button>
-    </form> : null}
+      </form>
+    </div> : null}
   </div>;
 }

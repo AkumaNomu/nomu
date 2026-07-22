@@ -53,7 +53,7 @@ type NoiseOpts = {
 const VOLUME_KEY = "nomu-sound-volume";
 const MUTED_KEY = "nomu-sound-muted";
 
-const clamp01 = (value: number) => Math.min(1, Math.max(0, value));
+const clampVolume = (value: number) => Math.min(3, Math.max(0, value));
 
 class SoundEngine {
   private ctx: AudioContext | null = null;
@@ -84,7 +84,7 @@ class SoundEngine {
   hydrate() {
     if (typeof window === "undefined") return;
     const v = Number(window.localStorage.getItem(VOLUME_KEY));
-    if (Number.isFinite(v) && v > 0) this._volume = clamp01(v);
+    if (Number.isFinite(v) && v >= 0) this._volume = clampVolume(v);
     this._muted = window.localStorage.getItem(MUTED_KEY) === "1";
   }
 
@@ -133,7 +133,7 @@ class SoundEngine {
   }
 
   setVolume(value: number) {
-    this._volume = clamp01(value);
+    this._volume = clampVolume(value);
     if (typeof window !== "undefined") window.localStorage.setItem(VOLUME_KEY, String(this._volume));
     if (this.ctx && this.master && !this._muted) {
       this.master.gain.setTargetAtTime(this._volume, this.ctx.currentTime, 0.02);

@@ -1,7 +1,7 @@
 .article { position: relative; margin-top: calc(-1 * var(--header-height)); padding: 0 0 var(--section-gap); }
 .coverHero { position: relative; min-height: clamp(20rem, 52vh, 30rem); overflow: hidden; color: #fff; background: #171714; border-radius: 0 0 1.75rem 1.75rem; }
 .heroInner { position: relative; z-index: 2; display: flex; min-height: inherit; flex-direction: column; padding-top: clamp(1.25rem, 3vw, 2.5rem); }
-.backLink { display: inline-flex; align-items: center; gap: 0.7rem; width: fit-content; min-height: 44px; color: rgba(255,255,255,.82); font-size: 0.88rem; }
+.backLink { display: inline-flex; align-items: center; gap: 0.7rem; width: fit-content; min-height: 44px; padding: 0 .95rem; color: #fff; font-size: .82rem; font-weight: 650; border: 1px solid rgba(255,255,255,.32); border-radius: 999px; background: rgba(9,9,9,.22); box-shadow: 0 .35rem 1rem rgba(0,0,0,.16); }
 .backLink svg { width: 1rem; transition: transform 180ms var(--ease-out); }
 .backLink:hover { color: #fff; }
 .backLink:hover svg { transform: translateX(-0.2rem); }

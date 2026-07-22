@@ -4,8 +4,9 @@ import type { Route } from "next";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
-import { Check, Moon } from "lucide-react";
+import { Check, Moon, Volume2, VolumeX } from "lucide-react";
 import { AccountPanel } from "@/components/account/AccountPanel";
+import { useSound } from "@/components/audio/SoundProvider";
 import { sound } from "@/lib/audio/soundEngine";
 import styles from "./SiteHeader.module.css";
 
@@ -37,6 +38,7 @@ function applyPreferences(preferences: Preferences) {
 
 function AppearanceSettings() {
   const [preferences, setPreferences] = useState(defaults);
+  const { volume, muted, setMuted, setVolume } = useSound();
 
   useEffect(() => {
     const frame = requestAnimationFrame(() => {
@@ -95,6 +97,14 @@ function AppearanceSettings() {
           <legend>Font size</legend>
           <div className={styles.fontSizes}>
             {fontSizes.map((fontSize) => <button key={fontSize} type="button" aria-pressed={preferences.fontSize === fontSize} onClick={() => update({ fontSize })}>{fontSize[0].toUpperCase() + fontSize.slice(1)}</button>)}
+          </div>
+        </fieldset>
+        <fieldset className={styles.settingsFieldset}>
+          <legend>Sound effects</legend>
+          <div className={styles.soundControl}>
+            <button type="button" aria-label={muted ? "Unmute sound effects" : "Mute sound effects"} title={muted ? "Unmute sound effects" : "Mute sound effects"} onClick={() => setMuted(!muted)}>{muted ? <VolumeX aria-hidden="true" /> : <Volume2 aria-hidden="true" />}</button>
+            <input aria-label="Sound effects volume" type="range" min="0" max="3" step="0.05" value={muted ? 0 : volume} onChange={(event) => { setMuted(false); setVolume(Number(event.target.value)); }} />
+            <output>{Math.round((muted ? 0 : volume) * 100)}%</output>
           </div>
         </fieldset>
       </section>

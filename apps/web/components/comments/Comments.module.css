@@ -102,6 +102,8 @@
 }
 
 .primaryAction { color: var(--background); border: 1px solid var(--foreground); border-radius: 999px; background: var(--foreground); }
+.composerActions .primaryAction { min-width: 5.75rem; min-height: 2.5rem; padding-inline: 1rem; box-shadow: 0 .3rem .75rem rgba(9,9,9,.14); transition: transform 160ms var(--ease-out), box-shadow 160ms var(--ease-out); }
+.composerActions .primaryAction:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 .5rem 1rem rgba(9,9,9,.18); }
 .secondaryAction { border: 1px solid var(--line); border-radius: 999px; background: transparent; }
 
 .replyButton {

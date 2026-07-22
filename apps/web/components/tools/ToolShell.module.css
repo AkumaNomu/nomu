@@ -14,7 +14,14 @@
   min-height: 44px;
   align-items: center;
   gap: 0.55rem;
-  color: var(--muted, #6f6b65);
+  padding: 0 .9rem;
+  color: var(--foreground, #090909);
+  font-size: .82rem;
+  font-weight: 650;
+  border: 1px solid var(--line, rgba(9,9,9,.18));
+  border-radius: 999px;
+  background: var(--paper, #fff);
+  box-shadow: 0 .35rem 1rem rgba(9,9,9,.06);
   text-decoration: none;
 }
 

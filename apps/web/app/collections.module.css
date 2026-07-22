@@ -31,7 +31,7 @@
 .date, .status, .category, .year { color: var(--muted); font-size: 0.72rem; letter-spacing: 0.1em; text-transform: uppercase; }
 .category { letter-spacing: 0.14em; }
 .title { display: block; font-size: clamp(1rem, 1.3vw, 1.15rem); font-weight: 580; letter-spacing: -0.02em; line-height: 1.25; transition: transform 260ms var(--ease-out); }
-.description { display: block; color: var(--muted); font-size: 0.86rem; line-height: 1.4; }
+.description { display: -webkit-box; overflow: hidden; color: var(--muted); font-size: 0.86rem; line-height: 1.4; -webkit-box-orient: vertical; -webkit-line-clamp: 1; }
 .cardLink:hover .title, .cardLink:focus-visible .title { transform: translateX(0.15rem); }
 .empty { padding-block: 4rem; color: var(--muted); }
 .pagination { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 0.35rem; margin-top: clamp(2rem, 4vw, 3rem); }

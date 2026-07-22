@@ -1,17 +1,19 @@
 .account { display: flex; flex-wrap: wrap; align-items: center; gap: 0.55rem; min-height: 2rem; color: var(--muted); font-size: 0.78rem; }
+.accountAuth { display: contents; }
 .avatar { display: inline-grid; flex: none; width: 2rem; height: 2rem; place-items: center; border-radius: 50%; color: var(--background); background: var(--foreground); font-size: 0.68rem; font-weight: 700; }
 .accountLink { padding: 0; color: var(--foreground); font: inherit; font-size: 0.76rem; font-weight: 650; border: 0; background: transparent; }
 .accountLink:hover { color: var(--accent); }
-.accountPanel { display: grid; flex-basis: min(100%, 22rem); gap: .65rem; margin-top: .7rem; padding: 1.15rem; border: 1px solid var(--line); border-radius: .85rem; background: var(--paper); }
+.authBackdrop { position: fixed; z-index: calc(var(--z-menu) + 2); inset: 0; display: grid; place-items: center; padding: 1rem; background: rgba(0,0,0,.48); backdrop-filter: blur(8px); animation: auth-fade 160ms ease both; }
+.authModal { display: grid; width: min(100%, 25rem); gap: .8rem; padding: 1.25rem; color: var(--foreground); border: 1px solid var(--line); border-radius: 1rem; background: var(--paper); box-shadow: 0 1.5rem 4rem rgba(0,0,0,.24); animation: auth-pop 180ms var(--ease-out) both; }
 .accountPanelHeader { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; }
 .accountPanelHeader p, .accountPanelHeader h3 { margin: 0; }
 .accountPanelHeader p { color: var(--muted); font-size: .68rem; font-weight: 650; letter-spacing: .12em; text-transform: uppercase; }
 .accountPanelHeader h3 { margin-top: .15rem; color: var(--foreground); font-size: 1.1rem; letter-spacing: -.03em; }
 .modalClose { padding: .2rem 0; color: var(--muted); font: inherit; font-size: .72rem; border: 0; background: transparent; }
 .modalClose:hover { color: var(--foreground); }
-.accountPanel input { width: 100%; padding: 0.55rem 0.65rem; color: var(--foreground); font: inherit; font-size: 0.8rem; border: 1px solid var(--line); border-radius: 0.5rem; outline: 0; background: transparent; }
-.accountPanel label { margin-bottom: -.45rem; color: var(--muted); font-size: .72rem; font-weight: 600; }
-.accountPanel input:focus { border-color: var(--foreground); }
+.authModal input { width: 100%; padding: 0.55rem 0.65rem; color: var(--foreground); font: inherit; font-size: 0.8rem; border: 1px solid var(--line); border-radius: 0.5rem; outline: 0; background: transparent; }
+.authModal label { margin-bottom: -.45rem; color: var(--muted); font-size: .72rem; font-weight: 600; }
+.authModal input:focus { border-color: var(--foreground); }
 .accountTabs { display: flex; gap: 0.8rem; border-bottom: 1px solid var(--soft-line); }
 .accountTabs button { padding: 0 0 0.45rem; color: var(--muted); font: inherit; font-size: 0.72rem; border: 0; border-bottom: 1px solid transparent; background: transparent; }
 .accountTabs .activeTab { color: var(--foreground); border-bottom-color: var(--foreground); }
@@ -30,6 +32,7 @@
   font-size: clamp(1.8rem, 4vw, 2.1rem);
 }
 .accountSettings strong { font-size: clamp(1.25rem, 3vw, 1.8rem); font-weight: 520; letter-spacing: -0.04em; }
+.accountActions { display: inline-flex; flex-wrap: wrap; gap: .55rem; margin-left: auto; }
 .accountAction {
   min-height: 4.25rem;
   padding: 0.95rem 1.8rem;
@@ -46,6 +49,7 @@
 .accountAction:hover, .accountAction:focus-visible { border-color: rgba(255, 255, 255, 0.22); transform: translateY(-1px); }
 .accountAction:focus-visible { outline: 2px solid rgba(255, 255, 255, 0.18); outline-offset: 3px; }
 .accountSettings .accountAction { margin-left: auto; }
+.accountActions .accountAction { min-height: 2.7rem; margin-left: 0; padding: .55rem 1rem; font-size: .84rem; }
 
 .accountPanelSettings {
   width: 100%;
@@ -68,8 +72,11 @@
 }
 .accountPanelSettings input:focus { border-color: rgba(255, 255, 255, 0.28); }
 .formGrid { display: grid; gap: 0.65rem; }
+@keyframes auth-fade { from { opacity: 0; } to { opacity: 1; } }
+@keyframes auth-pop { from { opacity: 0; transform: translateY(.5rem) scale(.98); } to { opacity: 1; transform: none; } }
 
 @media (max-width: 640px) {
   .accountSettings { align-items: center; }
-  .accountSettings .accountAction { width: 100%; margin-left: 0; }
+  .accountActions { width: 100%; }
+  .accountActions .accountAction { flex: 1; }
 }

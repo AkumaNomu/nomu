@@ -1,6 +1,6 @@
 .project, .resource { padding-bottom: var(--section-gap); }
 
-.backLink { display: inline-flex; align-items: center; gap: 0.6rem; min-height: 44px; margin-top: clamp(1.5rem, 3vw, 2.5rem); color: var(--muted); font-size: 0.88rem; }
+.backLink { display: inline-flex; align-items: center; gap: 0.6rem; min-height: 44px; margin-top: clamp(1.5rem, 3vw, 2.5rem); padding: 0 .9rem; color: var(--foreground); font-size: .82rem; font-weight: 650; border: 1px solid var(--line); border-radius: 999px; background: var(--paper); box-shadow: 0 .35rem 1rem rgba(9,9,9,.06); }
 .backLink svg { transition: transform 180ms var(--ease-out); }
 .backLink:hover { color: var(--foreground); }
 .backLink:hover svg { transform: translateX(-0.2rem); }
@@ -19,7 +19,7 @@
 /* Case-study body + sticky meta sidebar. */
 .layout { display: grid; grid-template-columns: minmax(0, 1fr) 16rem; gap: clamp(2rem, 5vw, 4rem); align-items: start; }
 .layout > .body { width: 100%; margin: 0; }
-.timelineBlock { margin-bottom: clamp(2rem, 4vw, 3rem); padding: clamp(1.1rem, 2vw, 1.5rem); border: 1px solid var(--soft-line); border-radius: 1rem; background: color-mix(in srgb, var(--paper) 90%, white); }
+.timelineBlock { margin-bottom: clamp(2rem, 4vw, 3rem); }
 .timelineEyebrow { margin: 0 0 0.45rem; color: var(--muted); font-size: 0.74rem; font-weight: 650; letter-spacing: 0.14em; text-transform: uppercase; }
 .timelineHeading { margin: 0; font-size: clamp(1.15rem, 2vw, 1.45rem); font-weight: 620; letter-spacing: -0.03em; }
 .timeline { position: relative; list-style: none; display: grid; gap: 0; margin: 1.4rem 0 0; padding: 0; }
