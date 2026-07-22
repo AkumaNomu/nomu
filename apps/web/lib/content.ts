@@ -1,4 +1,4 @@
-import { existsSync, readFileSync } from "node:fs";
+import { existsSync, readFileSync, readdirSync } from "node:fs";
 import path from "node:path";
 import matter from "gray-matter";
 import readingTime from "reading-time";
@@ -50,6 +50,24 @@ const contentRoot = (() => {
   const workspacePath = path.join(process.cwd(), "apps", "web", "content");
   return existsSync(workspacePath) ? workspacePath : path.join(process.cwd(), "content");
 })();
+
+const publicRoot = (() => {
+  const workspacePath = path.join(process.cwd(), "apps", "web", "public");
+  return existsSync(workspacePath) ? workspacePath : path.join(process.cwd(), "public");
+})();
+
+// Screenshots for a project's gallery: every image dropped into
+// public/projects/<slug>/ except the cover (already shown as the header icon
+// and the lead figure). Returns [] when the folder has no extra shots, so the
+// gallery only renders once real screenshots exist.
+export function getProjectImages(slug: string): string[] {
+  const dir = path.join(publicRoot, "projects", slug);
+  if (!existsSync(dir)) return [];
+  return readdirSync(dir)
+    .filter((file) => /\.(png|jpe?g|webp|avif)$/i.test(file) && !/^cover\./i.test(file))
+    .sort()
+    .map((file) => `/projects/${slug}/${file}`);
+}
 
 function readSource(collection: Collection, slug: string) {
   const filePath = path.join(contentRoot, collection, `${slug}.mdx`);
