@@ -4,6 +4,7 @@ import type { Route } from "next";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
+import { AccountPanel } from "@/components/account/AccountPanel";
 import { sound } from "@/lib/audio/soundEngine";
 import styles from "./SiteHeader.module.css";
 
@@ -64,10 +65,15 @@ function AppearanceSettings() {
 
   return (
     <details className={styles.settings}>
-      <summary aria-label="Appearance settings" title="Appearance settings">
+      <summary aria-label="Site settings" title="Site settings">
         <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M12 3v2m0 14v2M3 12h2m14 0h2M5.6 5.6 7 7m10 10 1.4 1.4M18.4 5.6 17 7M7 17l-1.4 1.4"/><circle cx="12" cy="12" r="4"/></svg>
       </summary>
-      <section className={styles.settingsPanel} aria-label="Appearance">
+      <section className={styles.settingsPanel} aria-label="Site settings">
+        <div className={styles.settingsTitle}><strong>Account</strong><span>Sign in to comment and react to posts</span></div>
+        <AccountPanel />
+
+        <div className={styles.settingsDivider} />
+
         <div className={styles.settingsTitle}><strong>Appearance</strong><span>Saved on this device</span></div>
         <label className={styles.toggle}>
           <span>Dark theme</span>

@@ -81,6 +81,7 @@
   background: var(--paper);
   box-shadow: 0 1rem 3rem var(--glass-shadow);
 }
+.settingsDivider { height: 1px; margin: 0.2rem 0; background: var(--soft-line); }
 .settingsTitle { display: grid; gap: 0.1rem; }
 .settingsTitle strong { font-size: 0.95rem; }
 .settingsTitle span, .settingsPanel legend { color: var(--muted); font-size: 0.7rem; }

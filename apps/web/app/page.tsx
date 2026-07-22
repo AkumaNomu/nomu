@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
-import { getAllWriting } from "@/lib/content";
+import { getAllBlog } from "@/lib/content";
 
-export default function LatestWritingRedirect() {
-  const latest = getAllWriting()[0];
-  redirect(`/writing/${latest.metadata.slug}`);
+export default function LatestBlogRedirect() {
+  const latest = getAllBlog()[0];
+  redirect(`/blog/${latest.metadata.slug}`);
 }

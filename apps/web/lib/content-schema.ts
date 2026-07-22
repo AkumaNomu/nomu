@@ -4,7 +4,7 @@ const slug = z.string().min(1).regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, "Use a lowerc
 const date = z.string().date();
 const optionalUrl = z.url().optional();
 
-export const writingSchema = z.object({
+export const blogSchema = z.object({
   title: z.string().min(1),
   slug,
   description: z.string().min(1),
@@ -57,7 +57,7 @@ export const resourceSchema = z.object({
   featured: z.boolean().optional(),
 }).strict();
 
-export type WritingFrontmatter = z.infer<typeof writingSchema>;
+export type BlogFrontmatter = z.infer<typeof blogSchema>;
 export type ProjectFrontmatter = z.infer<typeof projectSchema>;
 export type ToolFrontmatter = z.infer<typeof toolSchema>;
 export type PageFrontmatter = z.infer<typeof pageSchema>;

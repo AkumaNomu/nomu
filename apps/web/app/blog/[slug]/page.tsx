@@ -6,7 +6,8 @@ import { notFound } from "next/navigation";
 import { Comments } from "@/components/comments";
 import { SectionRule } from "@/components/editorial";
 import { TableOfContents } from "@/components/mdx/TableOfContents";
-import { getAllWriting, getWritingBySlug, getWritingSlugs } from "@/lib/content";
+import { PostReactions } from "@/components/PostReactions";
+import { getAllBlog, getBlogBySlug, getBlogSlugs } from "@/lib/content";
 import { parseHeadings } from "@/lib/mdx/headings";
 import styles from "@/app/article.module.css";
 
@@ -15,18 +16,18 @@ type Props = { params: Promise<{ slug: string }> };
 export const dynamicParams = false;
 
 export function generateStaticParams() {
-  return getWritingSlugs().map((slug) => ({ slug }));
+  return getBlogSlugs().map((slug) => ({ slug }));
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
-  const article = getWritingBySlug(slug);
+  const article = getBlogBySlug(slug);
   if (!article) return {};
 
   return {
     title: article.metadata.title,
     description: article.metadata.description,
-    alternates: { canonical: `/writing/${slug}` },
+    alternates: { canonical: `/blog/${slug}` },
     openGraph: {
       type: "article",
       title: article.metadata.title,
@@ -55,12 +56,12 @@ function formatDate(value: string) {
 
 export default async function ArticlePage({ params }: Props) {
   const { slug } = await params;
-  const article = getWritingBySlug(slug);
+  const article = getBlogBySlug(slug);
   if (!article) notFound();
 
   const Content = article.Content;
   const headings = parseHeadings(article.body);
-  const related = getAllWriting()
+  const related = getAllBlog()
     .filter((entry) => entry.metadata.slug !== slug && (
       entry.metadata.category === article.metadata.category ||
       entry.metadata.tags.some((tag) => article.metadata.tags.includes(tag))
@@ -86,7 +87,7 @@ export default async function ArticlePage({ params }: Props) {
           <div className={styles.coverFade} aria-hidden="true" />
         </div>
         <div className={`${styles.heroInner} site-shell`}>
-          <Link className={styles.backLink} href="/writing"><ArrowLeft aria-hidden="true" size={16} /> All writing</Link>
+          <Link className={styles.backLink} href="/blog"><ArrowLeft aria-hidden="true" size={16} /> All posts</Link>
           <div className={styles.headerInner}>
             <div className={styles.meta}>
               <time dateTime={article.metadata.publishedAt}>{formatDate(article.metadata.publishedAt)}</time>
@@ -108,12 +109,13 @@ export default async function ArticlePage({ params }: Props) {
           </div>
         ) : <div />}
         <div className={`${styles.body} prose`}><Content /></div>
+        <PostReactions slug={slug} />
       </div>
 
       {related.length ? (
         <aside className={`${styles.related} site-shell`}>
-          <SectionRule title="Related Writing" />
-          <ul>{related.map((entry) => <li key={entry.metadata.slug}><Link href={`/writing/${entry.metadata.slug}`}><span>{entry.metadata.title}</span><ArrowRight aria-hidden="true" /></Link></li>)}</ul>
+          <SectionRule title="Related Posts" />
+          <ul>{related.map((entry) => <li key={entry.metadata.slug}><Link href={`/blog/${entry.metadata.slug}`}><span>{entry.metadata.title}</span><ArrowRight aria-hidden="true" /></Link></li>)}</ul>
         </aside>
       ) : null}
 

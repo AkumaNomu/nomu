@@ -1,7 +1,7 @@
 .explorer { padding-block: clamp(2.5rem, 6vw, 5rem) 6rem; }
 
 /* Fold the status + year selects into the shared collections .search pill,
-   sharing col 3 the same way the writing page places its single select. */
+   sharing col 3 the same way the blog page places its single select. */
 .filters { display: flex; align-items: center; min-width: 0; }
 .select { height: 100%; border-left: 1px solid var(--soft-line); }
 .selectTrigger { display: flex; align-items: center; justify-content: space-between; gap: .55rem; height: 100%; min-height: 2.45rem; padding: 0 .85rem 0 1rem; color: var(--muted); font: inherit; font-size: .78rem; border: 0; background: transparent; white-space: nowrap; }

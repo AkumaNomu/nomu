@@ -181,7 +181,7 @@ print(f"\nMinimum similarity edge is between song {min_edge[0]} and song {min_ed
 ```
 Basically, Each song is a **node**, and the similarity scores are **edges** connecting them. Since I compared every two songs, this makes a complete graph as shown below:
 
-<Figure src="/writing/trying-to-make-playlists-flow-better/CompleteGraph.png" alt="Complete graph with songs as nodes and similarity-weighted edges connecting every pair of songs" width={300} />
+<Figure src="/blog/trying-to-make-playlists-flow-better/CompleteGraph.png" alt="Complete graph with songs as nodes and similarity-weighted edges connecting every pair of songs" width={300} />
 
 ### The "Start with the Worst" Strategy
 Here's my reasoning: if two songs don't flow well together, I want them as far apart as possible in the playlist. So I'll put one at the very beginning and the other at the very end.

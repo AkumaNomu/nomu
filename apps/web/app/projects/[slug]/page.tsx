@@ -4,7 +4,7 @@ import Link from "next/link";
 import { ArrowLeft, ArrowRight, ArrowUpRight } from "lucide-react";
 import { notFound } from "next/navigation";
 import { SectionRule } from "@/components/editorial";
-import { getAllProjects, getAllWriting, getProjectBySlug, getProjectImages, getProjectSlugs } from "@/lib/content";
+import { getAllBlog, getAllProjects, getProjectBySlug, getProjectImages, getProjectSlugs } from "@/lib/content";
 import styles from "@/app/project.module.css";
 
 type Props = { params: Promise<{ slug: string }> };
@@ -47,7 +47,7 @@ export default async function ProjectPage({ params }: Props) {
 
   const Content = project.Content;
   const shots = getProjectImages(slug);
-  const related = getAllWriting()
+  const related = getAllBlog()
     .filter((entry) => entry.metadata.tags.some((tag) => project.metadata.technologies.some((technology) => technology.toLowerCase().includes(tag.toLowerCase()))))
     .slice(0, 3);
   const projects = getAllProjects();
@@ -107,8 +107,8 @@ export default async function ProjectPage({ params }: Props) {
 
       {related.length ? (
         <aside className={styles.related}>
-          <SectionRule title="Related Writing" />
-          <ul>{related.map((entry) => <li key={entry.metadata.slug}><Link href={`/writing/${entry.metadata.slug}`}><span>{entry.metadata.title}</span><ArrowRight aria-hidden="true" /></Link></li>)}</ul>
+          <SectionRule title="Related Posts" />
+          <ul>{related.map((entry) => <li key={entry.metadata.slug}><Link href={`/blog/${entry.metadata.slug}`}><span>{entry.metadata.title}</span><ArrowRight aria-hidden="true" /></Link></li>)}</ul>
         </aside>
       ) : null}
 

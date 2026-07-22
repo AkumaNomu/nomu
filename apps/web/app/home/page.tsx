@@ -3,7 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { ArrowIcon } from "@personal/design-system";
 import { AnimatedGroup, AnimatedItem } from "@/components/motion/AnimatedGroup";
-import { getAllProjects, getAllTools, getAllWriting } from "@/lib/content";
+import { getAllBlog, getAllProjects, getAllTools } from "@/lib/content";
 import styles from "@/app/page.module.css";
 
 export const metadata: Metadata = {
@@ -29,7 +29,7 @@ function CardHeader({ title, href }: { title: string; href: Route }) {
 }
 
 export default function HomePage() {
-  const writing = getAllWriting().slice(0, 4);
+  const blog = getAllBlog().slice(0, 4);
   const projects = getAllProjects().slice(0, 3);
   const tools = getAllTools().slice(0, 3);
 
@@ -37,12 +37,12 @@ export default function HomePage() {
     <div className={`${styles.home} site-shell`}>
       <h1 className="sr-only">Home</h1>
       <AnimatedGroup className={styles.dashboard}>
-        <AnimatedItem className={`${styles.card} ${styles.writingCard}`}>
-          <CardHeader title="Recent writing" href="/writing" />
-          <ul className={styles.writingPreview}>
-            {writing.map(({ metadata: entry }) => <li key={entry.slug}><Link href={`/writing/${entry.slug}`}><time dateTime={entry.publishedAt}>{formatDate(entry.publishedAt)}</time><strong>{entry.title}</strong><ArrowIcon /></Link></li>)}
+        <AnimatedItem className={`${styles.card} ${styles.blogCard}`}>
+          <CardHeader title="Recent posts" href="/blog" />
+          <ul className={styles.blogPreview}>
+            {blog.map(({ metadata: entry }) => <li key={entry.slug}><Link href={`/blog/${entry.slug}`}><time dateTime={entry.publishedAt}>{formatDate(entry.publishedAt)}</time><strong>{entry.title}</strong><ArrowIcon /></Link></li>)}
           </ul>
-          <Link href="/writing" className={styles.viewAll}>View all writing</Link>
+          <Link href="/blog" className={styles.viewAll}>View all posts</Link>
         </AnimatedItem>
 
         <AnimatedItem className={styles.card}>

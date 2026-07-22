@@ -10,18 +10,18 @@ import ContrastCheckerTool from "@/content/tools/contrast-checker.mdx";
 import FocusTimerTool from "@/content/tools/focus-timer.mdx";
 import PaletteRatioCheckerTool from "@/content/tools/palette-ratio-checker.mdx";
 import PromptSplitterTool from "@/content/tools/prompt-splitter.mdx";
-import KatexSupport from "@/content/writing/katex-support.mdx";
-import MarkdownTestPost from "@/content/writing/markdown-test-post.mdx";
-import MergingPaginationMusicSupport from "@/content/writing/merging-pagination-music-support.mdx";
-import NomusFirstPost from "@/content/writing/nomus-first-post.mdx";
-import NomusV2 from "@/content/writing/nomus-v2.mdx";
-import SoTheyWantToBanPornMyTwoCents from "@/content/writing/so-they-want-to-ban-porn-my-two-cents.mdx";
-import TryingToMakePlaylistsFlowBetter from "@/content/writing/trying-to-make-playlists-flow-better.mdx";
-import WhyAreStudyAgenciesSuchAScam from "@/content/writing/why-are-study-agencies-such-a-scam.mdx";
+import KatexSupport from "@/content/blog/katex-support.mdx";
+import MarkdownTestPost from "@/content/blog/markdown-test-post.mdx";
+import MergingPaginationMusicSupport from "@/content/blog/merging-pagination-music-support.mdx";
+import NomusFirstPost from "@/content/blog/nomus-first-post.mdx";
+import NomusV2 from "@/content/blog/nomus-v2.mdx";
+import SoTheyWantToBanPornMyTwoCents from "@/content/blog/so-they-want-to-ban-porn-my-two-cents.mdx";
+import TryingToMakePlaylistsFlowBetter from "@/content/blog/trying-to-make-playlists-flow-better.mdx";
+import WhyAreStudyAgenciesSuchAScam from "@/content/blog/why-are-study-agencies-such-a-scam.mdx";
 
 export type MdxContent = ComponentType<Record<string, never>>;
 
-export const writingRegistry = {
+export const blogRegistry = {
   "nomus-v2": NomusV2,
   "why-are-study-agencies-such-a-scam": WhyAreStudyAgenciesSuchAScam,
   "trying-to-make-playlists-flow-better": TryingToMakePlaylistsFlowBetter,

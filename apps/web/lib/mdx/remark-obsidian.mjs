@@ -10,8 +10,8 @@
 import { visit, SKIP } from "unist-util-visit";
 
 // Assumption (documented per task): wikilinks cannot resolve a page-name -> slug
-// map at the plugin level, so [[Name]] links to /writing/<kebab-slug-of-name>.
-const WIKI_BASE = "/writing/";
+// map at the plugin level, so [[Name]] links to /blog/<kebab-slug-of-name>.
+const WIKI_BASE = "/blog/";
 
 const CALLOUT_TITLES = {
   note: "Note",

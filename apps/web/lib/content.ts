@@ -3,35 +3,35 @@ import path from "node:path";
 import matter from "gray-matter";
 import readingTime from "reading-time";
 import {
+  blogRegistry,
   pageRegistry,
   projectRegistry,
   resourceRegistry,
   toolRegistry,
-  writingRegistry,
   type MdxContent,
 } from "./content-registry";
 import {
+  blogSchema,
   pageSchema,
   projectSchema,
   resourceSchema,
   toolSchema,
-  writingSchema,
+  type BlogFrontmatter,
   type PageFrontmatter,
   type ProjectFrontmatter,
   type ResourceFrontmatter,
   type ToolFrontmatter,
-  type WritingFrontmatter,
 } from "./content-schema";
 
 export type {
+  BlogFrontmatter,
   PageFrontmatter,
   ProjectFrontmatter,
   ResourceFrontmatter,
   ToolFrontmatter,
-  WritingFrontmatter,
 } from "./content-schema";
 
-type Collection = "writing" | "projects" | "tools" | "pages" | "resources";
+type Collection = "blog" | "projects" | "tools" | "pages" | "resources";
 
 export type ContentEntry<T extends object> = T & {
   metadata: T;
@@ -40,7 +40,7 @@ export type ContentEntry<T extends object> = T & {
   Content: MdxContent;
 };
 
-export type WritingEntry = ContentEntry<WritingFrontmatter & { readingTime: string }>;
+export type BlogEntry = ContentEntry<BlogFrontmatter & { readingTime: string }>;
 export type ProjectEntry = ContentEntry<ProjectFrontmatter>;
 export type ToolEntry = ContentEntry<ToolFrontmatter>;
 export type PageEntry = ContentEntry<PageFrontmatter>;
@@ -84,12 +84,12 @@ function makeSearchText(metadata: object, body: string) {
     .trim();
 }
 
-function loadWriting(slug: keyof typeof writingRegistry): WritingEntry {
-  const { data, body } = readSource("writing", slug);
-  const parsed = writingSchema.parse(data);
-  if (parsed.slug !== slug) throw new Error(`Writing slug mismatch: ${slug}`);
+function loadBlog(slug: keyof typeof blogRegistry): BlogEntry {
+  const { data, body } = readSource("blog", slug);
+  const parsed = blogSchema.parse(data);
+  if (parsed.slug !== slug) throw new Error(`Blog slug mismatch: ${slug}`);
   const metadata = { ...parsed, readingTime: readingTime(body).text };
-  return { ...metadata, metadata, body, searchableText: makeSearchText(metadata, body), Content: writingRegistry[slug] };
+  return { ...metadata, metadata, body, searchableText: makeSearchText(metadata, body), Content: blogRegistry[slug] };
 }
 
 function loadProject(slug: keyof typeof projectRegistry): ProjectEntry {
@@ -120,20 +120,20 @@ function loadResource(slug: keyof typeof resourceRegistry): ResourceEntry {
   return { ...metadata, metadata, body, searchableText: makeSearchText(metadata, body), Content: resourceRegistry[slug] };
 }
 
-export const writingSlugs = Object.keys(writingRegistry) as Array<keyof typeof writingRegistry>;
+export const blogSlugs = Object.keys(blogRegistry) as Array<keyof typeof blogRegistry>;
 export const projectSlugs = Object.keys(projectRegistry) as Array<keyof typeof projectRegistry>;
 export const toolSlugs = Object.keys(toolRegistry) as Array<keyof typeof toolRegistry>;
 export const pageSlugs = Object.keys(pageRegistry) as Array<keyof typeof pageRegistry>;
 export const resourceSlugs = Object.keys(resourceRegistry) as Array<keyof typeof resourceRegistry>;
 
-export function getAllWriting({ includeDrafts = false }: { includeDrafts?: boolean } = {}) {
-  return writingSlugs.map(loadWriting)
+export function getAllBlog({ includeDrafts = false }: { includeDrafts?: boolean } = {}) {
+  return blogSlugs.map(loadBlog)
     .filter((entry) => includeDrafts || !entry.metadata.draft)
     .sort((a, b) => b.metadata.publishedAt.localeCompare(a.metadata.publishedAt));
 }
 
-export function getWritingBySlug(slug: string) {
-  return Object.hasOwn(writingRegistry, slug) ? loadWriting(slug as keyof typeof writingRegistry) : undefined;
+export function getBlogBySlug(slug: string) {
+  return Object.hasOwn(blogRegistry, slug) ? loadBlog(slug as keyof typeof blogRegistry) : undefined;
 }
 
 export function getAllProjects() {
@@ -164,7 +164,7 @@ export function getResourceBySlug(slug: string) {
   return Object.hasOwn(resourceRegistry, slug) ? loadResource(slug as keyof typeof resourceRegistry) : undefined;
 }
 
-export const getWritingSlugs = () => [...writingSlugs];
+export const getBlogSlugs = () => [...blogSlugs];
 export const getProjectSlugs = () => [...projectSlugs];
 export const getToolSlugs = () => [...toolSlugs];
 export const getPageSlugs = () => [...pageSlugs];

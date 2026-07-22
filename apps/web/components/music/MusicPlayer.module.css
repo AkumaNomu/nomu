@@ -28,7 +28,7 @@
 }
 
 /* ---------- MINI ---------- */
-.miniPill { gap: 0.5rem; height: 3.25rem; padding: 0.3rem 0.35rem 0.3rem 0.4rem; }
+.miniPill { gap: 0.6rem; height: 3.75rem; padding: 0.35rem 0.4rem 0.35rem 0.45rem; }
 
 .miniOpen {
   display: flex;
@@ -43,11 +43,11 @@
 
 .miniArt {
   display: block;
-  width: 2.35rem;
-  height: 2.35rem;
+  width: 3rem;
+  height: 3rem;
   flex: none;
   overflow: hidden;
-  border-radius: 0.6rem;
+  border-radius: 0.7rem;
   background: #222;
 }
 .miniArt img { width: 100%; height: 100%; object-fit: cover; }
@@ -68,8 +68,8 @@
 
 .miniPlay {
   display: grid;
-  width: 2.55rem;
-  height: 2.55rem;
+  width: 2.85rem;
+  height: 2.85rem;
   flex: none;
   place-items: center;
   padding: 0;
@@ -87,17 +87,17 @@
 .expandedPill {
   gap: clamp(0.75rem, 2vw, 1.25rem);
   width: min(40rem, calc(100vw - 2rem));
-  height: 4rem;
-  padding: 0.55rem 0.85rem 0.55rem 0.6rem;
+  height: 4.75rem;
+  padding: 0.6rem 0.9rem 0.6rem 0.65rem;
 }
 
 .exArt {
   display: block;
-  width: 2.9rem;
-  height: 2.9rem;
+  width: 3.75rem;
+  height: 3.75rem;
   flex: none;
   overflow: hidden;
-  border-radius: 0.7rem;
+  border-radius: 0.85rem;
   background: #222;
 }
 .exArt img { width: 100%; height: 100%; object-fit: cover; }
@@ -123,7 +123,7 @@
 .exControls button:hover { background: rgba(255, 255, 255, 0.08); }
 .exControls button:active { transform: scale(0.92); }
 .exControls button svg { width: 0.95rem; height: 0.95rem; }
-.exControls .exPlay { width: 2.9rem; height: 2.9rem; color: #0d0d0d; background: var(--ink); }
+.exControls .exPlay { width: 3.15rem; height: 3.15rem; color: #0d0d0d; background: var(--ink); }
 .exControls .exPlay:hover { background: #fff; }
 .exControls .exPlay svg { width: 1.05rem; height: 1.05rem; }
 
@@ -165,8 +165,8 @@
 
 .exCollapse {
   display: grid;
-  width: 2.25rem;
-  height: 2.25rem;
+  width: 2.75rem;
+  height: 2.75rem;
   flex: none;
   place-items: center;
   padding: 0;

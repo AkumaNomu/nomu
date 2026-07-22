@@ -1,11 +1,11 @@
 import type { Metadata } from "next";
-import { WritingSearch } from "@/components/WritingSearch";
-import { getAllWriting } from "@/lib/content";
+import { BlogSearch } from "@/components/BlogSearch";
+import { getAllBlog } from "@/lib/content";
 import styles from "@/app/collections.module.css";
 
-export const metadata: Metadata = { title: "Writing", description: "Thoughts on systems, design, learning, and building in public.", alternates: { canonical: "/writing" } };
+export const metadata: Metadata = { title: "Blog", description: "Thoughts on systems, design, learning, and building in public.", alternates: { canonical: "/blog" } };
 
-export default function WritingPage() {
-  const articles = getAllWriting().map((entry) => ({ ...entry.metadata, searchableText: entry.searchableText }));
-  return <div className={`${styles.collection} site-shell`}><h1 className="sr-only">Writing</h1><WritingSearch articles={articles} /></div>;
+export default function BlogPage() {
+  const articles = getAllBlog().map((entry) => ({ ...entry.metadata, searchableText: entry.searchableText }));
+  return <div className={`${styles.collection} site-shell`}><h1 className="sr-only">Blog</h1><BlogSearch articles={articles} /></div>;
 }

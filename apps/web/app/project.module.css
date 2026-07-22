@@ -46,7 +46,7 @@
 .bookmarkCta svg { transition: transform 180ms var(--ease-out); }
 .bookmark:hover .bookmarkCta svg { transform: translate(0.2rem, -0.2rem); }
 
-/* Related writing. */
+/* Related posts. */
 .related { width: min(60rem, 100%); margin: var(--section-gap) auto 0; }
 .related ul { margin: 0; padding: 0; list-style: none; }
 .related li { border-bottom: 1px solid var(--soft-line); }

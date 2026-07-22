@@ -57,8 +57,8 @@ export function ProjectLink({ slug, title, description }: Omit<EditorialLinkProp
   return <EditorialLink href={`/projects/${slug}` as Route} title={title} description={description} />;
 }
 
-export function ArticleLink({ slug, title, description }: Omit<EditorialLinkProps, "href"> & { slug: string }) {
-  return <EditorialLink href={`/writing/${slug}` as Route} title={title} description={description} />;
+export function BlogLink({ slug, title, description }: Omit<EditorialLinkProps, "href"> & { slug: string }) {
+  return <EditorialLink href={`/blog/${slug}` as Route} title={title} description={description} />;
 }
 
 export type TimelineEntry = { date: string; title: string; description?: string };
@@ -181,7 +181,7 @@ export const mdxComponents = {
   CodeDemo,
   ToolEmbed,
   ProjectLink,
-  ArticleLink,
+  BlogLink,
   Timeline,
   DataTable,
   BarChart,
