@@ -4,6 +4,7 @@ import Link from "next/link";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import { notFound } from "next/navigation";
 import { Comments } from "@/components/comments";
+import { ArticleReveal } from "@/components/ArticleReveal";
 import { SectionRule } from "@/components/editorial";
 import { TableOfContents } from "@/components/mdx/TableOfContents";
 import { PostReactions } from "@/components/PostReactions";
@@ -108,7 +109,7 @@ export default async function ArticlePage({ params }: Props) {
             <TableOfContents nodes={headings} />
           </div>
         ) : <div />}
-        <div className={`${styles.body} prose`}><Content /></div>
+        <div className={`${styles.body} prose`}><ArticleReveal><Content /></ArticleReveal></div>
         <PostReactions slug={slug} />
       </div>
 

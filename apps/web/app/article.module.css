@@ -17,6 +17,12 @@
 .tocColumn { position: absolute; top: clamp(2rem, 4vw, 3.5rem); right: calc(100% + clamp(1.5rem, 3vw, 3rem)); width: 14rem; }
 /* Long-form typography is shared via the global `.prose` class (globals.css). */
 .body { min-width: 0; }
+.body :global([data-scroll-reveal="true"]) {
+  opacity: 0;
+  transform: translateY(1rem);
+  transition: opacity 440ms var(--ease-out), transform 440ms var(--ease-out);
+}
+.body :global([data-scroll-reveal="true"][data-revealed="true"]) { opacity: 1; transform: none; }
 .related { width: min(100%, 70rem); margin-top: var(--section-gap); }
 .related ul { margin: 0; padding: 0; list-style: none; }
 .related li { border-bottom: 1px solid var(--soft-line); }
@@ -34,4 +40,8 @@
   .heroInner { padding-top: .75rem; }
   .headerInner { padding: 2.5rem 0 1.75rem; }
   .headerInner h1 { font-size: clamp(2rem, 9vw, 3.2rem); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .body :global([data-scroll-reveal="true"]) { opacity: 1; transform: none; transition: none; }
 }

@@ -63,7 +63,7 @@ class SoundEngine {
   private samples = new Map<string, AudioBuffer>();
   private pending = new Map<string, Promise<void>>();
 
-  private _volume = 0.85;
+  private _volume = 0.95;
   private _muted = false;
   private _enabled = true;
 
@@ -330,32 +330,32 @@ class SoundEngine {
 const PRESETS: Record<SoundName, (e: SoundEngine, when: number, gain: number) => void> = {
   hover: (e, when, gain) => {
     e.tone(
-      { freq: 2100, type: "sine", dur: 0.09, attack: 0.004, release: 0.08, peak: 0.045, detune: (Math.random() - 0.5) * 20, filter: { type: "highpass", freq: 900 }, reverb: 0.18, pan: 0.15 },
+      { freq: 880, type: "sine", dur: 0.09, attack: 0.004, release: 0.08, peak: 0.065, detune: (Math.random() - 0.5) * 14, filter: { type: "lowpass", freq: 1800 }, reverb: 0.18, pan: 0.15 },
       when,
       gain,
     );
   },
   tap: (e, when, gain) => {
-    e.tone({ freq: 660, type: "sine", dur: 0.1, attack: 0.004, release: 0.09, peak: 0.09, reverb: 0.16 }, when, gain);
-    e.noise({ dur: 0.05, type: "highpass", freq: 3200, peak: 0.055, reverb: 0.1 }, when, gain);
+    e.tone({ freq: 440, type: "sine", dur: 0.1, attack: 0.004, release: 0.09, peak: 0.12, reverb: 0.16 }, when, gain);
+    e.noise({ dur: 0.05, type: "bandpass", freq: 1800, peak: 0.065, reverb: 0.1 }, when, gain);
   },
   open: (e, when, gain) => {
-    e.tone({ freq: 523.25, type: "triangle", dur: 0.24, attack: 0.008, release: 0.24, peak: 0.11, reverb: 0.42, pan: -0.2 }, when, gain);
-    e.tone({ freq: 783.99, type: "sine", dur: 0.3, attack: 0.01, release: 0.3, peak: 0.09, reverb: 0.5, pan: 0.2 }, when + 0.06, gain);
+    e.tone({ freq: 392, type: "triangle", dur: 0.24, attack: 0.008, release: 0.24, peak: 0.13, reverb: 0.42, pan: -0.2 }, when, gain);
+    e.tone({ freq: 587.33, type: "sine", dur: 0.3, attack: 0.01, release: 0.3, peak: 0.11, reverb: 0.5, pan: 0.2 }, when + 0.06, gain);
   },
   close: (e, when, gain) => {
-    e.tone({ freq: 659.25, type: "triangle", dur: 0.22, attack: 0.008, release: 0.22, peak: 0.1, reverb: 0.38, pan: 0.2 }, when, gain);
-    e.tone({ freq: 440, type: "sine", dur: 0.28, attack: 0.01, release: 0.28, peak: 0.09, reverb: 0.44, pan: -0.2 }, when + 0.06, gain);
+    e.tone({ freq: 523.25, type: "triangle", dur: 0.22, attack: 0.008, release: 0.22, peak: 0.12, reverb: 0.38, pan: 0.2 }, when, gain);
+    e.tone({ freq: 349.23, type: "sine", dur: 0.28, attack: 0.01, release: 0.28, peak: 0.11, reverb: 0.44, pan: -0.2 }, when + 0.06, gain);
   },
   confirm: (e, when, gain) => {
-    e.tone({ freq: 587.33, type: "sine", dur: 0.34, attack: 0.01, release: 0.34, peak: 0.11, reverb: 0.5, pan: -0.12 }, when, gain);
-    e.tone({ freq: 880, type: "sine", dur: 0.36, attack: 0.012, release: 0.36, peak: 0.09, reverb: 0.55, pan: 0.12 }, when, gain);
+    e.tone({ freq: 440, type: "sine", dur: 0.34, attack: 0.01, release: 0.34, peak: 0.13, reverb: 0.5, pan: -0.12 }, when, gain);
+    e.tone({ freq: 659.25, type: "sine", dur: 0.36, attack: 0.012, release: 0.36, peak: 0.11, reverb: 0.55, pan: 0.12 }, when + 0.06, gain);
   },
   toggle: (e, when, gain) => {
-    e.tone({ freq: 880, type: "sine", dur: 0.12, attack: 0.005, release: 0.11, peak: 0.09, reverb: 0.22 }, when, gain);
+    e.tone({ freq: 554.37, type: "sine", dur: 0.12, attack: 0.005, release: 0.11, peak: 0.12, reverb: 0.22 }, when, gain);
   },
   next: (e, when, gain) => {
-    e.tone({ freq: 988, type: "sine", dur: 0.1, attack: 0.004, release: 0.09, peak: 0.08, glideTo: 1180, reverb: 0.2, pan: 0.1 }, when, gain);
+    e.tone({ freq: 659.25, type: "sine", dur: 0.1, attack: 0.004, release: 0.09, peak: 0.11, glideTo: 783.99, reverb: 0.2, pan: 0.1 }, when, gain);
   },
   error: (e, when, gain) => {
     e.tone({ freq: 174.61, type: "sine", dur: 0.4, attack: 0.012, release: 0.4, peak: 0.12, reverb: 0.4 }, when, gain);

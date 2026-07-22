@@ -61,7 +61,7 @@
 
 * { box-sizing: border-box; }
 
-html { background: var(--background); overflow-anchor: none; scroll-behavior: auto; }
+html { background: var(--background); overflow-anchor: none; scroll-behavior: smooth; }
 
 body {
   margin: 0;

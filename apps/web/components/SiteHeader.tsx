@@ -20,7 +20,6 @@ const accents = ["green", "blue", "rust", "gold"] as const;
 const fontSizes = ["small", "medium", "large"] as const;
 
 const links = [
-  { href: "/home", label: "Home" },
   { href: "/blog", label: "Blog" },
   { href: "/projects", label: "Projects" },
   { href: "/tools", label: "Tools" },

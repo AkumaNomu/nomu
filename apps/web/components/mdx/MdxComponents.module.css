@@ -2,6 +2,24 @@
   margin-block: 2rem;
 }
 
+.headingLink {
+  color: inherit;
+  text-decoration: none !important;
+}
+
+.headingLink::after {
+  display: inline-block;
+  margin-left: 0.45rem;
+  color: var(--accent);
+  content: "#";
+  opacity: 0;
+  transform: translateX(-0.2rem);
+  transition: opacity 160ms var(--ease-out), transform 160ms var(--ease-out);
+}
+
+.headingLink:hover::after,
+.headingLink:focus-visible::after { opacity: 1; transform: none; }
+
 .callout,
 .aside {
   border: 1px solid var(--line);

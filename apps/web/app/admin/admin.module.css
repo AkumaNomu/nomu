@@ -1,67 +1,221 @@
 .container {
-  max-width: 900px;
+  max-width: 1200px;
   margin: 0 auto;
-  padding: 2rem 1.5rem;
+  padding: 2rem 1.5rem 4rem;
   min-height: 100vh;
 }
 
 .container h1 {
-  font-size: 2.2rem;
-  margin-bottom: 2rem;
+  font-size: clamp(2rem, 4vw, 2.75rem);
+  margin-bottom: 0.75rem;
   color: var(--foreground);
+}
+
+.intro {
+  max-width: 72ch;
+  margin: 0 0 2rem;
+  color: var(--muted);
+  line-height: 1.6;
 }
 
 .section {
-  margin-bottom: 3rem;
+  margin-bottom: 2rem;
   padding: 1.5rem;
   border: 1px solid var(--line);
-  border-radius: 0.85rem;
-  background: rgba(255, 255, 255, 0.02);
+  border-radius: 1rem;
+  background: rgba(255, 255, 255, 0.03);
 }
 
-.section h2 {
-  font-size: 1.3rem;
-  margin-bottom: 1.5rem;
-  color: var(--foreground);
+.sectionHeader {
+  display: grid;
+  gap: 0.35rem;
+  margin-bottom: 1.25rem;
 }
 
-.form {
+.sectionHeader h2 {
+  margin: 0;
+  font-size: 1.25rem;
+}
+
+.sectionHeader p {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+.editorGrid,
+.list {
   display: grid;
   gap: 1rem;
 }
 
+.card,
+.rowCard {
+  border: 1px solid var(--soft-line);
+  border-radius: 0.85rem;
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.cardSummary {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: flex-start;
+  padding: 1rem 1.1rem;
+  cursor: pointer;
+  list-style: none;
+}
+
+.cardSummary::-webkit-details-marker {
+  display: none;
+}
+
+.cardSummary strong,
+.rowCard strong {
+  display: block;
+  color: var(--foreground);
+  font-size: 1rem;
+}
+
+.cardSummary span,
+.rowCard p {
+  color: var(--muted);
+}
+
+.badges {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2rem;
+  padding: 0 0.7rem;
+  border-radius: 999px;
+  border: 1px solid var(--soft-line);
+  color: var(--muted);
+  font-size: 0.82rem;
+  white-space: nowrap;
+}
+
+.cardBody {
+  display: grid;
+  gap: 1rem;
+  padding: 0 1.1rem 1.1rem;
+}
+
+.inlineFields {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.checkRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.checkbox {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.65rem;
+  color: var(--foreground);
+}
+
+.checkbox input {
+  width: 1rem;
+  height: 1rem;
+}
+
+.form,
+.cardBody label {
+  display: grid;
+  gap: 0.5rem;
+}
+
 .form input,
-.form button {
-  padding: 0.75rem;
+.form button,
+.cardBody input,
+.cardBody textarea,
+.cardBody select,
+.rowActions select,
+.rowActions button,
+.actions button {
+  padding: 0.75rem 0.85rem;
   border: 1px solid var(--line);
-  border-radius: 0.65rem;
+  border-radius: 0.7rem;
   font-size: 0.95rem;
   font-family: inherit;
   background: transparent;
   color: var(--foreground);
 }
 
-.form input::placeholder {
+.cardBody textarea,
+.codeArea {
+  resize: vertical;
+}
+
+.form input::placeholder,
+.cardBody input::placeholder,
+.cardBody textarea::placeholder {
   color: var(--muted);
 }
 
 .form input:focus,
-.form button:focus {
+.form button:focus,
+.cardBody input:focus,
+.cardBody textarea:focus,
+.cardBody select:focus,
+.rowActions select:focus,
+.rowActions button:focus,
+.actions button:focus {
   outline: none;
   border-color: var(--foreground);
 }
 
-.form button {
-  background: rgba(9, 9, 9, 0.08);
-  cursor: pointer;
-  font-weight: 600;
-  padding: 0.9rem;
-  transition: all 180ms ease;
+.codeArea {
+  min-height: 16rem;
+  font-family: "Geist Mono", monospace;
+  line-height: 1.5;
 }
 
-.form button:hover {
-  background: rgba(9, 9, 9, 0.12);
-  border-color: var(--foreground);
+.actions,
+.rowActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.actions button,
+.rowActions button {
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.secondaryButton {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.dangerButton {
+  border-color: rgba(217, 119, 119, 0.5);
+  color: #f1a2a2;
+}
+
+.rowCard {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+  padding: 1rem 1.1rem;
+}
+
+.bodyText {
+  white-space: pre-wrap;
+  line-height: 1.55;
 }
 
 .error {
@@ -74,30 +228,17 @@
   font-size: 0.9rem;
 }
 
-.tracklist {
-  display: grid;
-  gap: 1rem;
-}
+@media (max-width: 860px) {
+  .cardSummary,
+  .rowCard {
+    flex-direction: column;
+  }
 
-.trackItem {
-  padding: 1rem;
-  border: 1px solid var(--soft-line);
-  border-radius: 0.65rem;
-  background: rgba(255, 255, 255, 0.02);
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 1rem;
-}
+  .badges {
+    justify-content: flex-start;
+  }
 
-.trackItem strong {
-  display: block;
-  color: var(--foreground);
-  font-weight: 600;
-}
-
-.trackItem small {
-  color: var(--muted);
-  display: block;
-  margin-top: 0.3rem;
+  .inlineFields {
+    grid-template-columns: 1fr;
+  }
 }

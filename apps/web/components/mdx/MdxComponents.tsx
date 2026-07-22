@@ -159,7 +159,7 @@ type HeadingTag = "h2" | "h3" | "h4";
 function makeHeading(Tag: HeadingTag) {
   function Heading({ children, id, ...props }: ComponentPropsWithoutRef<HeadingTag>) {
     const generatedId = id ?? (slugifyHeading(headingText(children)) || undefined);
-    return <Tag id={generatedId} {...props}>{children}</Tag>;
+    return <Tag id={generatedId} {...props}>{generatedId ? <a className={styles.headingLink} href={`#${generatedId}`} aria-label={`Link to ${headingText(children)}`}>{children}</a> : children}</Tag>;
   }
   Heading.displayName = `Mdx${Tag.toUpperCase()}`;
   return Heading;

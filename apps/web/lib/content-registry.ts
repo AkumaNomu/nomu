@@ -1,6 +1,5 @@
 import type { ComponentType } from "react";
 import AboutPage from "@/content/pages/about.mdx";
-import HomePage from "@/content/pages/home.mdx";
 import MaiProject from "@/content/projects/mai.mdx";
 import MicroCode20Project from "@/content/projects/micro-code-2-0.mdx";
 import NomuSiteProject from "@/content/projects/nomu-site.mdx";
@@ -51,6 +50,5 @@ export const toolRegistry = {
 } satisfies Record<string, MdxContent>;
 
 export const pageRegistry = {
-  home: HomePage,
   about: AboutPage,
 } satisfies Record<string, MdxContent>;

@@ -54,6 +54,23 @@ export default async function ProjectPage({ params }: Props) {
   const index = projects.findIndex((entry) => entry.metadata.slug === slug);
   const previous = index > 0 ? projects[index - 1] : undefined;
   const next = index >= 0 && index < projects.length - 1 ? projects[index + 1] : undefined;
+  const timeline = [
+    {
+      label: String(project.metadata.year),
+      title: "Project started",
+      description: project.metadata.description,
+    },
+    {
+      label: project.metadata.role ?? "Independent",
+      title: "Primary role",
+      description: "Discipline leading the direction and delivery of this work.",
+    },
+    {
+      label: statusLabel[project.metadata.status],
+      title: "Current status",
+      description: project.metadata.technologies.join(" · "),
+    },
+  ];
   const data = {
     "@context": "https://schema.org",
     "@type": "CreativeWork",
@@ -88,7 +105,25 @@ export default async function ProjectPage({ params }: Props) {
       ) : null}
 
       <div className={styles.layout}>
-        <div className={`${styles.body} prose`}><Content /></div>
+        <div className={styles.body}>
+          <section className={styles.timelineBlock} aria-labelledby="project-timeline-heading">
+            <p className={styles.timelineEyebrow}>Project timeline</p>
+            <h2 id="project-timeline-heading" className={styles.timelineHeading}>From brief to current state</h2>
+            <ol className={styles.timeline} aria-label={`${project.metadata.title} timeline`}>
+              {timeline.map((entry) => (
+                <li className={styles.timelineItem} key={`${entry.label}-${entry.title}`}>
+                  <span className={styles.timelineMarker} aria-hidden="true" />
+                  <time className={styles.timelineLabel}>{entry.label}</time>
+                  <div className={styles.timelineContent}>
+                    <strong>{entry.title}</strong>
+                    <p>{entry.description}</p>
+                  </div>
+                </li>
+              ))}
+            </ol>
+          </section>
+          <div className="prose"><Content /></div>
+        </div>
         <aside className={styles.sidebar}>
           <dl className={styles.meta}>
             <div><dt>Role</dt><dd>{project.metadata.role ?? "Independent"}</dd></div>

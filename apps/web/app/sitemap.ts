@@ -3,7 +3,7 @@ import { getAllBlog, getAllProjects, getAllResources, getAllTools } from "@/lib/
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const origin = process.env.NEXT_PUBLIC_SITE_URL ?? "https://nomu.dev";
-  const staticPages = ["", "/home", "/blog", "/projects", "/tools", "/resources", "/about"];
+  const staticPages = ["", "/blog", "/projects", "/tools", "/resources", "/about"];
   return [
     ...staticPages.map((path) => ({ url: `${origin}${path}`, changeFrequency: "monthly" as const, priority: path === "" ? 1 : 0.8 })),
     ...getAllBlog().map(({ metadata }) => ({ url: `${origin}/blog/${metadata.slug}`, lastModified: metadata.updatedAt ?? metadata.publishedAt, changeFrequency: "yearly" as const, priority: 0.7 })),
