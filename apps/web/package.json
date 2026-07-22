@@ -6,7 +6,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint .",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "sync:tracks": "node scripts/sync-tracks.mjs"
   },
   "dependencies": {
     "@chenglou/pretext": "0.0.8",
@@ -49,6 +50,7 @@
     "@types/react-dom": "^19.2.0",
     "eslint": "9.39.5",
     "eslint-config-next": "16.2.10",
+    "music-metadata": "^11.14.0",
     "typescript": "5.9.3"
   }
 }

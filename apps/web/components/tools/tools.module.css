@@ -53,6 +53,20 @@
 .ratioTable th, .ratioTable td { border-bottom: 1px solid var(--soft-line, rgba(9,9,9,.09)); padding: 0.85rem 0.5rem; text-align: left; }
 .ratioTable th { color: var(--muted, #6f6b65); font-size: 0.72rem; letter-spacing: 0.1em; text-transform: uppercase; }
 .error { margin: 0; color: #9b1c1c; font-weight: 600; }
+.fileDrop {
+  display: grid; gap: 0.3rem; min-height: 7rem; place-content: center; border: 1px dashed var(--line, rgba(9,9,9,.32));
+  padding: 1.5rem; cursor: pointer; text-align: center;
+}
+.fileDrop span { font-weight: 650; }
+.fileDrop small { color: var(--muted, #6f6b65); }
+.imagePreview { display: block; width: 100%; max-height: 28rem; border: 1px solid var(--soft-line, rgba(9,9,9,.09)); object-fit: contain; }
+.range { width: 100%; accent-color: var(--foreground, #090909); }
+.toggle { display: inline-flex; min-height: 48px; align-items: center; gap: 0.65rem; border-bottom: 1px solid var(--foreground, #090909); }
+.tabs { display: flex; flex-wrap: wrap; gap: 0.5rem; border-bottom: 1px solid var(--soft-line, rgba(9,9,9,.09)); padding-bottom: 1rem; }
+.tab, .tabActive { min-height: 40px; border: 1px solid var(--line, rgba(9,9,9,.18)); padding: 0.5rem 0.8rem; background: transparent; color: inherit; font: inherit; cursor: pointer; }
+.tabActive { background: var(--foreground, #090909); color: var(--background, #f5f3ee); }
+.checkerSection { display: grid; gap: 0.85rem; }
+.keyReadout { margin: 0; border-block: 1px solid var(--soft-line, rgba(9,9,9,.09)); padding: 1.2rem 0; font-size: clamp(1.45rem, 4vw, 2.5rem); font-variant-numeric: tabular-nums; }
 
 @media (max-width: 700px) {
   .grid { grid-template-columns: 1fr; }

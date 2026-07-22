@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
+import type { Route } from "next";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { Plus, X } from "lucide-react";
 import styles from "./page.module.css";
@@ -127,7 +128,7 @@ export function QuickAccessGrid() {
           if (tool) {
             return (
               <div className={styles.quickSlot} key={index}>
-                <Link className={styles.quickCard} href={`/tools/${tool.slug}`} aria-label={`Open ${tool.name}`}>
+                <Link className={styles.quickCard} href={`/tools/${tool.slug}` as Route} aria-label={`Open ${tool.name}`}>
                   <ToolGlyph kind={tool.icon} />
                 </Link>
                 <button

@@ -3,7 +3,7 @@
 import { FormEvent, useState } from "react";
 import styles from "./tools.module.css";
 
-type Format = "mp3_128" | "mp3_192" | "mp3_320" | "wav" | "m4a";
+type Format = "mp3_128" | "mp3_192" | "mp3_320" | "wav" | "m4a" | "mp4_720";
 
 const FORMATS: { value: Format; label: string; desc: string }[] = [
   { value: "mp3_128", label: "MP3 128 kbps", desc: "Small file, good for streaming" },
@@ -11,6 +11,7 @@ const FORMATS: { value: Format; label: string; desc: string }[] = [
   { value: "mp3_320", label: "MP3 320 kbps", desc: "Highest MP3 quality" },
   { value: "m4a", label: "M4A (AAC)", desc: "Better compression than MP3" },
   { value: "wav", label: "WAV", desc: "Lossless, uncompressed" },
+  { value: "mp4_720", label: "MP4 up to 720p", desc: "Video, capped for faster downloads" },
 ];
 
 export function YoutubeDownloader() {
@@ -23,7 +24,7 @@ export function YoutubeDownloader() {
   async function handleDownload(e: FormEvent) {
     e.preventDefault();
     if (!url.trim()) {
-      setError("Enter a YouTube URL");
+      setError("Enter a supported media URL");
       return;
     }
 
@@ -47,7 +48,7 @@ export function YoutubeDownloader() {
       const dlUrl = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = dlUrl;
-      a.download = `download.${format.includes("mp3") ? "mp3" : format}`;
+      a.download = `download.${format.includes("mp3") ? "mp3" : format === "mp4_720" ? "mp4" : format}`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
@@ -70,7 +71,7 @@ export function YoutubeDownloader() {
         <div className={styles.inputGroup}>
           <input
             type="url"
-            placeholder="Paste YouTube URL"
+            placeholder="Paste YouTube, SoundCloud, Vimeo, TikTok... URL"
             value={url}
             onChange={(e) => setUrl(e.target.value)}
             disabled={loading}
@@ -108,8 +109,8 @@ export function YoutubeDownloader() {
       <div className={styles.info}>
         <h3>About</h3>
         <ul>
-          <li>Downloads audio from YouTube videos</li>
-          <li>Converts to MP3, M4A, or WAV format</li>
+          <li>Downloads from YouTube, SoundCloud, Vimeo, TikTok, Instagram, X, Twitch, and Facebook</li>
+          <li>Converts audio to MP3, M4A, or WAV, or downloads MP4 video up to 720p</li>
           <li>Embeds title and artist metadata</li>
           <li>MP3 supports 128, 192, and 320 kbps quality</li>
           <li>Files download to your device — nothing stored</li>

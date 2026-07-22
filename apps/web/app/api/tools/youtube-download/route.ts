@@ -18,17 +18,33 @@ const FORMATS = {
   mp3_320: { codec: "libmp3lame", bitrate: "320k", extension: "mp3" },
   wav: { codec: "pcm_s16le", bitrate: "", extension: "wav" },
   m4a: { codec: "aac", bitrate: "192k", extension: "m4a" },
+  mp4_720: { codec: "", bitrate: "", extension: "mp4" },
 } as const;
 
 type Format = keyof typeof FORMATS;
 
-async function downloadYoutube(url: string, format: Format) {
+const SUPPORTED_HOSTS = new Set([
+  "youtube.com", "youtu.be", "soundcloud.com", "vimeo.com", "tiktok.com",
+  "instagram.com", "x.com", "twitter.com", "twitch.tv", "facebook.com",
+]);
+
+function isSupportedUrl(value: string) {
+  try {
+    const { protocol, hostname } = new URL(value);
+    const host = hostname.toLowerCase().replace(/^www\./, "");
+    return protocol === "https:" && [...SUPPORTED_HOSTS].some((domain) => host === domain || host.endsWith(`.${domain}`));
+  } catch {
+    return false;
+  }
+}
+
+async function downloadMedia(url: string, format: Format) {
   if (!Object.keys(FORMATS).includes(format)) {
     throw new Error("Invalid format");
   }
 
-  if (!/^https?:\/\/(www\.)?(youtube\.com|youtu\.be)\//.test(url)) {
-    throw new Error("Invalid YouTube URL");
+  if (!isSupportedUrl(url)) {
+    throw new Error("Unsupported media URL");
   }
 
   if (!ffmpegPath) {
@@ -44,7 +60,18 @@ async function downloadYoutube(url: string, format: Format) {
     // Fetch metadata (execa-based, no shell — safe against untrusted URLs)
     const info = await ytdlp(url, { dumpJson: true, noWarnings: true }) as { title?: string; uploader?: string };
     const title = info.title || "download";
-    const artist = info.uploader || "YouTube";
+    const artist = info.uploader || "Media";
+
+    if (format === "mp4_720") {
+      await ytdlp(url, {
+        format: "bestvideo[height<=720][ext=mp4]+bestaudio[ext=m4a]/best[height<=720][ext=mp4]",
+        mergeOutputFormat: "mp4",
+        noPlaylist: true,
+        output: outputFile,
+      }, { timeout: 45000 });
+
+      return await readFile(outputFile);
+    }
 
     // Download best audio track
     await ytdlp(url, { format: "bestaudio", output: audioFile }, { timeout: 45000 });
@@ -61,21 +88,23 @@ async function downloadYoutube(url: string, format: Format) {
     ];
     await execFileAsync(ffmpegPath, ffmpegArgs, { timeout: 45000 });
 
-    // Read file and return
-    const stream = createReadStream(outputFile);
-    const chunks: Buffer[] = [];
-
-    return new Promise<Buffer>((resolve, reject) => {
-      stream.on("data", (chunk) => chunks.push(chunk as Buffer));
-      stream.on("end", () => resolve(Buffer.concat(chunks)));
-      stream.on("error", reject);
-    });
+    return await readFile(outputFile);
   } finally {
     try {
       unlinkSync(audioFile);
       unlinkSync(outputFile);
     } catch {}
   }
+}
+
+async function readFile(path: string) {
+  const stream = createReadStream(path);
+  const chunks: Buffer[] = [];
+  return new Promise<Buffer>((resolve, reject) => {
+    stream.on("data", (chunk) => chunks.push(chunk as Buffer));
+    stream.on("end", () => resolve(Buffer.concat(chunks)));
+    stream.on("error", reject);
+  });
 }
 
 export async function POST(request: NextRequest) {
@@ -86,19 +115,19 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "URL and format required" }, { status: 400 });
     }
 
-    const buffer = await downloadYoutube(body.url, body.format);
+    const buffer = await downloadMedia(body.url, body.format);
     const fmt = FORMATS[body.format];
 
     return new NextResponse(new Uint8Array(buffer), {
       headers: {
-        "Content-Type": fmt.extension === "mp3" ? "audio/mpeg" : `audio/${fmt.extension}`,
+        "Content-Type": fmt.extension === "mp3" ? "audio/mpeg" : fmt.extension === "mp4" ? "video/mp4" : `audio/${fmt.extension}`,
         "Content-Disposition": `attachment; filename="download.${fmt.extension}"`,
         "Cache-Control": "no-cache",
       },
     });
   } catch (error) {
     const msg = String(error);
-    if (msg.includes("Invalid")) return NextResponse.json({ error: msg }, { status: 400 });
+    if (msg.includes("Invalid") || msg.includes("Unsupported")) return NextResponse.json({ error: msg }, { status: 400 });
     if (msg.includes("timeout")) return NextResponse.json({ error: "Download timeout - video too long" }, { status: 408 });
     return NextResponse.json({ error: "Download failed" }, { status: 500 });
   }
