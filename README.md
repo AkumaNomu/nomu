@@ -39,7 +39,7 @@ pnpm --filter web start
 
 - `apps/web`: Next.js App Router site and MDX content
 - `apps/video`: Remotion compositions and render entry point
-- `packages/design-system`: framework-light SVG icons
+- `packages/design-system`: lucide-react icon wrappers with fixed stroke/fill defaults
 - `packages/motion-system`: shared timing tokens and motion preference helpers
 - `packages/shared-scenes`: face-derived SVG geometry shared by web and video
 - `packages/content`: shared metadata schemas and types
@@ -78,16 +78,26 @@ Without the variable or schema, article comments show a clear setup state instea
 
 ### Add music
 
-Track metadata lives in `apps/web/lib/tracks.ts`. The included demo tracks use
-generated local WAV tones, so the repository contains no unlicensed music.
-Album art belongs in `apps/web/public/album-art`.
+The site-wide player and the public `/music` library both read from the
+`public.music` DB table, managed at `/admin` (title, artist, album, file
+path, artwork path, duration, lyrics/chords markdown, notes). Audio files and
+cover art are placed on disk by hand — there's no upload UI — matching the
+existing local-file workflow: drop an `.mp3` into `apps/web/public/audio/`,
+run `pnpm --filter web sync:tracks` to extract ID3 tags and cover art (square-
+cropped automatically via `pnpm --filter web crop:covers`, using the
+`ffmpeg-static` binary already in the workspace) into
+`apps/web/lib/tracks.generated.ts`. That generated file is the fallback
+source `AudioProvider` uses when the DB is empty or `DATABASE_URL` is unset;
+once tracks exist in `public.music` and are exposed at `/api/music`, they
+take over as the primary source. Track selection ("what plays on the site")
+is per-visitor (`localStorage`), never shared across visitors.
 
-Set `NEXT_PUBLIC_YOUTUBE_PLAYLIST_URL` to use a full YouTube or YouTube Music
-playlist URL, or set `NEXT_PUBLIC_YOUTUBE_PLAYLIST_ID` to use only the playlist
-id. You can also set `NEXT_PUBLIC_SOUNDCLOUD_PLAYLIST_URL` for SoundCloud.
-YouTube takes priority when both values exist. The global widget always offers
-the local playlist as a fallback. It persists the selected source, track, and
-volume while client-side navigation keeps playback alive.
+### Add a game
+
+Drop a self-contained HTML file into `apps/web/public/games/`, then register
+it at `/admin` (title, description, thumbnail path, file path). It's served
+in a sandboxed `<iframe>` on `/games/<slug>` — no upload pipeline, no bundle
+extraction, just a static file the site owner places directly.
 
 ## Animation architecture
 
@@ -118,4 +128,4 @@ The App Router produces page metadata, canonical links, sitemap, robots rules, R
 
 Deploy `apps/web` through any Node-compatible Next.js host. From the monorepo root, install with pnpm and run `pnpm --filter web build`. Configure `DATABASE_URL` in the host when using comments. Do not deploy the Remotion studio with the web runtime; render assets separately and copy final media into `apps/web/public`.
 
-More detail: `ARCHITECTURE.md`, `CONTENT_GUIDE.md`, `MOTION_GUIDE.md`, and `DESIGN_SYSTEM.md`.
+More detail: `ARCHITECTURE.md` (system boundaries), `SITE_MAP.md` (every route/API/table), `MEMORY.md` (why things are the way they are), `AGENTS.md` (conventions for AI coding agents), `CONTENT_GUIDE.md`, `MOTION_GUIDE.md`, and `DESIGN_SYSTEM.md`.

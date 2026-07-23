@@ -4,6 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { useDeferredValue, useMemo, useState } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
+import { LayoutGrid, List } from "lucide-react";
 import { SearchIcon } from "@personal/design-system";
 import styles from "@/app/collections.module.css";
 
@@ -44,10 +45,10 @@ export function BlogSearch({ articles }: { articles: SearchArticle[] }) {
       </nav>
       <div className={styles.viewToggle} aria-label="Post view">
         <button type="button" aria-label="Grid view" title="Grid view" aria-pressed={view === "grid"} onClick={() => setView("grid")}>
-          <svg aria-hidden="true" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+          <LayoutGrid aria-hidden="true" />
         </button>
         <button type="button" aria-label="List view" title="List view" aria-pressed={view === "list"} onClick={() => setView("list")}>
-          <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>
+          <List aria-hidden="true" />
         </button>
       </div>
     </div>

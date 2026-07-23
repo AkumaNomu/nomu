@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import type { CSSProperties } from "react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ChevronDown, Music2, Volume2, VolumeX } from "lucide-react";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { PauseIcon, PlayIcon, SkipIcon } from "@personal/design-system";
@@ -10,7 +10,10 @@ import { sound } from "@/lib/audio/soundEngine";
 import type { Track } from "@/lib/tracks";
 import styles from "./MusicPlayer.module.css";
 
-type PlayerState = "icon" | "expanded";
+type PlayerState = "icon" | "floating" | "expanded";
+
+const FLOATING_HIDE_DELAY = 15000;
+const WAVE_BAR_HEIGHTS = ["0.4rem", "0.85rem", "0.6rem", "1rem", "0.5rem"];
 
 export type MusicWidgetProps = {
   currentTrack: Track;
@@ -28,19 +31,26 @@ export type MusicWidgetProps = {
 export function MusicWidget({ currentTrack, playing, volume, next, playPause, previous, setVolume }: MusicWidgetProps) {
   const reducedMotion = useReducedMotion();
   const [state, setState] = useState<PlayerState>("icon");
+  const hideTimer = useRef<number | null>(null);
 
-  useEffect(() => {
-    if (state !== "expanded") return;
-    const timeout = window.setTimeout(() => setState("icon"), 3600);
-    return () => window.clearTimeout(timeout);
-  }, [state]);
+  const clearHideTimer = () => {
+    if (hideTimer.current === null) return;
+    window.clearTimeout(hideTimer.current);
+    hideTimer.current = null;
+  };
+  const scheduleHide = () => {
+    clearHideTimer();
+    hideTimer.current = window.setTimeout(() => setState("icon"), FLOATING_HIDE_DELAY);
+  };
+
+  useEffect(() => () => clearHideTimer(), []);
 
   const enter = reducedMotion ? { duration: 0 } : { duration: 0.26, ease: [0.16, 1, 0.3, 1] as const };
   const exit = reducedMotion ? { duration: 0 } : { duration: 0.16, ease: [0.4, 0, 1, 1] as const };
 
-  // A single AnimatePresence around the two mutually-exclusive layouts so the
+  // A single AnimatePresence around the three mutually-exclusive layouts so the
   // outgoing pill actually plays its exit animation instead of vanishing the
-  // instant React swaps it out for the other one.
+  // instant React swaps it out for another one.
   return (
     // No mode="wait": the incoming pill crossfades in immediately alongside the
     // outgoing one's exit, so switching states feels instant, not delayed.
@@ -55,7 +65,7 @@ export function MusicWidget({ currentTrack, playing, volume, next, playPause, pr
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={reducedMotion ? undefined : { opacity: 0, scale: 0.9, y: 10, transition: exit }}
           transition={enter}
-          onPointerEnter={() => setState("expanded")}
+          onPointerEnter={() => { clearHideTimer(); setState("floating"); }}
         >
           <div className={styles.miniPill}>
             <button
@@ -65,11 +75,46 @@ export function MusicWidget({ currentTrack, playing, volume, next, playPause, pr
               aria-expanded="false"
               aria-label={`Open music player: ${currentTrack.title} by ${currentTrack.artist}`}
               title="Open music player"
-              onClick={() => { sound.play("open"); setState("expanded"); }}
+              onClick={() => { sound.play("open"); clearHideTimer(); setState("expanded"); }}
             >
               <Music2 aria-hidden="true" />
             </button>
           </div>
+        </motion.aside>
+      ) : state === "floating" ? (
+        <motion.aside
+          key="floating"
+          className={`${styles.widget} ${styles.mini}`}
+          aria-label="Site music player"
+          data-state="floating"
+          initial={reducedMotion ? false : { opacity: 0, scale: 0.94, y: 6 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          exit={reducedMotion ? undefined : { opacity: 0, scale: 0.94, y: 6, transition: exit }}
+          transition={enter}
+          onPointerEnter={clearHideTimer}
+          onPointerLeave={scheduleHide}
+        >
+          <button
+            className={styles.floatingPill}
+            type="button"
+            aria-controls="site-music-panel"
+            aria-expanded="false"
+            aria-label={`Open music player: ${currentTrack.title} by ${currentTrack.artist}`}
+            title="Open music player"
+            onClick={() => { sound.play("open"); clearHideTimer(); setState("expanded"); }}
+          >
+            <span className={styles.miniArt}>
+              <Image src={currentTrack.artwork} width={48} height={48} alt="" />
+            </span>
+            <span className={styles.floatingTitle}>{currentTrack.title}</span>
+            <span className={`${styles.wave} ${playing ? styles.wavePlaying : ""}`}>
+              <span className={styles.waveRow}>
+                {WAVE_BAR_HEIGHTS.map((height, index) => (
+                  <i key={index} style={{ "--h": height, "--i": index } as CSSProperties} />
+                ))}
+              </span>
+            </span>
+          </button>
         </motion.aside>
       ) : (
         <motion.aside
@@ -81,12 +126,12 @@ export function MusicWidget({ currentTrack, playing, volume, next, playPause, pr
           animate={{ opacity: 1, y: 0 }}
           exit={reducedMotion ? undefined : { opacity: 0, y: 10, transition: exit }}
           transition={enter}
-          onPointerEnter={() => setState("expanded")}
         >
           <div className={styles.expandedPill} id="site-music-panel">
-            <span className={styles.exArt}>
+            <button className={styles.exArt} type="button" onClick={playPause} aria-label={playing ? "Pause" : "Play"} aria-pressed={playing} title={playing ? "Pause" : "Play"}>
               <Image src={currentTrack.artwork} width={60} height={60} priority alt={`${currentTrack.album} album cover`} />
-            </span>
+              <span className={styles.exArtOverlay} aria-hidden="true">{playing ? <PauseIcon /> : <PlayIcon />}</span>
+            </button>
 
             <div className={styles.exCopy} aria-live="polite">
               <strong>{currentTrack.title}</strong>

@@ -7,7 +7,8 @@
     "start": "next start",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
-    "sync:tracks": "node scripts/sync-tracks.mjs"
+    "sync:tracks": "node scripts/sync-tracks.mjs",
+    "crop:covers": "node scripts/crop-covers.mjs"
   },
   "dependencies": {
     "@chenglou/pretext": "0.0.8",

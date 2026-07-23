@@ -1,5 +1,6 @@
 import { getCurrentUser } from "@/lib/auth";
 import { commentsDb } from "@/lib/db";
+import { slugify } from "@/lib/slugify";
 import { NextRequest, NextResponse } from "next/server";
 
 async function requireAdmin() {
@@ -21,7 +22,7 @@ export async function GET() {
     if (!commentsDb) return NextResponse.json({ error: "Database not configured" }, { status: 500 });
 
     const tracks = await commentsDb`
-      SELECT id, title, artist, album, file_path, artwork_path, duration_ms, created_at
+      SELECT id, title, artist, album, file_path, artwork_path, duration_ms, slug, lyrics_md, notes_md, created_at
       FROM public.music
       ORDER BY created_at DESC
     `;
@@ -37,11 +38,17 @@ export async function POST(req: NextRequest) {
     const user = await requireAdmin();
     if (!commentsDb) return NextResponse.json({ error: "Database not configured" }, { status: 500 });
 
-    const body = await req.json() as { title: string; artist: string; album: string; file_path: string; artwork_path?: string; duration_ms?: number };
+    const body = await req.json() as { title: string; artist: string; album: string; file_path: string; artwork_path?: string; duration_ms?: number; slug?: string; lyrics_md?: string; notes_md?: string };
+
+    const base = slugify(body.slug || `${body.title}-${body.artist}`);
+    const taken = await commentsDb`SELECT slug FROM public.music WHERE slug LIKE ${base + "%"}` as { slug: string }[];
+    const takenSet = new Set(taken.map((row) => row.slug));
+    let slug = base;
+    for (let n = 2; takenSet.has(slug); n += 1) slug = `${base}-${n}`;
 
     const result = await commentsDb`
-      INSERT INTO public.music (title, artist, album, file_path, artwork_path, duration_ms)
-      VALUES (${body.title}, ${body.artist}, ${body.album}, ${body.file_path}, ${body.artwork_path || null}, ${body.duration_ms || null})
+      INSERT INTO public.music (title, artist, album, file_path, artwork_path, duration_ms, slug, lyrics_md, notes_md)
+      VALUES (${body.title}, ${body.artist}, ${body.album}, ${body.file_path}, ${body.artwork_path || null}, ${body.duration_ms || null}, ${slug}, ${body.lyrics_md || null}, ${body.notes_md || null})
       RETURNING *
     `;
 

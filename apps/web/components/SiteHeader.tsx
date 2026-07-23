@@ -4,8 +4,7 @@ import type { Route } from "next";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
-import { Check, Moon, Volume2, VolumeX } from "lucide-react";
-import { AccountPanel } from "@/components/account/AccountPanel";
+import { Check, FolderKanban, Gamepad2, Library, Moon, Music, Newspaper, Settings, User, Volume2, VolumeX, Wrench, X } from "lucide-react";
 import { useSound } from "@/components/audio/SoundProvider";
 import { sound } from "@/lib/audio/soundEngine";
 import styles from "./SiteHeader.module.css";
@@ -22,11 +21,13 @@ const accents = ["green", "blue", "rust", "gold"] as const;
 const fontSizes = ["small", "medium", "large"] as const;
 
 const links = [
-  { href: "/blog", label: "Blog" },
-  { href: "/projects", label: "Projects" },
-  { href: "/tools", label: "Tools" },
-  { href: "/resources", label: "Resources" },
-  { href: "/about", label: "About" }
+  { href: "/blog", label: "Blog", icon: Newspaper },
+  { href: "/projects", label: "Projects", icon: FolderKanban },
+  { href: "/music", label: "Music", icon: Music },
+  { href: "/games", label: "Games", icon: Gamepad2 },
+  { href: "/tools", label: "Tools", icon: Wrench },
+  { href: "/resources", label: "Resources", icon: Library },
+  { href: "/about", label: "About", icon: User }
 ] as const;
 
 function applyPreferences(preferences: Preferences) {
@@ -39,6 +40,7 @@ function applyPreferences(preferences: Preferences) {
 function AppearanceSettings() {
   const [preferences, setPreferences] = useState(defaults);
   const { volume, muted, setMuted, setVolume } = useSound();
+  const [open, setOpen] = useState(false);
 
   useEffect(() => {
     const frame = requestAnimationFrame(() => {
@@ -65,50 +67,77 @@ function AppearanceSettings() {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
   };
 
+  const close = () => { sound.play("close"); setOpen(false); };
+
+  useEffect(() => {
+    if (!open) return;
+    function onKey(event: KeyboardEvent) { if (event.key === "Escape") close(); }
+    document.addEventListener("keydown", onKey);
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.removeEventListener("keydown", onKey);
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [open]);
+
   return (
-    <details className={styles.settings}>
-      <summary aria-label="Site settings" title="Site settings">
-        <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M12 3v2m0 14v2M3 12h2m14 0h2M5.6 5.6 7 7m10 10 1.4 1.4M18.4 5.6 17 7M7 17l-1.4 1.4"/><circle cx="12" cy="12" r="4"/></svg>
-      </summary>
-      <section className={styles.settingsPanel} aria-label="Site settings">
-        <div className={styles.settingsGroup}>
-          <div className={styles.settingsTitle}><strong>Account</strong></div>
-          <AccountPanel kind="settings" />
+    <>
+      <button
+        className={styles.settingsTrigger}
+        type="button"
+        aria-label="Site settings"
+        title="Site settings"
+        aria-haspopup="dialog"
+        aria-expanded={open}
+        onClick={() => { sound.play("open"); setOpen(true); }}
+      >
+        <Settings aria-hidden="true" />
+      </button>
+
+      {open ? (
+        <div className={styles.settingsBackdrop} role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) close(); }}>
+          <section className={styles.settingsPanel} role="dialog" aria-modal="true" aria-label="Site settings">
+            <div className={styles.settingsPanelHeader}>
+              <strong>Settings</strong>
+              <button className={styles.settingsClose} type="button" aria-label="Close settings" onClick={close}>
+                <X aria-hidden="true" />
+              </button>
+            </div>
+
+            <div className={styles.settingsGroup}>
+              <div className={styles.settingsTitle}><strong>Appearance</strong></div>
+              <button className={styles.themeToggle} type="button" aria-pressed={preferences.theme === "dark"} onClick={() => update({ theme: preferences.theme === "dark" ? "light" : "dark" })}>
+                <span className={styles.themeIcon}><Moon aria-hidden="true" /></span>
+                <span className={styles.themeLabel}>Dark theme</span>
+                <span className={styles.themeSwitch} aria-hidden="true"><span>{preferences.theme === "dark" ? <Check /> : null}</span></span>
+              </button>
+            </div>
+
+            <fieldset className={styles.settingsFieldset}>
+              <legend>Accent color</legend>
+              <div className={styles.swatches}>
+                {accents.map((accent) => <button key={accent} type="button" data-color={accent} aria-label={accent} title={accent} aria-pressed={preferences.accent === accent} onClick={() => update({ accent })} />)}
+              </div>
+            </fieldset>
+            <fieldset className={styles.settingsFieldset}>
+              <legend>Font size</legend>
+              <div className={styles.fontSizes}>
+                {fontSizes.map((fontSize) => <button key={fontSize} type="button" aria-pressed={preferences.fontSize === fontSize} onClick={() => update({ fontSize })}>{fontSize[0].toUpperCase() + fontSize.slice(1)}</button>)}
+              </div>
+            </fieldset>
+            <fieldset className={styles.settingsFieldset}>
+              <legend>Sound effects</legend>
+              <div className={styles.soundControl}>
+                <button type="button" aria-label={muted ? "Unmute sound effects" : "Mute sound effects"} title={muted ? "Unmute sound effects" : "Mute sound effects"} onClick={() => setMuted(!muted)}>{muted ? <VolumeX aria-hidden="true" /> : <Volume2 aria-hidden="true" />}</button>
+                <input aria-label="Sound effects volume" type="range" min="0" max="3" step="0.05" value={muted ? 0 : volume} onChange={(event) => { setMuted(false); setVolume(Number(event.target.value)); }} />
+                <output>{Math.round((muted ? 0 : volume) * 100)}%</output>
+              </div>
+            </fieldset>
+          </section>
         </div>
-
-        <div className={styles.settingsDivider} />
-
-        <div className={styles.settingsGroup}>
-          <div className={styles.settingsTitle}><strong>Appearance</strong></div>
-          <button className={styles.themeToggle} type="button" aria-pressed={preferences.theme === "dark"} onClick={() => update({ theme: preferences.theme === "dark" ? "light" : "dark" })}>
-            <span className={styles.themeIcon}><Moon aria-hidden="true" /></span>
-            <span className={styles.themeLabel}>Dark theme</span>
-            <span className={styles.themeSwitch} aria-hidden="true"><span>{preferences.theme === "dark" ? <Check /> : null}</span></span>
-          </button>
-        </div>
-
-        <fieldset className={styles.settingsFieldset}>
-          <legend>Accent color</legend>
-          <div className={styles.swatches}>
-            {accents.map((accent) => <button key={accent} type="button" data-color={accent} aria-label={accent} title={accent} aria-pressed={preferences.accent === accent} onClick={() => update({ accent })} />)}
-          </div>
-        </fieldset>
-        <fieldset className={styles.settingsFieldset}>
-          <legend>Font size</legend>
-          <div className={styles.fontSizes}>
-            {fontSizes.map((fontSize) => <button key={fontSize} type="button" aria-pressed={preferences.fontSize === fontSize} onClick={() => update({ fontSize })}>{fontSize[0].toUpperCase() + fontSize.slice(1)}</button>)}
-          </div>
-        </fieldset>
-        <fieldset className={styles.settingsFieldset}>
-          <legend>Sound effects</legend>
-          <div className={styles.soundControl}>
-            <button type="button" aria-label={muted ? "Unmute sound effects" : "Mute sound effects"} title={muted ? "Unmute sound effects" : "Mute sound effects"} onClick={() => setMuted(!muted)}>{muted ? <VolumeX aria-hidden="true" /> : <Volume2 aria-hidden="true" />}</button>
-            <input aria-label="Sound effects volume" type="range" min="0" max="3" step="0.05" value={muted ? 0 : volume} onChange={(event) => { setMuted(false); setVolume(Number(event.target.value)); }} />
-            <output>{Math.round((muted ? 0 : volume) * 100)}%</output>
-          </div>
-        </fieldset>
-      </section>
-    </details>
+      ) : null}
+    </>
   );
 }
 
@@ -162,7 +191,12 @@ export function SiteHeader() {
       <nav className={styles.desktop} aria-label="Primary navigation">
         {links.map((link) => {
           const active = pathname === "/" ? link.href === "/blog" : pathname.startsWith(link.href);
-          return <Link key={link.href} href={link.href as Route} className={active ? styles.active : undefined} aria-current={active ? "page" : undefined} onPointerEnter={() => sound.play("hover")}>{link.label}</Link>;
+          const Icon = link.icon;
+          return (
+            <Link key={link.href} href={link.href as Route} className={active ? styles.active : undefined} aria-current={active ? "page" : undefined} aria-label={link.label} title={link.label} onPointerEnter={() => sound.play("hover")}>
+              <Icon aria-hidden="true" />
+            </Link>
+          );
         })}
         <AppearanceSettings />
       </nav>

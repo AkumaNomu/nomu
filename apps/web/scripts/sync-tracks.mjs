@@ -11,6 +11,7 @@ import { parseFile } from "music-metadata";
 import { mkdirSync, readdirSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { cropToSquare } from "./crop-covers.mjs";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const webRoot = path.resolve(here, "..");
@@ -57,7 +58,9 @@ for (const file of files) {
   let artwork = "/album-art/soft-loop.svg"; // fallback for mp3s with no embedded art
   if (picture) {
     const ext = EXT_BY_MIME[picture.format] ?? "jpg";
-    writeFileSync(path.join(artDir, `${slug}.${ext}`), picture.data);
+    const coverPath = path.join(artDir, `${slug}.${ext}`);
+    writeFileSync(coverPath, picture.data);
+    cropToSquare(coverPath);
     artwork = `/album-art/${slug}.${ext}`;
   }
 

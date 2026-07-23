@@ -1,0 +1,5 @@
+.sheet { display: grid; gap: 1.1rem; }
+.heading { margin: 0.4rem 0 0; color: var(--muted); font-size: 0.72rem; font-weight: 650; letter-spacing: 0.1em; text-transform: uppercase; }
+.block { margin: 0; font-size: 0.95rem; line-height: 1.9; white-space: pre-wrap; }
+.line { display: block; }
+.chord { margin-right: 0.15rem; padding: 0.02rem 0.35rem; color: var(--accent); font-family: var(--font-mono, monospace); font-size: 0.72rem; font-weight: 700; font-style: normal; border-radius: 0.3rem; background: color-mix(in srgb, var(--accent) 14%, transparent); }

@@ -25,11 +25,12 @@
 .accountTabs .activeTab { color: var(--foreground); border-bottom-color: var(--foreground); }
 .composer { display: flex; align-items: flex-start; gap: 0.7rem; }
 .composerMain { min-width: 0; flex: 1; }
-.composer textarea { display: block; width: 100%; min-height: 2.15rem; padding: 0.55rem 0; color: var(--foreground); font: inherit; font-size: 0.9rem; line-height: 1.4; border: 0; border-bottom: 1px solid var(--line); outline: 0; resize: vertical; background: transparent; }
+.composer textarea { display: block; width: 100%; min-height: 2.15rem; max-height: 12rem; padding: 0.55rem 0; overflow-y: auto; color: var(--foreground); font: inherit; font-size: 0.9rem; line-height: 1.4; border: 0; border-bottom: 1px solid var(--line); outline: 0; resize: none; background: transparent; }
 .composer textarea:focus { border-bottom-color: var(--foreground); }
 .composer textarea::placeholder { color: var(--muted); }
 .composer textarea:disabled { cursor: not-allowed; opacity: 0.7; }
 .composerActions { display: flex; align-items: center; justify-content: space-between; min-height: 2.4rem; color: var(--muted); font-size: 0.68rem; }
+.limitWarning { color: #9d352c; font-weight: 650; }
 
 .headingRow {
   display: flex;
@@ -122,7 +123,8 @@
 .list,
 .replies { margin: 0; padding: 0; list-style: none; }
 .list { margin-top: 2.25rem; border-top: 1px solid var(--soft-line); }
-.comment { padding-block: 1.1rem; border-bottom: 1px solid var(--soft-line); }
+.comment { padding-block: 1.1rem; border-bottom: 1px solid var(--soft-line); transition: background-color 160ms var(--ease-out); }
+.comment:hover { background: var(--paper); }
 
 .commentHeader {
   display: flex;

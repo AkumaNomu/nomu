@@ -36,9 +36,10 @@ function Composer({ user, placeholder, onPost }: { user: User | null; placeholde
     setPosting(true);
     try { await onPost(body.trim()); setBody(""); showToast("Comment posted."); } catch (error) { showToast(error instanceof Error ? error.message : "Unable to post comment.", "error"); } finally { setPosting(false); }
   }
+  const near = body.length > 1800;
   return <div className={styles.composer}>
     <span className={styles.avatar}>{user?.username[0].toUpperCase() ?? "?"}</span>
-    <div className={styles.composerMain}><textarea aria-label={placeholder} disabled={!user} maxLength={2000} placeholder={user ? placeholder : "Log in to join the conversation"} rows={1} value={body} onChange={(event) => setBody(event.target.value)} />{user ? <div className={styles.composerActions}><span>{body.length > 0 ? `${body.length}/2000` : ""}</span><button className={styles.primaryAction} type="button" disabled={!body.trim() || posting} onClick={post}>{posting ? "Posting…" : "Post"}</button></div> : null}</div>
+    <div className={styles.composerMain}><textarea aria-label={placeholder} disabled={!user} maxLength={2000} placeholder={user ? placeholder : "Log in to join the conversation"} rows={1} value={body} onChange={(event) => { setBody(event.target.value); event.target.style.height = "auto"; event.target.style.height = `${event.target.scrollHeight}px`; }} onKeyDown={(event) => { if (event.key === "Enter" && (event.metaKey || event.ctrlKey)) post(); }} />{user ? <div className={styles.composerActions}><span className={near ? styles.limitWarning : undefined}>{body.length > 0 ? `${body.length}/2000` : ""}</span><button className={styles.primaryAction} type="button" disabled={!body.trim() || posting} onClick={post}>{posting ? "Posting…" : "Post"}</button></div> : null}</div>
   </div>;
 }
 

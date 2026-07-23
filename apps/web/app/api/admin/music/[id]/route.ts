@@ -55,6 +55,8 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
       file_path: string;
       artwork_path?: string;
       duration_ms?: number | null;
+      lyrics_md?: string;
+      notes_md?: string;
     };
 
     const track = await commentsDb`
@@ -72,6 +74,8 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
         file_path = ${body.file_path},
         artwork_path = ${body.artwork_path || null},
         duration_ms = ${body.duration_ms || null},
+        lyrics_md = ${body.lyrics_md || null},
+        notes_md = ${body.notes_md || null},
         updated_at = now()
       WHERE id = ${id}
       RETURNING *

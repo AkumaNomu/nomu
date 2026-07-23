@@ -21,7 +21,9 @@ Global tokens own color, type scale, page gutters, content width, rule opacity, 
 
 ## Runtime state
 
-Only audio crosses routes. `AudioProvider` owns the native `HTMLAudioElement`, selected track, time, volume, and local-storage persistence. Search and tools keep state inside their route.
+`AudioProvider`, `AccountProvider`, and `SoundProvider` wrap the whole app (`app/layout.tsx`) and cross routes; everything else keeps state inside its own route. `AudioProvider` owns the native `HTMLAudioElement`, selected track, time, volume, and local-storage persistence — its track list comes from the DB-backed music library (`/api/music`) with the static ID3-scanned `lib/tracks.generated.ts` as a fallback when the database is empty or unreachable. `AccountProvider` tracks the logged-in user via a session cookie. `SoundProvider` (`lib/audio/soundEngine.ts`) is a separate, independent Web Audio engine for short UI feedback sounds — unrelated to music playback. Search and tools keep state inside their route.
+
+Music and games are the two DB-backed content types (everything else — blog/projects/resources/tools — is file-based MDX); both have a public read API and an admin-gated CRUD API, edited through `/admin`. See `SITE_MAP.md` for the full route/table inventory.
 
 ## Failure behavior
 

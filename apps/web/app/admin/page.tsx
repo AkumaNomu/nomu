@@ -12,6 +12,19 @@ type Track = {
   file_path: string;
   artwork_path?: string;
   duration_ms?: number;
+  slug: string;
+  lyrics_md?: string;
+  notes_md?: string;
+  created_at: string;
+};
+
+type GameEntry = {
+  id: string;
+  title: string;
+  slug: string;
+  description?: string;
+  thumbnail_path?: string;
+  file_path: string;
   created_at: string;
 };
 
@@ -76,6 +89,7 @@ type DashboardData = {
   tools: ToolEntry[];
   comments: CommentEntry[];
   tracks: Track[];
+  games: GameEntry[];
 };
 
 type TrackForm = {
@@ -85,6 +99,15 @@ type TrackForm = {
   file_path: string;
   artwork_path: string;
   duration_ms: string;
+  lyrics_md: string;
+  notes_md: string;
+};
+
+type GameForm = {
+  title: string;
+  description: string;
+  thumbnail_path: string;
+  file_path: string;
 };
 
 type NewPostForm = {
@@ -119,6 +142,15 @@ const emptyTrackForm: TrackForm = {
   file_path: "",
   artwork_path: "",
   duration_ms: "",
+  lyrics_md: "",
+  notes_md: "",
+};
+
+const emptyGameForm: GameForm = {
+  title: "",
+  description: "",
+  thumbnail_path: "",
+  file_path: "",
 };
 
 const emptyPostForm: NewPostForm = {
@@ -172,6 +204,8 @@ export default function AdminPage() {
   const [busyKey, setBusyKey] = useState<string | null>(null);
   const [trackForm, setTrackForm] = useState<TrackForm>(emptyTrackForm);
   const [editingTrackId, setEditingTrackId] = useState<string | null>(null);
+  const [gameForm, setGameForm] = useState<GameForm>(emptyGameForm);
+  const [editingGameId, setEditingGameId] = useState<string | null>(null);
   const [newPostForm, setNewPostForm] = useState<NewPostForm>(emptyPostForm);
   const [newProjectForm, setNewProjectForm] = useState<NewProjectForm>(emptyProjectForm);
 
@@ -382,7 +416,63 @@ export default function AdminPage() {
       file_path: track.file_path,
       artwork_path: track.artwork_path ?? "",
       duration_ms: track.duration_ms ? String(track.duration_ms) : "",
+      lyrics_md: track.lyrics_md ?? "",
+      notes_md: track.notes_md ?? "",
     });
+  }
+
+  function loadGame(game: GameEntry) {
+    setEditingGameId(game.id);
+    setGameForm({
+      title: game.title,
+      description: game.description ?? "",
+      thumbnail_path: game.thumbnail_path ?? "",
+      file_path: game.file_path,
+    });
+  }
+
+  async function submitGame(event: FormEvent) {
+    event.preventDefault();
+    const method = editingGameId ? "PATCH" : "POST";
+    const url = editingGameId ? `/api/admin/games/${encodeURIComponent(editingGameId)}` : "/api/admin/games";
+    setBusyKey(editingGameId ? `game:${editingGameId}` : "game:new");
+
+    try {
+      const res = await fetch(url, {
+        method,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(gameForm),
+      });
+      const payload = await res.json() as { error?: string };
+      if (!res.ok) throw new Error(payload.error ?? "Unable to save game");
+      setGameForm(emptyGameForm);
+      setEditingGameId(null);
+      setError(null);
+      await fetchDashboard();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Unable to save game");
+    } finally {
+      setBusyKey(null);
+    }
+  }
+
+  async function deleteGame(id: string) {
+    setBusyKey(`game-delete:${id}`);
+    try {
+      const res = await fetch(`/api/admin/games/${encodeURIComponent(id)}`, { method: "DELETE" });
+      const payload = await res.json() as { error?: string };
+      if (!res.ok) throw new Error(payload.error ?? "Unable to delete game");
+      if (editingGameId === id) {
+        setEditingGameId(null);
+        setGameForm(emptyGameForm);
+      }
+      setData((current) => current ? { ...current, games: current.games.filter((entry) => entry.id !== id) } : current);
+      setError(null);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Unable to delete game");
+    } finally {
+      setBusyKey(null);
+    }
   }
 
   async function submitTrack(event: FormEvent) {
@@ -866,6 +956,8 @@ export default function AdminPage() {
           <input placeholder="File path" required type="text" value={trackForm.file_path} onChange={(event) => setTrackForm((current) => ({ ...current, file_path: event.target.value }))} />
           <input placeholder="Artwork path" type="text" value={trackForm.artwork_path} onChange={(event) => setTrackForm((current) => ({ ...current, artwork_path: event.target.value }))} />
           <input placeholder="Duration (ms)" type="number" value={trackForm.duration_ms} onChange={(event) => setTrackForm((current) => ({ ...current, duration_ms: event.target.value }))} />
+          <textarea placeholder="Lyrics (markdown; chord tags like [Am] inline)" rows={6} value={trackForm.lyrics_md} onChange={(event) => setTrackForm((current) => ({ ...current, lyrics_md: event.target.value }))} />
+          <textarea placeholder="Notes (your own thoughts on the track, markdown)" rows={4} value={trackForm.notes_md} onChange={(event) => setTrackForm((current) => ({ ...current, notes_md: event.target.value }))} />
           <div className={styles.actions}>
             <button disabled={busyKey === (editingTrackId ? `track:${editingTrackId}` : "track:new")} type="submit">
               {busyKey === (editingTrackId ? `track:${editingTrackId}` : "track:new")
@@ -895,7 +987,7 @@ export default function AdminPage() {
               <div>
                 <strong>{track.title}</strong>
                 <p>{track.artist} · {track.album}</p>
-                <p>{track.file_path}</p>
+                <p>{track.file_path} · /music/{track.slug}</p>
               </div>
               <div className={styles.rowActions}>
                 <button className={styles.secondaryButton} onClick={() => loadTrack(track)} type="button">Edit</button>
@@ -906,6 +998,59 @@ export default function AdminPage() {
                   type="button"
                 >
                   {busyKey === `track-delete:${track.id}` ? "Deleting…" : "Delete"}
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <section className={styles.section}>
+        <SectionHeader title="Games" note={`${data?.games.length ?? 0} browser games. Drop a self-contained HTML file under public/games/, then register it here.`} />
+        <form className={styles.form} onSubmit={submitGame}>
+          <input placeholder="Title" required type="text" value={gameForm.title} onChange={(event) => setGameForm((current) => ({ ...current, title: event.target.value }))} />
+          <input placeholder="Description" type="text" value={gameForm.description} onChange={(event) => setGameForm((current) => ({ ...current, description: event.target.value }))} />
+          <input placeholder="File path (e.g. /games/pong.html)" required type="text" value={gameForm.file_path} onChange={(event) => setGameForm((current) => ({ ...current, file_path: event.target.value }))} />
+          <input placeholder="Thumbnail path (optional)" type="text" value={gameForm.thumbnail_path} onChange={(event) => setGameForm((current) => ({ ...current, thumbnail_path: event.target.value }))} />
+          <div className={styles.actions}>
+            <button disabled={busyKey === (editingGameId ? `game:${editingGameId}` : "game:new")} type="submit">
+              {busyKey === (editingGameId ? `game:${editingGameId}` : "game:new")
+                ? "Saving…"
+                : editingGameId
+                  ? "Update game"
+                  : "Add game"}
+            </button>
+            {editingGameId ? (
+              <button
+                className={styles.secondaryButton}
+                onClick={() => {
+                  setEditingGameId(null);
+                  setGameForm(emptyGameForm);
+                }}
+                type="button"
+              >
+                Cancel edit
+              </button>
+            ) : null}
+          </div>
+        </form>
+
+        <div className={styles.list}>
+          {data?.games.map((game) => (
+            <div className={styles.rowCard} key={game.id}>
+              <div>
+                <strong>{game.title}</strong>
+                <p>{game.file_path} · /games/{game.slug}</p>
+              </div>
+              <div className={styles.rowActions}>
+                <button className={styles.secondaryButton} onClick={() => loadGame(game)} type="button">Edit</button>
+                <button
+                  className={styles.dangerButton}
+                  disabled={busyKey === `game-delete:${game.id}`}
+                  onClick={() => void deleteGame(game.id)}
+                  type="button"
+                >
+                  {busyKey === `game-delete:${game.id}` ? "Deleting…" : "Delete"}
                 </button>
               </div>
             </div>
