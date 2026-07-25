@@ -1,16 +1,22 @@
 ---
-title: Nomu Personal Site
+title: Nomu — Personal Editorial Site
 slug: nomu-site
-description: The blog and publishing stack you are currently using.
-year: 2025
+description: Monochrome personal site for writing, projects, experiments, tools, music, and games.
+year: 2026
 status: building
-role: Web
-technologies: [Vanilla JS, Markdown, UI/UX, Blog Engine]
+role: Design & Development
+technologies: [Next.js, TypeScript, MDX, GSAP, Remotion, Neon]
 icon: /project-icons/nomu-site.svg
 featured: true
 repository: https://github.com/akumanomu/nomu
 ---
 
-Focus area: a fast, minimal publishing stack with markdown content, a content hub, and custom tooling.
+Nomu is the site you are reading: a personal editorial space that keeps writing, projects, small utilities, music, and games in one deliberately minimal system.
 
 <Figure src="/projects/nomu-site/cover.png" alt="Current Nomu personal site homepage" />
+
+The web app uses Next.js and MDX for file-based publishing, with Zod-validated metadata so invalid content fails at build time. Music and games use an admin-managed Neon database, while the rest of the site remains easy to version and edit in Git.
+
+Motion has clear ownership: GSAP handles hero and scroll timelines, Motion handles component interactions, and Lenis handles desktop smooth scrolling. A companion Remotion studio shares visual primitives with the site for project teasers, article covers, and music visualizers.
+
+The project also includes search, comments, theme preferences, audio playback, SEO metadata, sitemap and RSS generation, plus a small collection of browser tools.

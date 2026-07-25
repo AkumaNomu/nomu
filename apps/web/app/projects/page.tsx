@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { ProjectExplorer } from "@/components/ProjectExplorer";
-import { getAllProjects } from "@/lib/content";
+import { getAllProjects, getProjectImage } from "@/lib/content";
 
 export const metadata: Metadata = {
   title: "Projects",
@@ -22,7 +22,7 @@ export default function ProjectsPage() {
         status: metadata.status,
         role: metadata.role,
         technologies: metadata.technologies,
-        icon: `/projects/${metadata.slug}/cover.png`,
+        icon: getProjectImage(metadata.slug, metadata.icon),
         href: `/projects/${metadata.slug}`,
       }))} />
     </div>

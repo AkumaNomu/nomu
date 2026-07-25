@@ -1,8 +1,10 @@
 import type { ComponentType } from "react";
 import AboutPage from "@/content/pages/about.mdx";
+import AetherProject from "@/content/projects/aether.mdx";
 import MaiProject from "@/content/projects/mai.mdx";
-import MicroCode20Project from "@/content/projects/micro-code-2-0.mdx";
 import NomuSiteProject from "@/content/projects/nomu-site.mdx";
+import ParkerProject from "@/content/projects/parker.mdx";
+import TradePilotProject from "@/content/projects/trade-pilot.mdx";
 import Fmhy from "@/content/resources/fmhy.mdx";
 import PiracyGuide from "@/content/resources/piracy-guide.mdx";
 import ContrastCheckerTool from "@/content/tools/contrast-checker.mdx";
@@ -32,9 +34,11 @@ export const blogRegistry = {
 } satisfies Record<string, MdxContent>;
 
 export const projectRegistry = {
+  aether: AetherProject,
   mai: MaiProject,
-  "micro-code-2-0": MicroCode20Project,
   "nomu-site": NomuSiteProject,
+  parker: ParkerProject,
+  "trade-pilot": TradePilotProject,
 } satisfies Record<string, MdxContent>;
 
 export const resourceRegistry = {

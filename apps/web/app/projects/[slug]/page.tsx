@@ -4,7 +4,7 @@ import Link from "next/link";
 import { ArrowLeft, ArrowRight, ArrowUpRight } from "lucide-react";
 import { notFound } from "next/navigation";
 import { SectionRule } from "@/components/editorial";
-import { getAllBlog, getAllProjects, getProjectBySlug, getProjectImages, getProjectSlugs } from "@/lib/content";
+import { getAllBlog, getAllProjects, getProjectBySlug, getProjectImage, getProjectImages, getProjectSlugs } from "@/lib/content";
 import styles from "@/app/project.module.css";
 
 type Props = { params: Promise<{ slug: string }> };
@@ -26,7 +26,6 @@ export function generateStaticParams() {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const project = getProjectBySlug(slug);
-  const image = `/projects/${slug}/cover.png`;
   return project ? {
     title: project.metadata.title,
     description: project.metadata.description,
@@ -34,7 +33,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     openGraph: {
       title: project.metadata.title,
       description: project.metadata.description,
-      images: [{ url: image, alt: "" }],
+      images: [{ url: getProjectImage(slug, project.metadata.icon), alt: "" }],
     },
   } : {};
 }
@@ -43,7 +42,7 @@ export default async function ProjectPage({ params }: Props) {
   const { slug } = await params;
   const project = getProjectBySlug(slug);
   if (!project) notFound();
-  const image = `/projects/${slug}/cover.png`;
+  const image = getProjectImage(slug, project.metadata.icon);
 
   const Content = project.Content;
   const shots = getProjectImages(slug);

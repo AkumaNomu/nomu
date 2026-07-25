@@ -69,6 +69,11 @@ export function getProjectImages(slug: string): string[] {
     .map((file) => `/projects/${slug}/${file}`);
 }
 
+export function getProjectImage(slug: string, fallback: string) {
+  const cover = path.join(publicRoot, "projects", slug, "cover.png");
+  return existsSync(cover) ? `/projects/${slug}/cover.png` : fallback;
+}
+
 function readSource(collection: Collection, slug: string) {
   const filePath = path.join(contentRoot, collection, `${slug}.mdx`);
   if (!existsSync(filePath)) throw new Error(`Missing MDX source: ${collection}/${slug}.mdx`);

@@ -1,0 +1,20 @@
+---
+title: Parker
+slug: parker
+description: Local Windows capture tool that turns screen regions into useful clipboard-ready results.
+year: 2026
+status: building
+role: Desktop Development
+technologies: [Rust, Windows, OCR, FFmpeg, Computer Vision]
+icon: /project-icons/parker.svg
+featured: true
+repository: https://github.com/AkumaNomu/Parker
+---
+
+Parker is a local, hotkey-first Windows utility for turning a selected region of the screen into something useful immediately.
+
+Smart Capture detects QR codes, tables, code, and plain text. It copies decoded links, tab-separated tables, indentation-preserved code, or Unicode OCR text straight to the clipboard.
+
+Region Recording captures an area without the cursor, then optimizes it into a compatible H.264 MP4 using available hardware encoders before falling back to x264. The final video is copied as a Windows file clipboard entry, ready to paste.
+
+The app stays local: no account, analytics, cloud OCR, or capture uploads.
