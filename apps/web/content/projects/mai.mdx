@@ -11,12 +11,18 @@ featured: true
 repository: https://github.com/akumanomu/mai
 ---
 
-MAI reorders existing YouTube or CSV playlists, or generates new fixed-size sets, using musical transition scoring instead of a simple shuffle.
+## Why I made it
+
+I wanted playlists to feel curated rather than shuffled: each handoff should make musical sense, even when the tracks come from different genres.
 
 <Figure src="/projects/mai/cover.png" alt="MAI playlist engine model preview" />
 
-It combines harmonic compatibility, tempo matching, beat and phrase alignment, and mood bridges to make adjacent tracks feel intentional. A beam-search generator explores possible orders, then a bounded 2-opt pass refines the result.
+## How it works
 
-The project also includes a training pipeline: it scrapes curated mixes, resolves tracklists, mines hard negatives, and trains transition and energy-arc models. When data is sparse, MAI keeps its transparent music heuristics in charge rather than over-trusting a weak model.
+The Python pipeline accepts a YouTube playlist or CSV, normalizes its metadata, and scores directed track-to-track transitions. Its baseline combines harmonic compatibility, octave-aware tempo matching, beat and phrase alignment, and mood bridges. Beam search generates candidate orders; a bounded 2-opt pass refines the strongest one.
 
-Recommended orders export back to YouTube or YouTube Music, so the result is usable straight away.
+To improve on hand-built rules, the training pipeline scrapes curated mixes, resolves tracklists, mines hard negatives, and trains transition and energy-arc models. Sparse data does not override the baseline: MAI deliberately keeps transparent heuristics in control until learned scores prove reliable.
+
+## Current progress
+
+Playlist analysis, reordering, multi-set generation, training, cache management, and YouTube/YouTube Music export are implemented. The next planned work is local audio-folder ingestion, evaluation reports, and a lightweight run-monitoring UI.

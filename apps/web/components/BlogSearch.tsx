@@ -4,8 +4,8 @@ import Link from "next/link";
 import Image from "next/image";
 import { useDeferredValue, useMemo, useState } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
-import { LayoutGrid, List } from "lucide-react";
 import { SearchIcon } from "@personal/design-system";
+import { ViewToggle, type CollectionView } from "@/components/ui/ViewToggle";
 import styles from "@/app/collections.module.css";
 
 export type SearchArticle = { slug: string; title: string; description: string; publishedAt: string; category: string; tags: string[]; cover: string; searchableText: string };
@@ -19,7 +19,7 @@ export function BlogSearch({ articles }: { articles: SearchArticle[] }) {
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState("all");
   const [page, setPage] = useState(1);
-  const [view, setView] = useState<"grid" | "list">("grid");
+  const [view, setView] = useState<CollectionView>("grid");
   const deferredQuery = useDeferredValue(query.trim().toLocaleLowerCase());
   const categories = useMemo(() => [...new Set(articles.map((article) => article.category))], [articles]);
   const results = useMemo(() => {
@@ -43,14 +43,7 @@ export function BlogSearch({ articles }: { articles: SearchArticle[] }) {
           {categories.map((item) => <li key={item}><button type="button" aria-pressed={category === item} onClick={() => { setCategory(item); setPage(1); }}>{item}</button></li>)}
         </ul>
       </nav>
-      <div className={styles.viewToggle} aria-label="Post view">
-        <button type="button" aria-label="Grid view" title="Grid view" aria-pressed={view === "grid"} onClick={() => setView("grid")}>
-          <LayoutGrid aria-hidden="true" />
-        </button>
-        <button type="button" aria-label="List view" title="List view" aria-pressed={view === "list"} onClick={() => setView("list")}>
-          <List aria-hidden="true" />
-        </button>
-      </div>
+      <ViewToggle className={styles.viewToggle} label="Post view" view={view} onChange={setView} />
     </div>
     <motion.ul layout={!reducedMotion} className={`${styles.grid} ${view === "list" ? styles.list : ""}`} aria-live="polite">
       <AnimatePresence initial={false}>

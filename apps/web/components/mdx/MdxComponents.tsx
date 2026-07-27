@@ -154,7 +154,7 @@ function headingText(node: ReactNode): string {
   return "";
 }
 
-type HeadingTag = "h2" | "h3" | "h4";
+type HeadingTag = "h1" | "h2" | "h3" | "h4" | "h5" | "h6";
 
 function makeHeading(Tag: HeadingTag) {
   function Heading({ children, id, ...props }: ComponentPropsWithoutRef<HeadingTag>) {
@@ -166,9 +166,12 @@ function makeHeading(Tag: HeadingTag) {
 }
 
 export const mdxComponents = {
+  h1: makeHeading("h1"),
   h2: makeHeading("h2"),
   h3: makeHeading("h3"),
   h4: makeHeading("h4"),
+  h5: makeHeading("h5"),
+  h6: makeHeading("h6"),
   pre: CodeBlock,
   img: ZoomableImage,
   table: MdxTable,

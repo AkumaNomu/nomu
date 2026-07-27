@@ -1,0 +1,7 @@
+{
+  "tool_name": "mcp__Claude_Browser__javascript_tool",
+  "tool_input_preview": "{\"action\":\"javascript_exec\",\"text\":\"(() => {\\n  const p = document.querySelector('[class*=\\\"settingsPanel\\\"]:not([class*=\\\"Header\\\"])');\\n  const cs = getComputedStyle(p);\\n  const inp = p.querySelect...",
+  "error": "javascript_tool failed: TypeError: Failed to execute 'getComputedStyle' on 'Window': parameter 1 is not of type 'Element'.\n    at <anonymous>:3:14\n    at <anonymous>:12:3",
+  "timestamp": "2026-07-23T14:10:32.993Z",
+  "retry_count": 2
+}

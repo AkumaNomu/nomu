@@ -1,6 +1,5 @@
 import type { ComponentType } from "react";
 import AboutPage from "@/content/pages/about.mdx";
-import AetherProject from "@/content/projects/aether.mdx";
 import MaiProject from "@/content/projects/mai.mdx";
 import NomuSiteProject from "@/content/projects/nomu-site.mdx";
 import ParkerProject from "@/content/projects/parker.mdx";
@@ -16,6 +15,7 @@ import MarkdownTestPost from "@/content/blog/markdown-test-post.mdx";
 import MergingPaginationMusicSupport from "@/content/blog/merging-pagination-music-support.mdx";
 import NomusFirstPost from "@/content/blog/nomus-first-post.mdx";
 import NomusV2 from "@/content/blog/nomus-v2.mdx";
+import NomusV3 from "@/content/blog/nomus-v3.mdx";
 import SoTheyWantToBanPornMyTwoCents from "@/content/blog/so-they-want-to-ban-porn-my-two-cents.mdx";
 import TryingToMakePlaylistsFlowBetter from "@/content/blog/trying-to-make-playlists-flow-better.mdx";
 import WhyAreStudyAgenciesSuchAScam from "@/content/blog/why-are-study-agencies-such-a-scam.mdx";
@@ -23,6 +23,7 @@ import WhyAreStudyAgenciesSuchAScam from "@/content/blog/why-are-study-agencies-
 export type MdxContent = ComponentType<Record<string, never>>;
 
 export const blogRegistry = {
+  "nomus-v3": NomusV3,
   "nomus-v2": NomusV2,
   "why-are-study-agencies-such-a-scam": WhyAreStudyAgenciesSuchAScam,
   "trying-to-make-playlists-flow-better": TryingToMakePlaylistsFlowBetter,
@@ -34,7 +35,6 @@ export const blogRegistry = {
 } satisfies Record<string, MdxContent>;
 
 export const projectRegistry = {
-  aether: AetherProject,
   mai: MaiProject,
   "nomu-site": NomuSiteProject,
   parker: ParkerProject,

@@ -1,16 +1,15 @@
 "use client";
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
-import { tracks as staticTracks } from "@/lib/tracks";
-import type { Track } from "@/lib/tracks";
-import { FALLBACK_ARTWORK } from "@/lib/musicArtwork";
+import { mergeLibraryTracks, type LibraryTrack, type MusicRow } from "@/lib/musicLibrary";
 import { MusicWidget } from "./MusicWidget";
 
-type LibraryTrack = Track & { slug?: string };
-type DbTrack = { id: string; title: string; artist: string; album: string; file_path: string; artwork_path?: string; duration_ms?: number; slug: string };
+const staticTracks = mergeLibraryTracks([]);
 
 type AudioState = {
   current: number;
+  currentSlug: string | null;
+  tracks: LibraryTrack[];
   duration: number;
   playing: boolean;
   time: number;
@@ -22,18 +21,21 @@ type AudioState = {
   setVolume: (value: number) => void;
   openWidget: () => void;
   playTrackBySlug: (slug: string) => void;
+  playTracks: (slugs: string[]) => void;
 };
 
 const AudioContext = createContext<AudioState | null>(null);
 
 export function AudioProvider({ children }: { children: React.ReactNode }) {
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const autoPlayRef = useRef(false);
   const [tracks, setTracks] = useState<LibraryTrack[]>(staticTracks);
   const [current, setCurrent] = useState(0);
   const [playing, setPlaying] = useState(false);
   const [time, setTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const [volume, setVolumeState] = useState(0.55);
+  const [queue, setQueue] = useState<string[]>([]);
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
@@ -46,24 +48,13 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // The site's music library lives in the DB (admin-managed) — it's the real
-  // playback source. The static, file-scanned lib/tracks.ts stays as a
-  // fallback for when the DB is empty or unreachable, so the widget never
-  // renders with zero tracks.
+  // Admin-managed DB rows and the file-scanned public/audio tracks merge into
+  // one playable library (see lib/musicLibrary) — the same merge the /music
+  // page runs server-side, so slugs match and playTrackBySlug resolves either.
   useEffect(() => {
     fetch("/api/music", { cache: "no-store" })
-      .then((res) => (res.ok ? res.json() as Promise<DbTrack[]> : []))
-      .then((rows) => {
-        if (!rows.length) return;
-        setTracks(rows.map((row) => ({
-          title: row.title,
-          artist: row.artist,
-          album: row.album,
-          artwork: row.artwork_path || FALLBACK_ARTWORK,
-          src: row.file_path,
-          slug: row.slug,
-        })));
-      })
+      .then((res) => (res.ok ? res.json() as Promise<MusicRow[]> : []))
+      .then((rows) => { if (rows.length) setTracks(mergeLibraryTracks(rows)); })
       .catch(() => {});
   }, []);
 
@@ -77,10 +68,11 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
     if (!audio) return;
     const track = tracks[safeCurrent];
     if (!track) return;
-    const wasPlaying = !audio.paused;
+    const shouldPlay = !audio.paused || autoPlayRef.current;
+    autoPlayRef.current = false;
     audio.src = track.src;
     localStorage.setItem("nomu-player-track", String(safeCurrent));
-    if (wasPlaying) void audio.play();
+    if (shouldPlay) void audio.play();
   }, [safeCurrent, tracks]);
 
   useEffect(() => { if (audioRef.current) audioRef.current.volume = volume; }, [volume]);
@@ -90,20 +82,42 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
     if (!audio) return;
     if (audio.paused) void audio.play(); else audio.pause();
   }, []);
-  const next = useCallback(() => setCurrent((value) => (value + 1) % tracks.length), [tracks.length]);
-  const previous = useCallback(() => setCurrent((value) => (value - 1 + tracks.length) % tracks.length), [tracks.length]);
+  // A selection from the library becomes a throwaway queue: skip/next walk it
+  // instead of the whole library until a single track is picked again.
+  const order = useMemo(() => {
+    const fromQueue = queue.map((slug) => tracks.findIndex((track) => track.slug === slug)).filter((index) => index >= 0);
+    return fromQueue.length ? fromQueue : tracks.map((_, index) => index);
+  }, [queue, tracks]);
+  const step = useCallback((delta: number) => {
+    autoPlayRef.current = true;
+    setCurrent((value) => {
+      const position = order.indexOf(value);
+      return order[((position < 0 ? 0 : position + delta) + order.length) % order.length];
+    });
+  }, [order]);
+  const next = useCallback(() => step(1), [step]);
+  const previous = useCallback(() => step(-1), [step]);
   const seek = useCallback((value: number) => { if (audioRef.current) audioRef.current.currentTime = value; }, []);
   const setVolume = useCallback((value: number) => { setVolumeState(value); localStorage.setItem("nomu-player-volume", String(value)); }, []);
   const openWidget = playPause;
-  const playTrackBySlug = useCallback((slug: string) => {
+  // Selecting a track has to defer the play() to the effect that swaps
+  // audio.src — calling it here would start the *previous* src for a frame.
+  const startSlug = useCallback((slug: string) => {
     const index = tracks.findIndex((track) => track.slug === slug);
     if (index < 0) return;
-    setCurrent(index);
     const audio = audioRef.current;
-    if (audio) void audio.play();
-  }, [tracks]);
+    if (index === safeCurrent) { if (audio?.paused) void audio.play(); return; }
+    autoPlayRef.current = true;
+    setCurrent(index);
+  }, [safeCurrent, tracks]);
+  const playTrackBySlug = useCallback((slug: string) => { setQueue([]); startSlug(slug); }, [startSlug]);
+  const playTracks = useCallback((slugs: string[]) => {
+    if (!slugs.length) return;
+    setQueue(slugs);
+    startSlug(slugs[0]);
+  }, [startSlug]);
 
-  const value = useMemo(() => ({ current: safeCurrent, duration, playing, time, volume, playPause, next, previous, seek, setVolume, openWidget, playTrackBySlug }), [safeCurrent, duration, playing, time, volume, playPause, next, previous, seek, setVolume, openWidget, playTrackBySlug]);
+  const value = useMemo(() => ({ current: safeCurrent, currentSlug: tracks[safeCurrent]?.slug ?? null, tracks, duration, playing, time, volume, playPause, next, previous, seek, setVolume, openWidget, playTrackBySlug, playTracks }), [safeCurrent, tracks, duration, playing, time, volume, playPause, next, previous, seek, setVolume, openWidget, playTrackBySlug, playTracks]);
 
   return (
     <AudioContext.Provider value={value}>

@@ -1,0 +1,7 @@
+{
+  "tool_name": "mcp__Claude_Browser__find",
+  "tool_input_preview": "{\"query\":\"List view toggle button\",\"tabId\":\"seed\"}",
+  "error": "no read_page tree cached; call read_page first",
+  "timestamp": "2026-07-27T00:52:58.478Z",
+  "retry_count": 1
+}

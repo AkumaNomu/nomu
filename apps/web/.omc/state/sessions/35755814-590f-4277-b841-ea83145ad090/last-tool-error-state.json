@@ -1,0 +1,7 @@
+{
+  "tool_name": "Bash",
+  "tool_input_preview": "{\"command\":\"cd \\\"/c/Users/ROCDZ/Documents/Projects/Webdev/Nomu's site\\\" && \\\\\\ngit mv apps/web/app/writing apps/web/app/blog && \\\\\\ngit mv apps/web/content/writing apps/web/content/blog && \\\\\\ngit mv ...",
+  "error": "Exit code 128\nfatal: renaming 'apps/web/app/writing' failed: Permission denied",
+  "timestamp": "2026-07-22T10:56:41.590Z",
+  "retry_count": 1
+}

@@ -14,11 +14,11 @@
 .hidden { transform: translateY(calc(-100% - 1px)); }
 :global(body.route-transitioning) .header { opacity: 0; pointer-events: none; transform: translateY(calc(-100% - 1px)); }
 .inner { position: relative; height: var(--header-height); }
-.desktop {
+.navGroup { display: flex; align-items: center; gap: 0.5rem; width: min(27.6rem, 100%); }
+.desktop, .backNav {
   display: flex;
   align-items: center;
   gap: 0.15rem;
-  width: min(24rem, 100%);
   min-height: 3.1rem;
   padding: 0.25rem;
   border: 1px solid var(--soft-line);
@@ -28,7 +28,9 @@
   -webkit-backdrop-filter: blur(16px) saturate(120%);
   box-shadow: 0 10px 30px var(--glass-shadow);
 }
-.desktop a {
+.desktop { width: min(24rem, 100%); }
+.backNav { flex: none; }
+.desktop a, .backNav a, .backNav button {
   position: relative;
   display: grid;
   min-width: 0;
@@ -38,7 +40,9 @@
   border-radius: 999px;
   transition: color 180ms var(--ease-out), background-color 180ms var(--ease-out);
 }
-.desktop a svg { width: 18px; height: 18px; stroke-width: 1.8; }
+.desktop a svg, .backNav a svg, .backNav button svg { width: 18px; height: 18px; stroke-width: 1.8; }
+.backNav a, .backNav button { width: 44px; color: var(--accent); }
+.backNav button { padding: 0; border: 0; background: transparent; font: inherit; cursor: pointer; }
 .desktop a::after {
   position: absolute;
   bottom: 0.34rem;
@@ -52,7 +56,7 @@
   transform: translate(-50%, 3px) scale(0.5);
   transition: opacity 180ms var(--ease-out), transform 180ms var(--ease-out);
 }
-.desktop a:hover { background: var(--hover-fill); }
+.desktop a:hover, .backNav a:hover, .backNav button:hover { background: var(--hover-fill); }
 .desktop a.active::after { opacity: 1; transform: translate(-50%, 0) scale(1); }
 .settingsTrigger {
   display: grid;
@@ -88,11 +92,14 @@
   width: min(22rem, 100%);
   max-height: calc(100dvh - 2 * var(--page-padding));
   padding: 1.1rem;
-  border: 1px solid var(--line);
+  border: 1px solid var(--soft-line);
   border-radius: 1.15rem;
   color: var(--foreground);
-  background: var(--paper);
-  box-shadow: 0 1.25rem 3rem var(--glass-shadow), inset 0 1px 0 var(--soft-line);
+  /* same glass recipe as the header nav pill and music widget */
+  background: var(--glass);
+  backdrop-filter: blur(16px) saturate(120%);
+  -webkit-backdrop-filter: blur(16px) saturate(120%);
+  box-shadow: 0 1.1rem 2.8rem var(--glass-shadow), 0 0.25rem 0.7rem var(--glass-shadow);
   animation: settings-in 200ms var(--ease-out) both;
   overflow: auto;
 }
@@ -213,10 +220,44 @@
 }
 .swatches button:hover, .swatches button:focus-visible, .fontSizes button:hover, .fontSizes button:focus-visible { transform: translateY(-1px); }
 .soundControl { display: grid; grid-template-columns: 1.9rem minmax(0, 1fr) 2.5rem; align-items: center; gap: .5rem; min-height: 2.4rem; padding: .3rem .45rem; border: 1px solid var(--line); border-radius: .75rem; background: color-mix(in srgb, var(--foreground) 2%, transparent); }
-.soundControl button { display: grid; width: 1.55rem; height: 1.55rem; place-items: center; padding: 0; color: inherit; border: 0; border-radius: 50%; background: color-mix(in srgb, var(--foreground) 8%, transparent); }
-.soundControl button:hover { background: color-mix(in srgb, var(--foreground) 14%, transparent); }
+.soundControl button { display: grid; width: 1.55rem; height: 1.55rem; place-items: center; padding: 0; color: inherit; border: 0; border-radius: 50%; background: transparent; transition: background-color 150ms ease; }
+.soundControl button:hover { background: var(--hover-fill); }
 .soundControl button svg { width: 0.8rem; }
-.soundControl input { width: 100%; accent-color: var(--accent); }
+/* same slider recipe as the music widget volume control */
+.soundControl input {
+  width: 100%;
+  height: 44px;
+  margin: 0;
+  appearance: none;
+  -webkit-appearance: none;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  cursor: pointer;
+}
+.soundControl input::-webkit-slider-runnable-track {
+  height: 2px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--foreground) var(--progress), var(--soft-line) var(--progress));
+}
+.soundControl input::-moz-range-track {
+  height: 2px;
+  border: 0;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--foreground) var(--progress), var(--soft-line) var(--progress));
+}
+.soundControl input::-webkit-slider-thumb {
+  width: 0.7rem;
+  height: 0.7rem;
+  margin-top: calc((2px - 0.7rem) / 2);
+  appearance: none;
+  -webkit-appearance: none;
+  border: 0;
+  border-radius: 50%;
+  background: var(--foreground);
+}
+.soundControl input::-moz-range-thumb { width: 0.7rem; height: 0.7rem; border: 0; border-radius: 50%; background: var(--foreground); }
+.soundControl input:focus-visible { outline: 2px solid var(--foreground); outline-offset: 3px; }
 .soundControl output { color: var(--muted); font-size: .68rem; font-variant-numeric: tabular-nums; text-align: right; }
 @keyframes settings-in { from { opacity: 0; transform: scale(.96); } to { opacity: 1; transform: none; } }
 @keyframes settings-backdrop-in { from { opacity: 0; } to { opacity: 1; } }
@@ -250,5 +291,5 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .header, .desktop a, .desktop a::after, .settingsTrigger, .settingsBackdrop, .settingsPanel, .themeToggle, .swatches button, .fontSizes button { animation: none; transition: none; }
+  .header, .desktop a, .backNav a, .backNav button, .desktop a::after, .settingsTrigger, .settingsBackdrop, .settingsPanel, .themeToggle, .swatches button, .fontSizes button { animation: none; transition: none; }
 }

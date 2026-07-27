@@ -1,0 +1,78 @@
+---
+title: Nomu's V3
+slug: nomus-v3
+description: Rebuilt the site around better structure, sharper navigation, and room for everything I actually want to make.
+publishedAt: "2026-07-26"
+category: Development
+tags: [development, projects, design]
+featured: true
+draft: false
+cover: /covers/nomus-v2.png
+---
+
+# Why V3
+
+V2 was fun, but it was still mostly a blog with extra ideas sitting around it.
+I wanted the site to feel like my actual space: writing, projects, music, games,
+and small tools all in one place without turning it into a mess.
+
+So V3 is less about adding random features and more about giving everything a
+proper place.
+
+# The rebuild
+
+## Stack
+
+The site now runs on Next.js and TypeScript. Posts, projects, resources, and
+tool copy are MDX files, so I can write in normal Markdown while still getting
+validated metadata and real pages out of it.
+
+The stuff that needs browser editing works differently. Music and games use a
+small Neon database with an admin page, because adding a track or game should
+not mean editing a file and redeploying every time.
+
+## Motion
+
+I stopped mixing random animation ideas together. GSAP handles the bigger hero
+and scroll movement, Motion handles component interactions, and Lenis handles
+smooth scrolling on desktop. Less overlap, less weirdness.
+
+# The site
+
+## Navigation
+
+The navbar is now the main control point instead of a list of text links taking
+up half the page. Every section has one icon, settings live there too, and
+project pages get a small back button right beside it.
+
+<Figure src="/blog/nomus-v3/navigation-settings.png" alt="Nomu V3 navbar with the settings panel open" caption="Navigation, appearance, text size, and sound controls now live in one place." />
+
+## Projects
+
+Projects finally have their own place instead of being treated like blog posts
+with a different title. Each one now explains why I made it, how it is built,
+what I used, and where it currently stands.
+
+That means MAI, Parker, TradePilot, and this site can grow into proper records
+of the work instead of one-line descriptions.
+
+<Figure src="/blog/nomus-v3/projects.png" alt="Nomu V3 projects page showing MAI, Nomu, Parker, and TradePilot" caption="Projects now have search, filters, status, and their own case-study pages." />
+
+## Music and games
+
+Music is no longer just background noise. There is a real library, a player,
+and room for lyrics, notes, and whatever else I want to attach to a track.
+
+Games work the same way: keep the files local, add them through the admin side,
+and let them live on the site without pretending I am building a separate game
+platform.
+
+<Figure src="/blog/nomus-v3/music.png" alt="Nomu V3 music library showing album art and track controls" caption="The music library has search, shuffle, playback, and a growing track collection." />
+
+<Figure src="/blog/nomus-v3/games.png" alt="Nomu V3 games page ready for browser games" caption="The games section is ready; it is empty until I add the first local browser game." />
+
+# What is next?
+
+More projects, better project details, more music, and probably more tools.
+The point is not to make the site finished. The point is to make it easy enough
+to keep building without needing another V4 rebuild in two weeks.

@@ -4,13 +4,16 @@
   --pill-edge: var(--soft-line);
   --pill-shadow: var(--glass-shadow);
   --track-dim: var(--soft-line);
+  /* One inset for both axes so the mini button sits an equal distance from the
+     right edge and the bottom edge — a true corner anchor. */
+  --edge-inset: 1rem;
   position: fixed;
-  bottom: max(0.75rem, env(safe-area-inset-bottom));
+  bottom: max(var(--edge-inset), env(safe-area-inset-bottom));
   z-index: calc(var(--z-menu) + 1);
   color: var(--ink);
 }
 
-.mini { right: max(var(--page-padding), env(safe-area-inset-right)); }
+.mini { right: max(var(--edge-inset), env(safe-area-inset-right)); }
 /* Full-width flex rail centers the pill without a CSS transform — Motion owns
    the element's transform for the enter animation, so centering can't rely on it. */
 .expanded { left: 0; right: 0; display: flex; justify-content: center; pointer-events: none; }

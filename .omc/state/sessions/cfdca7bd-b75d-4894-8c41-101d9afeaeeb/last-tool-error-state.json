@@ -1,0 +1,7 @@
+{
+  "tool_name": "mcp__Claude_Browser__computer",
+  "tool_input_preview": "{\"action\":\"screenshot\",\"tabId\":\"seed\"}",
+  "error": "screenshot failed: Screenshot timed out after 5s: the Browser pane is not displayed, so the page is not compositing frames. Display the pane and retry.",
+  "timestamp": "2026-07-25T23:40:06.214Z",
+  "retry_count": 1
+}

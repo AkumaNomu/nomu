@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { commentsDb } from "@/lib/db";
-import { MusicCard, type LibraryTrack } from "@/components/music/MusicCard";
+import { mergeLibraryTracks, type MusicRow } from "@/lib/musicLibrary";
+import { TrackCollection } from "@/components/music/TrackCollection";
 import styles from "./musicLibrary.module.css";
 
 export const metadata: Metadata = {
@@ -11,28 +12,23 @@ export const metadata: Metadata = {
 
 export const dynamic = "force-dynamic";
 
-async function getTracks(): Promise<LibraryTrack[]> {
+async function getRows(): Promise<MusicRow[]> {
   if (!commentsDb) return [];
   return await commentsDb`
-    SELECT id, title, artist, album, artwork_path, slug
+    SELECT id, title, artist, album, file_path, artwork_path, duration_ms, slug
     FROM public.music
     ORDER BY created_at DESC
-  ` as LibraryTrack[];
+  ` as MusicRow[];
 }
 
 export default async function MusicPage() {
-  const tracks = await getTracks();
+  const tracks = mergeLibraryTracks(await getRows());
 
   return (
     <div className="site-shell">
       <div className={styles.page}>
-        <h1 className={styles.heading}>Music</h1>
-        <p className={styles.intro}>Songs I like. Pick one to hear it here on the site — lyrics and chords live on each track&apos;s page.</p>
-        {tracks.length ? (
-          <div className={styles.grid}>
-            {tracks.map((track) => <MusicCard key={track.id} track={track} />)}
-          </div>
-        ) : <p className={styles.empty}>No tracks in the library yet.</p>}
+        <h1 className={styles.srOnly}>Music</h1>
+        {tracks.length ? <TrackCollection tracks={tracks} /> : <p className={styles.empty}>No tracks in the library yet.</p>}
       </div>
     </div>
   );

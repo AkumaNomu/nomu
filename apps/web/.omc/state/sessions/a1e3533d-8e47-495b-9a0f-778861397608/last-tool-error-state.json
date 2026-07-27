@@ -1,7 +1,7 @@
 {
-  "tool_name": "mcp__Claude_Browser__computer",
-  "tool_input_preview": "{\"action\":\"screenshot\",\"tabId\":\"seed\"}",
-  "error": "computer timed out after 30s. The Browser pane may be stuck (modal dialog, navigation hang, or unresponsive renderer). Check preview_console_logs for errors.",
-  "timestamp": "2026-07-21T23:38:01.001Z",
+  "tool_name": "mcp__Claude_Browser__javascript_tool",
+  "tool_input_preview": "{\"action\":\"javascript_exec\",\"tabId\":\"seed\",\"text\":\"await new Promise(r => setTimeout(r, 800));\\n(() => {\\n  const aside = document.querySelector('aside[data-state=\\\"expanded\\\"]');\\n  const pill = asid...",
+  "error": "javascript_tool failed: SyntaxError: await is only valid in async functions and the top level bodies of modules",
+  "timestamp": "2026-07-21T23:59:39.421Z",
   "retry_count": 1
 }

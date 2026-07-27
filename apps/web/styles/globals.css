@@ -168,6 +168,15 @@ img, svg, video { display: block; max-width: 100%; }
 .prose > :first-child { margin-top: 0; }
 .prose > :last-child { margin-bottom: 0; }
 .prose p { margin: 0 0 1.35em; }
+.prose h1 {
+  scroll-margin-top: calc(var(--header-height) + 2rem);
+  margin: 3.6rem 0 1.1rem;
+  font-size: clamp(1.85rem, 3vw, 2.5rem);
+  font-weight: 660;
+  letter-spacing: -0.04em;
+  line-height: 1.08;
+  color: var(--foreground);
+}
 .prose h2 {
   scroll-margin-top: calc(var(--header-height) + 2rem);
   margin: 3.2rem 0 1rem;

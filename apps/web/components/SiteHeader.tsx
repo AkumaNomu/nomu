@@ -1,10 +1,11 @@
 "use client";
 
+import type { CSSProperties } from "react";
 import type { Route } from "next";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
-import { Check, FolderKanban, Gamepad2, Library, Moon, Music, Newspaper, Settings, User, Volume2, VolumeX, Wrench, X } from "lucide-react";
+import { ArrowLeft, Check, FolderKanban, Gamepad2, Library, Moon, Music, Newspaper, Settings, User, Volume2, VolumeX, Wrench, X } from "lucide-react";
 import { useSound } from "@/components/audio/SoundProvider";
 import { sound } from "@/lib/audio/soundEngine";
 import styles from "./SiteHeader.module.css";
@@ -130,7 +131,7 @@ function AppearanceSettings() {
               <legend>Sound effects</legend>
               <div className={styles.soundControl}>
                 <button type="button" aria-label={muted ? "Unmute sound effects" : "Mute sound effects"} title={muted ? "Unmute sound effects" : "Mute sound effects"} onClick={() => setMuted(!muted)}>{muted ? <VolumeX aria-hidden="true" /> : <Volume2 aria-hidden="true" />}</button>
-                <input aria-label="Sound effects volume" type="range" min="0" max="3" step="0.05" value={muted ? 0 : volume} onChange={(event) => { setMuted(false); setVolume(Number(event.target.value)); }} />
+                <input aria-label="Sound effects volume" type="range" min="0" max="3" step="0.05" value={muted ? 0 : volume} style={{ "--progress": `${((muted ? 0 : volume) / 3) * 100}%` } as CSSProperties} onChange={(event) => { setMuted(false); setVolume(Number(event.target.value)); }} />
                 <output>{Math.round((muted ? 0 : volume) * 100)}%</output>
               </div>
             </fieldset>
@@ -138,6 +139,32 @@ function AppearanceSettings() {
         </div>
       ) : null}
     </>
+  );
+}
+
+// A cold-loaded deep link has no in-app history to pop, so count client
+// navigations instead of trusting window.history.length (which also counts
+// wherever the tab was before this site) and fall back to the parent route.
+function BackButton() {
+  const router = useRouter();
+  const pathname = usePathname();
+  const navigations = useRef(0);
+
+  useEffect(() => { navigations.current += 1; }, [pathname]);
+
+  const goBack = () => {
+    sound.play("tap");
+    if (navigations.current > 1) { router.back(); return; }
+    const parent = pathname.replace(/\/[^/]*$/, "");
+    router.push((parent || "/") as Route);
+  };
+
+  return (
+    <nav className={styles.backNav} aria-label="Back">
+      <button type="button" aria-label="Go back" title="Go back" onPointerEnter={() => sound.play("hover")} onClick={goBack}>
+        <ArrowLeft aria-hidden="true" />
+      </button>
+    </nav>
   );
 }
 
@@ -188,18 +215,21 @@ export function SiteHeader() {
 
   return (
     <header className={`${styles.header} ${hidden ? styles.hidden : ""}`}>
-      <nav className={styles.desktop} aria-label="Primary navigation">
-        {links.map((link) => {
-          const active = pathname === "/" ? link.href === "/blog" : pathname.startsWith(link.href);
-          const Icon = link.icon;
-          return (
-            <Link key={link.href} href={link.href as Route} className={active ? styles.active : undefined} aria-current={active ? "page" : undefined} aria-label={link.label} title={link.label} onPointerEnter={() => sound.play("hover")}>
-              <Icon aria-hidden="true" />
-            </Link>
-          );
-        })}
-        <AppearanceSettings />
-      </nav>
+      <div className={styles.navGroup}>
+        <nav className={styles.desktop} aria-label="Primary navigation">
+          {links.map((link) => {
+            const active = pathname === "/" ? link.href === "/blog" : pathname.startsWith(link.href);
+            const Icon = link.icon;
+            return (
+              <Link key={link.href} href={link.href as Route} className={active ? styles.active : undefined} aria-current={active ? "page" : undefined} aria-label={link.label} title={link.label} onPointerEnter={() => sound.play("hover")}>
+                <Icon aria-hidden="true" />
+              </Link>
+            );
+          })}
+          <AppearanceSettings />
+        </nav>
+        <BackButton />
+      </div>
     </header>
   );
 }

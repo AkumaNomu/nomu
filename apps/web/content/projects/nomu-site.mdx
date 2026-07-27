@@ -11,12 +11,18 @@ featured: true
 repository: https://github.com/akumanomu/nomu
 ---
 
-Nomu is the site you are reading: a personal editorial space that keeps writing, projects, small utilities, music, and games in one deliberately minimal system.
+## Why I made it
+
+I wanted one personal space for publishing writing and showing work without splitting it across disconnected platforms. The site is intentionally editorial, minimal, and easy to keep evolving in Git.
 
 <Figure src="/projects/nomu-site/cover.png" alt="Current Nomu personal site homepage" />
 
-The web app uses Next.js and MDX for file-based publishing, with Zod-validated metadata so invalid content fails at build time. Music and games use an admin-managed Neon database, while the rest of the site remains easy to version and edit in Git.
+## How it is built
 
-Motion has clear ownership: GSAP handles hero and scroll timelines, Motion handles component interactions, and Lenis handles desktop smooth scrolling. A companion Remotion studio shares visual primitives with the site for project teasers, article covers, and music visualizers.
+The web app is a Next.js workspace with file-based MDX content and Zod-validated metadata, so publishing stays versioned and malformed entries fail during builds. Music and games use an admin-managed Neon database because they need browser-based CRUD; everything else remains plain content files.
 
-The project also includes search, comments, theme preferences, audio playback, SEO metadata, sitemap and RSS generation, plus a small collection of browser tools.
+Motion has one owner per job: GSAP handles hero and scroll timelines, Motion handles component interaction, and Lenis handles desktop smooth scrolling. A companion Remotion studio reuses visual primitives for teasers, article covers, and music visualizers.
+
+## Current progress
+
+The publishing, projects, tools, search, comments, theme preferences, audio player, music library, games, sitemap, RSS, and SEO foundations are in place. It is still an active build: the design system and content structure grow with each new piece of work.
