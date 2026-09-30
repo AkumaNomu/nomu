@@ -3,6 +3,7 @@ import Link from "next/link";
 import { ArrowLeft, ArrowUpRight } from "lucide-react";
 import { notFound } from "next/navigation";
 import { getResourceBySlug, getResourceSlugs } from "@/lib/content";
+import { AnimatedGroup, AnimatedItem } from "@/components/motion/AnimatedGroup";
 import styles from "@/app/project.module.css";
 
 type Props = { params: Promise<{ slug: string }> };
@@ -50,11 +51,14 @@ export default async function ResourcePage({ params }: Props) {
     <article className={`${styles.resource} site-shell`}>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(data).replace(/</g, "\\u003c") }} />
       <Link className={styles.backLink} href="/resources"><ArrowLeft aria-hidden="true" size={16} /> All resources</Link>
+      <AnimatedGroup>
+      <AnimatedItem>
       <header className={styles.header}>
         <span className={styles.badge}>{typeLabel[type]}</span>
         <h1>{title}</h1>
       </header>
-
+      </AnimatedItem>
+      <AnimatedItem>
       <a className={styles.bookmark} href={url} target="_blank" rel="noreferrer">
         {/* Favicon of the linked site — a lightweight preview for the bookmark card. */}
         {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -65,8 +69,11 @@ export default async function ResourcePage({ params }: Props) {
         </span>
         <span className={styles.bookmarkCta}>Visit <ArrowUpRight aria-hidden="true" size={16} /></span>
       </a>
-
+      </AnimatedItem>
+      <AnimatedItem>
       <div className={`${styles.body} prose`}><Content /></div>
+      </AnimatedItem>
+      </AnimatedGroup>
     </article>
   );
 }

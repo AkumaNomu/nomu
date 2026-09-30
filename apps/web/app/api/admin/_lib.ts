@@ -78,15 +78,24 @@ function getCollectionPath(collection: ReadableCollection) {
 }
 
 function getContentFilePath(collection: ReadableCollection, slug: string) {
-  return path.join(getCollectionPath(collection), `${slug}.mdx`);
+  const direct = path.join(getCollectionPath(collection), `${slug}.mdx`);
+  if (collection === "blog" && !existsSync(direct)) {
+    const archived = path.join(getCollectionPath(collection), "archived", `${slug}.mdx`);
+    if (existsSync(archived)) return archived;
+  }
+  return direct;
 }
 
 export async function listContentEntries(collection: AdminContentCollection) {
-  const dir = getCollectionPath(collection);
-  const files = (await readdir(dir)).filter((file) => file.endsWith(".mdx")).sort();
+  const dirs = collection === "blog"
+    ? [{ dir: getCollectionPath(collection), prefix: "" }, { dir: path.join(getCollectionPath(collection), "archived"), prefix: "archived/" }]
+    : [{ dir: getCollectionPath(collection), prefix: "" }];
+  const files = (await Promise.all(dirs.filter(({ dir }) => existsSync(dir)).map(async ({ dir, prefix }) =>
+    (await readdir(dir)).filter((file) => file.endsWith(".mdx")).sort().map((file) => ({ dir, fileName: `${prefix}${file}` }))
+  ))).flat();
 
-  const entries = await Promise.all(files.map(async (fileName) => {
-    const filePath = path.join(dir, fileName);
+  const entries = await Promise.all(files.map(async ({ dir, fileName }) => {
+    const filePath = path.join(dir, fileName.slice(fileName.lastIndexOf("/") + 1));
     const [source, fileStat] = await Promise.all([readFile(filePath, "utf8"), stat(filePath)]);
     const parsed = matter(source);
     const metadata = collection === "blog"

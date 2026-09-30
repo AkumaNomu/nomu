@@ -3,7 +3,7 @@
 import Image from "next/image";
 import type { CSSProperties } from "react";
 import { useEffect, useRef, useState } from "react";
-import { ChevronDown, Music2, Volume2, VolumeX } from "lucide-react";
+import { ChevronDown, Volume2, VolumeX } from "lucide-react";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { PauseIcon, PlayIcon, SkipIcon } from "@personal/design-system";
 import { sound } from "@/lib/audio/soundEngine";
@@ -77,7 +77,7 @@ export function MusicWidget({ currentTrack, playing, volume, next, playPause, pr
               title="Open music player"
               onClick={() => { sound.play("open"); clearHideTimer(); setState("expanded"); }}
             >
-              <Music2 aria-hidden="true" />
+              <Image src={currentTrack.artwork} width={44} height={44} alt="" />
             </button>
           </div>
         </motion.aside>
@@ -139,13 +139,13 @@ export function MusicWidget({ currentTrack, playing, volume, next, playPause, pr
             </div>
 
             <div className={styles.exControls}>
-              <button type="button" onClick={previous} aria-label="Previous track" title="Previous track">
+              <button className={styles.exSkip} type="button" onClick={previous} aria-label="Previous track" title="Previous track">
                 <SkipIcon style={{ transform: "scaleX(-1)" }} />
               </button>
               <button className={styles.exPlay} type="button" onClick={playPause} aria-label={playing ? "Pause" : "Play"} title={playing ? "Pause" : "Play"} aria-pressed={playing}>
                 {playing ? <PauseIcon /> : <PlayIcon />}
               </button>
-              <button type="button" onClick={next} aria-label="Next track" title="Next track">
+              <button className={styles.exSkip} type="button" onClick={next} aria-label="Next track" title="Next track">
                 <SkipIcon />
               </button>
             </div>

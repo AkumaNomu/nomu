@@ -1,13 +1,14 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowLeft, ArrowRight } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { notFound } from "next/navigation";
-import { Comments } from "@/components/comments";
+import { Comments, COMMENTS_ENABLED } from "@/components/comments";
 import { ArticleReveal } from "@/components/ArticleReveal";
+import { AnimatedGroup, AnimatedItem } from "@/components/motion/AnimatedGroup";
 import { SectionRule } from "@/components/editorial";
 import { TableOfContents } from "@/components/mdx/TableOfContents";
-import { PostReactions } from "@/components/PostReactions";
+import { PostReactions, REACTIONS_ENABLED } from "@/components/PostReactions";
 import { getAllBlog, getBlogBySlug, getBlogSlugs } from "@/lib/content";
 import { parseHeadings } from "@/lib/mdx/headings";
 import styles from "@/app/article.module.css";
@@ -80,7 +81,7 @@ export default async function ArticlePage({ params }: Props) {
   };
 
   return (
-    <article className={styles.article}>
+    <article className={styles.article} data-article-page>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }} />
       <header className={styles.coverHero}>
         <div className={styles.coverFrame}>
@@ -88,7 +89,8 @@ export default async function ArticlePage({ params }: Props) {
           <div className={styles.coverFade} aria-hidden="true" />
         </div>
         <div className={`${styles.heroInner} site-shell`}>
-          <Link className={styles.backLink} href="/blog"><ArrowLeft aria-hidden="true" size={16} /> All posts</Link>
+          <AnimatedGroup>
+          <AnimatedItem>
           <div className={styles.headerInner}>
             <div className={styles.meta}>
               <time dateTime={article.metadata.publishedAt}>{formatDate(article.metadata.publishedAt)}</time>
@@ -100,6 +102,8 @@ export default async function ArticlePage({ params }: Props) {
             <h1>{article.metadata.title}</h1>
             <p className={styles.dek}>{article.metadata.description}</p>
           </div>
+          </AnimatedItem>
+          </AnimatedGroup>
         </div>
       </header>
 
@@ -108,9 +112,9 @@ export default async function ArticlePage({ params }: Props) {
           <div className={styles.tocColumn}>
             <TableOfContents nodes={headings} />
           </div>
-        ) : <div />}
+        ) : null}
         <div className={`${styles.body} prose`}><ArticleReveal><Content /></ArticleReveal></div>
-        <PostReactions slug={slug} />
+        {REACTIONS_ENABLED ? <div className={styles.reactionsRow}><PostReactions slug={slug} /></div> : null}
       </div>
 
       {related.length ? (
@@ -120,7 +124,7 @@ export default async function ArticlePage({ params }: Props) {
         </aside>
       ) : null}
 
-      <div className={`${styles.comments} site-shell`}><Comments slug={slug} /></div>
+      {COMMENTS_ENABLED ? <div className={`${styles.comments} site-shell`}><Comments slug={slug} /></div> : null}
     </article>
   );
 }

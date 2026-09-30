@@ -19,7 +19,7 @@ packages/content         Zod schemas for MDX frontmatter (blog/projects/tools)
 |---|---|---|
 | `/` | `page.tsx` | Home |
 | `/about` | `about/page.tsx` | |
-| `/blog`, `/blog/[slug]` | `blog/` | MDX, file-backed |
+| `/blog`, `/blog/archived`, `/blog/[slug]` | `blog/` | MDX, file-backed; `content/blog/archived/` holds older posts, listed only on the archive page |
 | `/projects`, `/projects/[slug]` | `projects/` | MDX, file-backed |
 | `/resources`, `/resources/[slug]` | `resources/` | MDX, file-backed |
 | `/tools`, `/tools/<slug>` | `tools/` | List page uses shared `ProjectExplorer`; each tool slug is its own static page + client implementation (`focus-timer`, `contrast-checker`, `prompt-splitter`, `palette-ratio-checker`, `image-utilities`, `converter`, `downloader`, `encryption`, `password-utils`, `pc-checker`) |
@@ -69,6 +69,6 @@ Admin (session cookie + `public.users.is_admin`, see `app/api/admin/_lib.ts`):
 
 ## Content authoring
 
-- Blog/projects/resources: MDX under `apps/web/content/<collection>`, Zod-validated frontmatter, statically imported in `apps/web/lib/content.ts` (required for the Next.js MDX compiler — no dynamic `fs` read at that layer).
+- Blog/projects/resources: MDX under `apps/web/content/<collection>`, Zod-validated frontmatter, statically imported in `apps/web/lib/content.ts` (required for the Next.js MDX compiler — no dynamic `fs` read at that layer). Older posts live in `apps/web/content/blog/archived/` — same `/blog/<slug>` URLs, resolved via an `archived/` fallback in `readSource` and the admin file resolver.
 - Music/games: DB rows, edited through `/admin`, not git-tracked content.
 - Audio files: drop an `.mp3` in `public/audio/`, run `pnpm sync:tracks` (reads ID3 tags via `music-metadata`, extracts + square-crops cover art via `ffmpeg-static`, writes `lib/tracks.generated.ts`).

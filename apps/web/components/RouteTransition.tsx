@@ -2,7 +2,7 @@
 
 import type { Route } from "next";
 import { usePathname, useRouter } from "next/navigation";
-import { useCallback, useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { motion, useAnimationControls, useReducedMotion } from "motion/react";
 import styles from "./RouteTransition.module.css";
 
@@ -15,11 +15,33 @@ const transitionVariants = [
   { enter: "50% 50%", exit: "50% 100%" },
 ] as const;
 
-type TransitionVariant = (typeof transitionVariants)[number];
-
 const circleClosed = (origin: string) => `circle(0vmax at ${origin})`;
 const circleOpen = (origin: string) => `circle(160vmax at ${origin})`;
 const transition = { duration: 0.54, ease: [0.76, 0, 0.24, 1] as const };
+
+// The wipe only plays when opening or closing a blog post — every other
+// page change navigates instantly with no transition screen.
+const isPostPath = (value: string) => value !== "/blog/archived" && /^\/blog\/[^/]+$/.test(value);
+
+// The wipe only lifts once the destination is actually ready — fonts in,
+// eager images decoded, a paint committed — so the page never swaps or pops
+// underneath the reveal. Capped so a hung asset can't trap the transition.
+const waitForPageReady = () => {
+  const timeout = new Promise((resolve) => window.setTimeout(resolve, 2000));
+  const ready = (async () => {
+    try { await document.fonts.ready; } catch { /* ignore */ }
+    const main = document.querySelector("#main-content");
+    const pending = main
+      ? Array.from(main.querySelectorAll("img")).filter((img) => img.loading !== "lazy" && (!img.complete || img.naturalWidth === 0))
+      : [];
+    await Promise.all(pending.map((img) => new Promise((resolve) => {
+      img.addEventListener("load", () => resolve(null), { once: true });
+      img.addEventListener("error", () => resolve(null), { once: true });
+    })));
+    await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+  })();
+  return Promise.race([ready, timeout]);
+};
 
 export function RouteTransition({ children }: Readonly<{ children: React.ReactNode }>) {
   const reducedMotion = useReducedMotion();
@@ -29,14 +51,20 @@ export function RouteTransition({ children }: Readonly<{ children: React.ReactNo
   const navigating = useRef(false);
   const previousPathname = useRef(pathname);
   const previousVariantIndex = useRef(-1);
-  const activeVariant = useRef<TransitionVariant>(transitionVariants[2]);
+  const [transitionsEnabled, setTransitionsEnabled] = useState(true);
+
+  useEffect(() => {
+    try { setTransitionsEnabled(localStorage.getItem("nomu-transitions") !== "off"); } catch { /* keep default */ }
+    const onChange = (event: Event) => setTransitionsEnabled((event as CustomEvent<boolean>).detail);
+    window.addEventListener("site:transitions-change", onChange);
+    return () => window.removeEventListener("site:transitions-change", onChange);
+  }, []);
 
   const chooseVariant = useCallback(() => {
     const availableCount = transitionVariants.length - 1;
     const offset = Math.floor(Math.random() * availableCount) + 1;
     const index = (previousVariantIndex.current + offset) % transitionVariants.length;
     previousVariantIndex.current = index;
-    activeVariant.current = transitionVariants[index];
     return transitionVariants[index];
   }, []);
 
@@ -76,7 +104,13 @@ export function RouteTransition({ children }: Readonly<{ children: React.ReactNo
 
   useEffect(() => {
     if (previousPathname.current === pathname) return;
+    const from = previousPathname.current;
     previousPathname.current = pathname;
+
+    if (!transitionsEnabled || (!isPostPath(from) && !isPostPath(pathname))) {
+      navigating.current = false;
+      return;
+    }
 
     if (reducedMotion) {
       navigating.current = false;
@@ -85,12 +119,11 @@ export function RouteTransition({ children }: Readonly<{ children: React.ReactNo
 
     const reveal = async () => {
       document.body.classList.add("route-transitioning");
-      const variant = navigating.current ? activeVariant.current : chooseVariant();
-      if (!navigating.current) {
-        controls.set({ clipPath: circleClosed(variant.enter) });
-        await controls.start({ clipPath: circleOpen(variant.enter), transition });
-      }
+      const variant = chooseVariant();
+      controls.set({ clipPath: circleClosed(variant.enter) });
+      await controls.start({ clipPath: circleOpen(variant.enter), transition });
       animatePageEntrance();
+      await waitForPageReady();
       await controls.start({ clipPath: circleClosed(variant.exit), transition: { ...transition, duration: 0.58 } });
       controls.set({ clipPath: circleClosed(variant.enter) });
       navigating.current = false;
@@ -98,18 +131,19 @@ export function RouteTransition({ children }: Readonly<{ children: React.ReactNo
     };
 
     void reveal();
-  }, [animatePageEntrance, chooseVariant, controls, pathname, reducedMotion]);
+  }, [animatePageEntrance, chooseVariant, controls, pathname, reducedMotion, transitionsEnabled]);
 
   useEffect(() => {
-    const onClick = async (event: MouseEvent) => {
-      if (reducedMotion || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+    const onClick = (event: MouseEvent) => {
+      if (!transitionsEnabled || reducedMotion || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
       const target = event.target;
       if (!(target instanceof Element)) return;
       const anchor = target.closest("a");
       if (!anchor || anchor.target === "_blank" || anchor.hasAttribute("download")) return;
 
       const url = new URL(anchor.href, window.location.href);
-      if (url.origin !== window.location.origin || (url.pathname === window.location.pathname && url.search === window.location.search) || url.hash) return;
+      if (url.origin !== window.location.origin || url.pathname === window.location.pathname || url.hash) return;
+      if (!isPostPath(url.pathname) && !isPostPath(window.location.pathname)) return;
 
       event.preventDefault();
       event.stopPropagation();
@@ -117,15 +151,12 @@ export function RouteTransition({ children }: Readonly<{ children: React.ReactNo
       navigating.current = true;
       document.body.classList.add("route-transitioning");
       document.dispatchEvent(new Event("site:navigation-start"));
-      const variant = chooseVariant();
-      controls.set({ clipPath: circleClosed(variant.enter) });
-      await controls.start({ clipPath: circleOpen(variant.enter), transition });
       router.push(`${url.pathname}${url.search}${url.hash}` as Route);
     };
 
     document.addEventListener("click", onClick, true);
     return () => document.removeEventListener("click", onClick, true);
-  }, [chooseVariant, controls, reducedMotion, router]);
+  }, [reducedMotion, router, transitionsEnabled]);
 
   return (
     <>

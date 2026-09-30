@@ -10,15 +10,15 @@ import ContrastCheckerTool from "@/content/tools/contrast-checker.mdx";
 import FocusTimerTool from "@/content/tools/focus-timer.mdx";
 import PaletteRatioCheckerTool from "@/content/tools/palette-ratio-checker.mdx";
 import PromptSplitterTool from "@/content/tools/prompt-splitter.mdx";
-import KatexSupport from "@/content/blog/katex-support.mdx";
-import MarkdownTestPost from "@/content/blog/markdown-test-post.mdx";
-import MergingPaginationMusicSupport from "@/content/blog/merging-pagination-music-support.mdx";
-import NomusFirstPost from "@/content/blog/nomus-first-post.mdx";
-import NomusV2 from "@/content/blog/nomus-v2.mdx";
-import NomusV3 from "@/content/blog/nomus-v3.mdx";
+import KatexSupport from "@/content/blog/archived/katex-support.mdx";
+import MarkdownTestPost from "@/content/blog/archived/markdown-test-post.mdx";
+import MergingPaginationMusicSupport from "@/content/blog/archived/merging-pagination-music-support.mdx";
+import NomusFirstPost from "@/content/blog/archived/nomus-first-post.mdx";
+import NomusV2 from "@/content/blog/archived/nomus-v2.mdx";
+import NomusV3 from "@/content/blog/archived/nomus-v3.mdx";
 import SoTheyWantToBanPornMyTwoCents from "@/content/blog/so-they-want-to-ban-porn-my-two-cents.mdx";
-import TryingToMakePlaylistsFlowBetter from "@/content/blog/trying-to-make-playlists-flow-better.mdx";
-import WhyAreStudyAgenciesSuchAScam from "@/content/blog/why-are-study-agencies-such-a-scam.mdx";
+import TryingToMakePlaylistsFlowBetter from "@/content/blog/archived/trying-to-make-playlists-flow-better.mdx";
+import WhyAreStudyAgenciesSuchAScam from "@/content/blog/archived/why-are-study-agencies-such-a-scam.mdx";
 
 export type MdxContent = ComponentType<Record<string, never>>;
 

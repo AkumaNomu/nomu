@@ -14,6 +14,11 @@ type SoundContextValue = {
 
 const SoundContext = createContext<SoundContextValue | null>(null);
 
+// Master switch for the UI sound effects. Off for now — the engine stays
+// mounted so volume/mute preferences survive, but no cue ever plays and the
+// settings panel hides its sound section.
+export const SOUND_EFFECTS_ENABLED = false;
+
 /**
  * Mounts the shared sound engine: restores saved volume/mute, unlocks the
  * AudioContext on the first user gesture (browsers block audio until then),
@@ -29,7 +34,7 @@ export function SoundProvider({ children }: { children: React.ReactNode }) {
     setMutedState(sound.muted);
 
     const media = window.matchMedia("(prefers-reduced-motion: reduce)");
-    const applyPreference = () => sound.setEnabled(!media.matches);
+    const applyPreference = () => sound.setEnabled(SOUND_EFFECTS_ENABLED && !media.matches);
     applyPreference();
     media.addEventListener("change", applyPreference);
 
@@ -38,6 +43,9 @@ export function SoundProvider({ children }: { children: React.ReactNode }) {
       if (unlocked) return;
       unlocked = true;
       sound.unlock();
+      for (const name of ["hover", "tap", "open", "close", "confirm", "toggle", "next", "error"] as const) {
+        void sound.registerSample(name, `/sounds/${name}.ogg`);
+      }
       window.removeEventListener("pointerdown", unlock);
       window.removeEventListener("keydown", unlock);
     };

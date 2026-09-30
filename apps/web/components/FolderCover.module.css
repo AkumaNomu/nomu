@@ -1,0 +1,3 @@
+.folder { display: grid; place-items: center; width: 100%; height: 100%; background: color-mix(in srgb, var(--foreground) 3%, transparent); }
+.mini { display: grid; grid-template-columns: 1fr 1fr; gap: 0.7rem; width: 78%; }
+.mini img { width: 100%; aspect-ratio: 16 / 10; object-fit: cover; border-radius: 0.35rem; border: 1px solid var(--soft-line); background: var(--paper); box-shadow: 0 0.3rem 0.7rem rgba(0, 0, 0, 0.12); }

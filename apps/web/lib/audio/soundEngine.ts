@@ -7,9 +7,10 @@
 //   2. One-shot samples — high-quality decoded AudioBuffers, registered by name
 //      and preferred over the synth recipe when present.
 //
-// The design goal is a sparse, soft, spatial, premium soundscape (closer to
-// PlayStation / Apple UI feedback than retro synth beeps): low levels, gentle
-// attacks, high-pass to keep things airy, and a short plate-like reverb for space.
+// The design goal is a deep, low, cinematic soundscape (closer to film
+// trailers and ambient game menus than retro synth beeps): sub-bass swells,
+// airy low whooshes, and soft halo intervals with slow attacks and long,
+// reverberant tails. Nothing lives above the lower midrange.
 //
 // Browsers require a user gesture before audio can start, so the context is
 // created lazily and resumed on unlock(). Global volume, mute, and an enabled
@@ -42,8 +43,10 @@ type ToneOpts = {
 
 type NoiseOpts = {
   dur?: number;
+  attack?: number;
   type?: BiquadFilterType;
   freq?: number;
+  sweepTo?: number;
   q?: number;
   peak?: number;
   reverb?: number;
@@ -111,9 +114,9 @@ class SoundEngine {
     comp.release.value = 0.2;
 
     const reverb = ctx.createConvolver();
-    reverb.buffer = this.impulse(ctx, 1.5, 3.2);
+    reverb.buffer = this.impulse(ctx, 2.2, 2.6);
     const reverbReturn = ctx.createGain();
-    reverbReturn.gain.value = 0.85;
+    reverbReturn.gain.value = 0.9;
 
     // master -> compressor -> speakers; reverb send folds back into master.
     master.connect(comp).connect(ctx.destination);
@@ -245,7 +248,7 @@ class SoundEngine {
     const ctx = this.ctx;
     if (!ctx || !this.master) return;
 
-    const { dur = 0.12, type = "highpass", freq = 2000, q = 0.7, peak = 0.06, reverb = 0.2, pan = 0 } = opts;
+    const { dur = 0.12, attack = 0.004, type = "lowpass", freq = 320, sweepTo, q = 0.6, peak = 0.06, reverb = 0.2, pan = 0 } = opts;
 
     const frames = Math.max(1, Math.floor(ctx.sampleRate * dur));
     const buffer = ctx.createBuffer(1, frames, ctx.sampleRate);
@@ -257,13 +260,14 @@ class SoundEngine {
 
     const biquad = ctx.createBiquadFilter();
     biquad.type = type;
-    biquad.frequency.value = freq;
+    biquad.frequency.setValueAtTime(freq, when);
+    if (sweepTo) biquad.frequency.linearRampToValueAtTime(sweepTo, when + dur);
     biquad.Q.value = q;
 
     const env = ctx.createGain();
     const level = peak * gainScale;
     env.gain.setValueAtTime(0.0001, when);
-    env.gain.exponentialRampToValueAtTime(Math.max(0.0002, level), when + 0.004);
+    env.gain.exponentialRampToValueAtTime(Math.max(0.0002, level), when + Math.min(attack, dur));
     env.gain.exponentialRampToValueAtTime(0.0001, when + dur);
 
     src.connect(biquad).connect(env);
@@ -307,7 +311,8 @@ class SoundEngine {
     src.buffer = buffer;
     const env = ctx.createGain();
     env.gain.value = 0.9 * gainScale;
-    src.connect(env).connect(master);
+    src.connect(env);
+    this.route(env, when, buffer.duration, 0.45, 0);
     src.start(when);
   }
 
@@ -325,41 +330,38 @@ class SoundEngine {
   }
 }
 
-// Preset recipes. Each schedules one or more voices relative to `when`.
-// Levels stay low and attacks soft to keep the palette gentle and premium.
+// Preset recipes (offline fallback — the generated .ogg samples take priority
+// when loaded). Same shape as the samples: 100ms soft hums, low and subtle.
 const PRESETS: Record<SoundName, (e: SoundEngine, when: number, gain: number) => void> = {
   hover: (e, when, gain) => {
-    e.tone(
-      { freq: 880, type: "sine", dur: 0.09, attack: 0.004, release: 0.08, peak: 0.065, detune: (Math.random() - 0.5) * 14, filter: { type: "lowpass", freq: 1800 }, reverb: 0.18, pan: 0.15 },
-      when,
-      gain,
-    );
+    e.tone({ freq: 120, type: "sine", dur: 0.1, attack: 0.05, release: 0.05, peak: 0.06, reverb: 0.3 }, when, gain);
   },
   tap: (e, when, gain) => {
-    e.tone({ freq: 440, type: "sine", dur: 0.1, attack: 0.004, release: 0.09, peak: 0.12, reverb: 0.16 }, when, gain);
-    e.noise({ dur: 0.05, type: "bandpass", freq: 1800, peak: 0.065, reverb: 0.1 }, when, gain);
+    e.tone({ freq: 110, type: "sine", dur: 0.1, attack: 0.04, release: 0.06, peak: 0.1, reverb: 0.3 }, when, gain);
+    e.noise({ dur: 0.1, attack: 0.04, type: "lowpass", freq: 300, peak: 0.03, reverb: 0.25 }, when, gain);
   },
   open: (e, when, gain) => {
-    e.tone({ freq: 392, type: "triangle", dur: 0.24, attack: 0.008, release: 0.24, peak: 0.13, reverb: 0.42, pan: -0.2 }, when, gain);
-    e.tone({ freq: 587.33, type: "sine", dur: 0.3, attack: 0.01, release: 0.3, peak: 0.11, reverb: 0.5, pan: 0.2 }, when + 0.06, gain);
+    e.tone({ freq: 80, type: "sine", dur: 0.1, attack: 0.05, release: 0.05, peak: 0.09, reverb: 0.4 }, when, gain);
+    e.tone({ freq: 120, type: "sine", dur: 0.1, attack: 0.05, release: 0.05, peak: 0.06, reverb: 0.4 }, when, gain);
   },
   close: (e, when, gain) => {
-    e.tone({ freq: 523.25, type: "triangle", dur: 0.22, attack: 0.008, release: 0.22, peak: 0.12, reverb: 0.38, pan: 0.2 }, when, gain);
-    e.tone({ freq: 349.23, type: "sine", dur: 0.28, attack: 0.01, release: 0.28, peak: 0.11, reverb: 0.44, pan: -0.2 }, when + 0.06, gain);
+    e.tone({ freq: 120, type: "sine", dur: 0.1, attack: 0.05, release: 0.05, peak: 0.07, reverb: 0.4 }, when, gain);
+    e.tone({ freq: 80, type: "sine", dur: 0.1, attack: 0.05, release: 0.05, peak: 0.08, reverb: 0.4 }, when, gain);
   },
   confirm: (e, when, gain) => {
-    e.tone({ freq: 440, type: "sine", dur: 0.34, attack: 0.01, release: 0.34, peak: 0.13, reverb: 0.5, pan: -0.12 }, when, gain);
-    e.tone({ freq: 659.25, type: "sine", dur: 0.36, attack: 0.012, release: 0.36, peak: 0.11, reverb: 0.55, pan: 0.12 }, when + 0.06, gain);
+    e.tone({ freq: 130.81, type: "sine", dur: 0.1, attack: 0.05, release: 0.05, peak: 0.07, reverb: 0.45 }, when, gain);
+    e.tone({ freq: 196, type: "sine", dur: 0.1, attack: 0.05, release: 0.05, peak: 0.05, reverb: 0.45 }, when, gain);
   },
   toggle: (e, when, gain) => {
-    e.tone({ freq: 554.37, type: "sine", dur: 0.12, attack: 0.005, release: 0.11, peak: 0.12, reverb: 0.22 }, when, gain);
+    e.tone({ freq: 140, type: "sine", dur: 0.1, attack: 0.04, release: 0.06, peak: 0.08, reverb: 0.35 }, when, gain);
   },
   next: (e, when, gain) => {
-    e.tone({ freq: 659.25, type: "sine", dur: 0.1, attack: 0.004, release: 0.09, peak: 0.11, glideTo: 783.99, reverb: 0.2, pan: 0.1 }, when, gain);
+    e.tone({ freq: 160, type: "sine", dur: 0.1, attack: 0.05, release: 0.05, peak: 0.07, reverb: 0.4 }, when, gain);
+    e.noise({ dur: 0.1, attack: 0.05, type: "lowpass", freq: 500, peak: 0.03, reverb: 0.4 }, when, gain);
   },
   error: (e, when, gain) => {
-    e.tone({ freq: 174.61, type: "sine", dur: 0.4, attack: 0.012, release: 0.4, peak: 0.12, reverb: 0.4 }, when, gain);
-    e.tone({ freq: 130.81, type: "triangle", dur: 0.44, attack: 0.014, release: 0.44, peak: 0.09, reverb: 0.36 }, when + 0.02, gain);
+    e.tone({ freq: 70, type: "sine", dur: 0.1, attack: 0.05, release: 0.05, peak: 0.09, reverb: 0.4 }, when, gain);
+    e.noise({ dur: 0.1, attack: 0.05, type: "lowpass", freq: 200, peak: 0.03, reverb: 0.35 }, when, gain);
   },
 };
 

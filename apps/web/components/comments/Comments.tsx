@@ -59,6 +59,10 @@ function CommentItem({ entry, user, onPost }: { entry: CommentEntry; user: User 
 
 export type CommentsProps = { slug: string };
 
+// Master switch for the comment threads. Off for now — the API routes and
+// stored comments stay untouched, the thread UI just doesn't render.
+export const COMMENTS_ENABLED = false;
+
 export function Comments({ slug }: CommentsProps) {
   const { user } = useAccount();
   const [comments, setComments] = useState<CommentEntry[]>([]);

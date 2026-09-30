@@ -40,7 +40,7 @@ export type ContentEntry<T extends object> = T & {
   Content: MdxContent;
 };
 
-export type BlogEntry = ContentEntry<BlogFrontmatter & { readingTime: string }>;
+export type BlogEntry = ContentEntry<BlogFrontmatter & { readingTime: string; archived: boolean }>;
 export type ProjectEntry = ContentEntry<ProjectFrontmatter>;
 export type ToolEntry = ContentEntry<ToolFrontmatter>;
 export type PageEntry = ContentEntry<PageFrontmatter>;
@@ -75,11 +75,13 @@ export function getProjectImage(slug: string, fallback: string) {
 }
 
 function readSource(collection: Collection, slug: string) {
-  const filePath = path.join(contentRoot, collection, `${slug}.mdx`);
-  if (!existsSync(filePath)) throw new Error(`Missing MDX source: ${collection}/${slug}.mdx`);
+  const direct = path.join(contentRoot, collection, `${slug}.mdx`);
+  const candidates = collection === "blog" ? [direct, path.join(contentRoot, collection, "archived", `${slug}.mdx`)] : [direct];
+  const filePath = candidates.find((candidate) => existsSync(candidate));
+  if (!filePath) throw new Error(`Missing MDX source: ${collection}/${slug}.mdx`);
   const source = readFileSync(filePath, "utf8");
   const parsed = matter(source);
-  return { data: parsed.data, body: parsed.content.trim() };
+  return { data: parsed.data, body: parsed.content.trim(), archived: filePath !== direct };
 }
 
 function makeSearchText(metadata: object, body: string) {
@@ -90,10 +92,10 @@ function makeSearchText(metadata: object, body: string) {
 }
 
 function loadBlog(slug: keyof typeof blogRegistry): BlogEntry {
-  const { data, body } = readSource("blog", slug);
+  const { data, body, archived } = readSource("blog", slug);
   const parsed = blogSchema.parse(data);
   if (parsed.slug !== slug) throw new Error(`Blog slug mismatch: ${slug}`);
-  const metadata = { ...parsed, readingTime: readingTime(body).text };
+  const metadata = { ...parsed, readingTime: readingTime(body).text, archived };
   return { ...metadata, metadata, body, searchableText: makeSearchText(metadata, body), Content: blogRegistry[slug] };
 }
 

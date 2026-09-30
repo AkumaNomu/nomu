@@ -4,6 +4,7 @@ import Link from "next/link";
 import { ArrowLeft, ArrowRight, ArrowUpRight } from "lucide-react";
 import { notFound } from "next/navigation";
 import { SectionRule } from "@/components/editorial";
+import { AnimatedGroup, AnimatedItem } from "@/components/motion/AnimatedGroup";
 import { getAllBlog, getAllProjects, getProjectBySlug, getProjectImage, getProjectImages, getProjectSlugs } from "@/lib/content";
 import styles from "@/app/project.module.css";
 
@@ -67,6 +68,8 @@ export default async function ProjectPage({ params }: Props) {
   return (
     <article className={`${styles.project} site-shell`}>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(data).replace(/</g, "\\u003c") }} />
+      <AnimatedGroup>
+      <AnimatedItem>
       <header className={styles.header}>
         <div className={styles.titleRow}>
           <Image src={image} alt="" width={112} height={112} />
@@ -74,8 +77,9 @@ export default async function ProjectPage({ params }: Props) {
         </div>
         <p className={styles.summary}>{project.metadata.description}</p>
       </header>
-
+      </AnimatedItem>
       {shots.length ? (
+        <AnimatedItem>
         <div className={styles.gallery} aria-label={`${project.metadata.title} screenshots`}>
           {shots.map((src, position) => (
             <figure key={src} className={styles.shot}>
@@ -83,8 +87,10 @@ export default async function ProjectPage({ params }: Props) {
             </figure>
           ))}
         </div>
+        </AnimatedItem>
       ) : null}
 
+      <AnimatedItem>
       <div className={styles.layout}>
         <div className={styles.body}>
           <div className="prose"><Content /></div>
@@ -104,13 +110,17 @@ export default async function ProjectPage({ params }: Props) {
           ) : null}
         </aside>
       </div>
+      </AnimatedItem>
 
       {related.length ? (
+        <AnimatedItem>
         <aside className={styles.related}>
           <SectionRule title="Related Posts" />
           <ul>{related.map((entry) => <li key={entry.metadata.slug}><Link href={`/blog/${entry.metadata.slug}`}><span>{entry.metadata.title}</span><ArrowRight aria-hidden="true" /></Link></li>)}</ul>
         </aside>
+        </AnimatedItem>
       ) : null}
+      </AnimatedGroup>
 
       {previous || next ? (
         <nav className={styles.projectNav} aria-label="More projects">

@@ -5,8 +5,8 @@ import type { Route } from "next";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
-import { ArrowLeft, Check, FolderKanban, Gamepad2, Library, Moon, Music, Newspaper, Settings, User, Volume2, VolumeX, Wrench, X } from "lucide-react";
-import { useSound } from "@/components/audio/SoundProvider";
+import { ArrowLeft, Check, FolderKanban, Gamepad2, Library, Moon, Music, Newspaper, Settings, Sun, User, Volume2, VolumeX, Wrench, X, Zap } from "lucide-react";
+import { useSound, SOUND_EFFECTS_ENABLED } from "@/components/audio/SoundProvider";
 import { sound } from "@/lib/audio/soundEngine";
 import styles from "./SiteHeader.module.css";
 
@@ -20,6 +20,7 @@ const STORAGE_KEY = "nomu-appearance";
 const defaults: Preferences = { theme: "light", accent: "green", fontSize: "medium" };
 const accents = ["green", "blue", "rust", "gold"] as const;
 const fontSizes = ["small", "medium", "large"] as const;
+const fontSizeOptions = { small: { label: "S", size: ".68rem" }, medium: { label: "M", size: ".8rem" }, large: { label: "L", size: ".95rem" } } as const;
 
 const links = [
   { href: "/blog", label: "Blog", icon: Newspaper },
@@ -28,8 +29,11 @@ const links = [
   { href: "/games", label: "Games", icon: Gamepad2 },
   { href: "/tools", label: "Tools", icon: Wrench },
   { href: "/resources", label: "Resources", icon: Library },
-  { href: "/about", label: "About", icon: User }
+  {href: "/about", label: "About", icon: User }
 ] as const;
+
+// Games, Tools, Music and Resources stay routable but are hidden from the main site nav.
+const visibleLinks = links.filter((link) => link.href !== "/games" && link.href !== "/tools" && link.href !== "/music" && link.href !== "/resources");
 
 function applyPreferences(preferences: Preferences) {
   const root = document.documentElement;
@@ -38,25 +42,48 @@ function applyPreferences(preferences: Preferences) {
   root.dataset.fontSize = preferences.fontSize;
 }
 
+const TRANSITIONS_KEY = "nomu-transitions";
+
+function readPreferences(): Preferences {
+  try {
+    const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) ?? "{}") as Partial<Preferences>;
+    return {
+      theme: saved.theme === "dark" ? "dark" : "light",
+      accent: accents.includes(saved.accent as Preferences["accent"]) ? saved.accent as Preferences["accent"] : defaults.accent,
+      fontSize: fontSizes.includes(saved.fontSize as Preferences["fontSize"]) ? saved.fontSize as Preferences["fontSize"] : defaults.fontSize
+    };
+  } catch {
+    return defaults;
+  }
+}
+
+function writePreferences(preferences: Preferences) {
+  applyPreferences(preferences);
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(preferences)); } catch { /* ignore */ }
+  window.dispatchEvent(new CustomEvent("site:appearance-change", { detail: preferences }));
+}
+
+function readTransitionsEnabled(): boolean {
+  try { return localStorage.getItem(TRANSITIONS_KEY) !== "off"; } catch { return true; }
+}
+
+function writeTransitionsEnabled(enabled: boolean) {
+  try { localStorage.setItem(TRANSITIONS_KEY, enabled ? "on" : "off"); } catch { /* ignore */ }
+  window.dispatchEvent(new CustomEvent("site:transitions-change", { detail: enabled }));
+}
+
 function AppearanceSettings() {
   const [preferences, setPreferences] = useState(defaults);
+  const [transitionsEnabled, setTransitionsEnabled] = useState(true);
   const { volume, muted, setMuted, setVolume } = useSound();
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
     const frame = requestAnimationFrame(() => {
-      try {
-        const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) ?? "{}") as Partial<Preferences>;
-        const next: Preferences = {
-          theme: saved.theme === "dark" ? "dark" : "light",
-          accent: accents.includes(saved.accent as Preferences["accent"]) ? saved.accent as Preferences["accent"] : defaults.accent,
-          fontSize: fontSizes.includes(saved.fontSize as Preferences["fontSize"]) ? saved.fontSize as Preferences["fontSize"] : defaults.fontSize
-        };
-        setPreferences(next);
-        applyPreferences(next);
-      } catch {
-        applyPreferences(defaults);
-      }
+      const next = readPreferences();
+      setPreferences(next);
+      applyPreferences(next);
+      setTransitionsEnabled(readTransitionsEnabled());
     });
     return () => cancelAnimationFrame(frame);
   }, []);
@@ -64,8 +91,7 @@ function AppearanceSettings() {
   const update = (patch: Partial<Preferences>) => {
     const next = { ...preferences, ...patch };
     setPreferences(next);
-    applyPreferences(next);
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+    writePreferences(next);
   };
 
   const close = () => { sound.play("close"); setOpen(false); };
@@ -106,14 +132,14 @@ function AppearanceSettings() {
               </button>
             </div>
 
-            <div className={styles.settingsGroup}>
-              <div className={styles.settingsTitle}><strong>Appearance</strong></div>
-              <button className={styles.themeToggle} type="button" aria-pressed={preferences.theme === "dark"} onClick={() => update({ theme: preferences.theme === "dark" ? "light" : "dark" })}>
-                <span className={styles.themeIcon}><Moon aria-hidden="true" /></span>
-                <span className={styles.themeLabel}>Dark theme</span>
-                <span className={styles.themeSwitch} aria-hidden="true"><span>{preferences.theme === "dark" ? <Check /> : null}</span></span>
+            <fieldset className={styles.settingsFieldset}>
+              <legend>Motion</legend>
+              <button className={styles.themeToggle} type="button" aria-pressed={transitionsEnabled} onClick={() => { const next = !transitionsEnabled; setTransitionsEnabled(next); writeTransitionsEnabled(next); }}>
+                <span className={styles.themeIcon}><Zap aria-hidden="true" /></span>
+                <span className={styles.themeLabel}>Transitions</span>
+                <span className={styles.themeSwitch} aria-hidden="true"><span>{transitionsEnabled ? <Check /> : null}</span></span>
               </button>
-            </div>
+            </fieldset>
 
             <fieldset className={styles.settingsFieldset}>
               <legend>Accent color</legend>
@@ -124,9 +150,10 @@ function AppearanceSettings() {
             <fieldset className={styles.settingsFieldset}>
               <legend>Font size</legend>
               <div className={styles.fontSizes}>
-                {fontSizes.map((fontSize) => <button key={fontSize} type="button" aria-pressed={preferences.fontSize === fontSize} onClick={() => update({ fontSize })}>{fontSize[0].toUpperCase() + fontSize.slice(1)}</button>)}
+                {fontSizes.map((fontSize) => <button key={fontSize} type="button" aria-label={`${fontSize} font size`} aria-pressed={preferences.fontSize === fontSize} style={{ fontSize: fontSizeOptions[fontSize].size }} onClick={() => update({ fontSize })}>{fontSizeOptions[fontSize].label}</button>)}
               </div>
             </fieldset>
+            {SOUND_EFFECTS_ENABLED ? (
             <fieldset className={styles.settingsFieldset}>
               <legend>Sound effects</legend>
               <div className={styles.soundControl}>
@@ -135,6 +162,7 @@ function AppearanceSettings() {
                 <output>{Math.round((muted ? 0 : volume) * 100)}%</output>
               </div>
             </fieldset>
+            ) : null}
           </section>
         </div>
       ) : null}
@@ -142,21 +170,42 @@ function AppearanceSettings() {
   );
 }
 
-// A cold-loaded deep link has no in-app history to pop, so count client
-// navigations instead of trusting window.history.length (which also counts
-// wherever the tab was before this site) and fall back to the parent route.
+function ThemeToggle() {
+  const [theme, setTheme] = useState<Preferences["theme"]>("light");
+
+  useEffect(() => {
+    setTheme(readPreferences().theme);
+    const onChange = (event: Event) => setTheme((event as CustomEvent<Preferences>).detail.theme);
+    window.addEventListener("site:appearance-change", onChange);
+    return () => window.removeEventListener("site:appearance-change", onChange);
+  }, []);
+
+  const toggle = () => {
+    sound.play("tap");
+    const next = { ...readPreferences(), theme: (theme === "dark" ? "light" : "dark") as Preferences["theme"] };
+    setTheme(next.theme);
+    writePreferences(next);
+  };
+
+  return (
+    <nav className={styles.backNav} aria-label="Theme">
+      <button type="button" aria-label={theme === "dark" ? "Switch to light theme" : "Switch to dark theme"} title={theme === "dark" ? "Switch to light theme" : "Switch to dark theme"} aria-pressed={theme === "dark"} onPointerEnter={() => sound.play("hover")} onClick={toggle}>
+        {theme === "dark" ? <Sun aria-hidden="true" /> : <Moon aria-hidden="true" />}
+      </button>
+    </nav>
+  );
+}
+
+// The back button always goes to the root of the current section
+// (/blog/x → /blog, /projects/x → /projects, /about → /) — never history.
 function BackButton() {
   const router = useRouter();
   const pathname = usePathname();
-  const navigations = useRef(0);
-
-  useEffect(() => { navigations.current += 1; }, [pathname]);
 
   const goBack = () => {
     sound.play("tap");
-    if (navigations.current > 1) { router.back(); return; }
-    const parent = pathname.replace(/\/[^/]*$/, "");
-    router.push((parent || "/") as Route);
+    const segments = pathname.split("/").filter(Boolean);
+    router.push((segments.length > 1 ? `/${segments[0]}` : "/") as Route);
   };
 
   return (
@@ -216,8 +265,9 @@ export function SiteHeader() {
   return (
     <header className={`${styles.header} ${hidden ? styles.hidden : ""}`}>
       <div className={styles.navGroup}>
+        <BackButton />
         <nav className={styles.desktop} aria-label="Primary navigation">
-          {links.map((link) => {
+          {visibleLinks.map((link) => {
             const active = pathname === "/" ? link.href === "/blog" : pathname.startsWith(link.href);
             const Icon = link.icon;
             return (
@@ -228,7 +278,7 @@ export function SiteHeader() {
           })}
           <AppearanceSettings />
         </nav>
-        <BackButton />
+        <ThemeToggle />
       </div>
     </header>
   );
