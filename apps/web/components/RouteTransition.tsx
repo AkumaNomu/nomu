@@ -49,6 +49,7 @@ export function RouteTransition({ children }: Readonly<{ children: React.ReactNo
   const pathname = usePathname();
   const router = useRouter();
   const navigating = useRef(false);
+  const exitOrigin = useRef<string>(transitionVariants[2].exit);
   const previousPathname = useRef(pathname);
   const previousVariantIndex = useRef(-1);
   const [transitionsEnabled, setTransitionsEnabled] = useState(true);
@@ -107,6 +108,7 @@ export function RouteTransition({ children }: Readonly<{ children: React.ReactNo
     const from = previousPathname.current;
     previousPathname.current = pathname;
 
+    const fromClick = navigating.current;
     if (!transitionsEnabled || (!isPostPath(from) && !isPostPath(pathname))) {
       navigating.current = false;
       return;
@@ -119,13 +121,18 @@ export function RouteTransition({ children }: Readonly<{ children: React.ReactNo
 
     const reveal = async () => {
       document.body.classList.add("route-transitioning");
-      const variant = chooseVariant();
-      controls.set({ clipPath: circleClosed(variant.enter) });
-      await controls.start({ clipPath: circleOpen(variant.enter), transition });
+      // Clicks already covered the screen before pushing — only lift.
+      // Anything else (back/forward, programmatic pushes) covers after arrival.
+      if (!fromClick) {
+        const variant = chooseVariant();
+        exitOrigin.current = variant.exit;
+        controls.set({ clipPath: circleClosed(variant.enter) });
+        await controls.start({ clipPath: circleOpen(variant.enter), transition });
+      }
       animatePageEntrance();
       await waitForPageReady();
-      await controls.start({ clipPath: circleClosed(variant.exit), transition: { ...transition, duration: 0.58 } });
-      controls.set({ clipPath: circleClosed(variant.enter) });
+      await controls.start({ clipPath: circleClosed(exitOrigin.current), transition: { ...transition, duration: 0.58 } });
+      controls.set({ clipPath: circleClosed(transitionVariants[2].enter) });
       navigating.current = false;
       document.body.classList.remove("route-transitioning");
     };
@@ -151,12 +158,27 @@ export function RouteTransition({ children }: Readonly<{ children: React.ReactNo
       navigating.current = true;
       document.body.classList.add("route-transitioning");
       document.dispatchEvent(new Event("site:navigation-start"));
-      router.push(`${url.pathname}${url.search}${url.hash}` as Route);
+      // The page must not change until the wipe has fully covered it.
+      const cover = async () => {
+        const variant = chooseVariant();
+        exitOrigin.current = variant.exit;
+        controls.set({ clipPath: circleClosed(variant.enter) });
+        await controls.start({ clipPath: circleOpen(variant.enter), transition });
+        router.push(`${url.pathname}${url.search}${url.hash}` as Route);
+        window.setTimeout(() => {
+          if (navigating.current && previousPathname.current === window.location.pathname) {
+            navigating.current = false;
+            document.body.classList.remove("route-transitioning");
+            controls.set({ clipPath: circleClosed(transitionVariants[2].enter) });
+          }
+        }, 4000);
+      };
+      void cover();
     };
 
     document.addEventListener("click", onClick, true);
     return () => document.removeEventListener("click", onClick, true);
-  }, [reducedMotion, router, transitionsEnabled]);
+  }, [chooseVariant, controls, reducedMotion, router, transitionsEnabled]);
 
   return (
     <>

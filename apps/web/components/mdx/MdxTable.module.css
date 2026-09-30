@@ -13,11 +13,11 @@
   gap: 1rem;
   padding: 0.55rem 0.9rem;
   border-bottom: 1px solid var(--soft-line);
-  background: rgba(255, 255, 255, 0.3);
+  background: color-mix(in srgb, var(--foreground) 4%, transparent);
 }
 
 .count {
-  color: #55524d;
+  color: var(--muted);
   font-size: 0.72rem;
   letter-spacing: 0.1em;
   text-transform: uppercase;
@@ -28,13 +28,14 @@
   border: 1px solid var(--line);
   border-radius: 0.45rem;
   background: transparent;
-  color: #55524d;
+  color: var(--muted-strong);
   font-size: 0.74rem;
 }
 
 .collapse:hover {
   color: var(--foreground);
-  background: rgba(64, 118, 70, 0.08);
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
 }
 
 .collapsible {
@@ -87,15 +88,17 @@
 }
 
 .sortButton:hover {
-  background: rgba(64, 118, 70, 0.08);
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
 }
 
 .indicator {
   display: inline-flex;
-  color: #8a877f;
+  color: var(--muted);
   opacity: 0;
   transition: opacity 150ms ease;
 }
+
+.indicatorActive { color: var(--accent); }
 
 .sortButton:hover .indicator,
 .sortButton:focus-visible .indicator,
@@ -104,5 +107,5 @@
 }
 
 .table tbody tr:hover {
-  background: rgba(64, 118, 70, 0.05);
+  background: color-mix(in srgb, var(--accent) 7%, transparent);
 }

@@ -1,12 +1,13 @@
 "use client";
 
-import type { CSSProperties, MouseEvent } from "react";
+import type { CSSProperties } from "react";
 import type { Route } from "next";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
-import { ArrowLeft, Check, FolderKanban, Gamepad2, Library, Moon, Music, Newspaper, Settings, Sun, User, Volume2, VolumeX, Wrench, X, Zap } from "lucide-react";
+import { ArrowLeft, Check, FolderKanban, Gamepad2, Keyboard, Library, Moon, Music, Newspaper, Settings, Sun, User, Volume2, VolumeX, Wrench, X, Zap } from "lucide-react";
 import { useSound, SOUND_EFFECTS_ENABLED } from "@/components/audio/SoundProvider";
+import { openShortcuts } from "@/components/Shortcuts";
 import { sound } from "@/lib/audio/soundEngine";
 import styles from "./SiteHeader.module.css";
 
@@ -153,6 +154,14 @@ function AppearanceSettings() {
                 {fontSizes.map((fontSize) => <button key={fontSize} type="button" aria-label={`${fontSize} font size`} aria-pressed={preferences.fontSize === fontSize} style={{ fontSize: fontSizeOptions[fontSize].size }} onClick={() => update({ fontSize })}>{fontSizeOptions[fontSize].label}</button>)}
               </div>
             </fieldset>
+            <fieldset className={styles.settingsFieldset}>
+              <legend>Shortcuts</legend>
+              <button className={styles.themeToggle} type="button" onClick={() => { sound.play("open"); setOpen(false); openShortcuts(); }}>
+                <span className={styles.themeIcon}><Keyboard aria-hidden="true" /></span>
+                <span className={styles.themeLabel}>Keyboard shortcuts</span>
+                <span className={styles.themeHint} aria-hidden="true">?</span>
+              </button>
+            </fieldset>
             {SOUND_EFFECTS_ENABLED ? (
             <fieldset className={styles.settingsFieldset}>
               <legend>Sound effects</legend>
@@ -180,23 +189,30 @@ function ThemeToggle() {
     return () => window.removeEventListener("site:appearance-change", onChange);
   }, []);
 
-  const toggle = (event: MouseEvent) => {
+  const toggle = (point?: { clientX: number; clientY: number }) => {
     sound.play("tap");
     const next = { ...readPreferences(), theme: (theme === "dark" ? "light" : "dark") as Preferences["theme"] };
     const apply = () => { setTheme(next.theme); writePreferences(next); };
     const doc = document as Document & { startViewTransition?: (update: () => void) => { ready: Promise<void> } };
+    const origin = point ?? { clientX: window.innerWidth / 2, clientY: window.innerHeight / 2 };
     if (!doc.startViewTransition || window.matchMedia("(prefers-reduced-motion: reduce)").matches) { apply(); return; }
     try {
       const transition = doc.startViewTransition(apply);
       transition.ready.then(() => {
-        const radius = Math.hypot(Math.max(event.clientX, window.innerWidth - event.clientX), Math.max(event.clientY, window.innerHeight - event.clientY));
+        const radius = Math.hypot(Math.max(origin.clientX, window.innerWidth - origin.clientX), Math.max(origin.clientY, window.innerHeight - origin.clientY));
         document.documentElement.animate(
-          { clipPath: [`circle(0px at ${event.clientX}px ${event.clientY}px)`, `circle(${radius}px at ${event.clientX}px ${event.clientY}px)`] },
-          { duration: 480, easing: "cubic-bezier(0.22, 1, 0.36, 1)", pseudoElement: "::view-transition-new(root)" },
+          { clipPath: [`circle(0px at ${origin.clientX}px ${origin.clientY}px)`, `circle(${radius}px at ${origin.clientX}px ${origin.clientY}px)`] },
+          { duration: 720, easing: "cubic-bezier(0.22, 1, 0.36, 1)", pseudoElement: "::view-transition-new(root)" },
         );
       }).catch(() => { /* transition skipped — theme already applied */ });
     } catch { apply(); }
   };
+
+  useEffect(() => {
+    const onToggle = () => toggle();
+    window.addEventListener("site:toggle-theme", onToggle);
+    return () => window.removeEventListener("site:toggle-theme", onToggle);
+  });
 
   return (
     <nav className={styles.backNav} aria-label="Theme">

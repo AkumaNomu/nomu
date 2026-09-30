@@ -7,19 +7,19 @@
 .backLink:hover svg { transform: translateX(-0.2rem); }
 .coverFrame { position: absolute; inset: 0; overflow: hidden; background: #d8d3c9; }
 .coverImage { object-fit: cover; filter: saturate(0.76) contrast(1.04) brightness(.72); }
-.coverFade { position: absolute; inset: 0; background: linear-gradient(180deg, rgba(9,9,9,.22) 0%, transparent 30%, rgba(9,9,9,.22) 58%, var(--background) 100%), linear-gradient(90deg, rgba(9,9,9,.48), transparent 68%); pointer-events: none; }
-:root[data-theme="dark"] .coverFade { background: linear-gradient(180deg, rgba(9,9,9,.34) 0%, transparent 30%, rgba(9,9,9,.42) 52%, var(--background) 88%, var(--background) 100%), linear-gradient(90deg, rgba(9,9,9,.55), transparent 68%); }
+.coverFade { position: absolute; inset: 0; background: linear-gradient(180deg, rgba(9,9,9,.18) 0%, transparent 28%, rgba(9,9,9,.12) 55%, var(--background) 88%, var(--background) 100%), linear-gradient(90deg, rgba(9,9,9,.42), transparent 68%); pointer-events: none; }
+:root[data-theme="dark"] .coverFade { background: linear-gradient(180deg, rgba(9,9,9,.3) 0%, transparent 28%, rgba(9,9,9,.3) 50%, var(--background) 86%, var(--background) 100%), linear-gradient(90deg, rgba(9,9,9,.5), transparent 68%); }
 .headerInner { width: min(100%, 70rem); margin: auto auto 0; padding: clamp(3rem, 6vw, 5rem) 0 clamp(2rem, 3.5vw, 3rem); }
 .meta { display: flex; flex-wrap: wrap; align-items: center; gap: 0.55rem; margin: 0 0 1.2rem; color: rgba(255,255,255,.78); font-size: 0.69rem; font-weight: 650; letter-spacing: 0.14em; text-transform: uppercase; }
 .category { color: #d9e8d5; }
 .headerInner h1 { max-width: 70rem; margin: 0; font-size: clamp(2.1rem, 4.5vw, 3.75rem); font-weight: 620; letter-spacing: -0.05em; line-height: 1.02; text-wrap: balance; }
 .dek { max-width: 60rem; margin: 0.9rem 0 0; color: rgba(255,255,255,.78); font-size: clamp(1rem, 1.4vw, 1.18rem); line-height: 1.55; }
-.articleGrid { position: relative; width: min(100%, 76rem); margin-inline: auto; padding-top: clamp(2rem, 4vw, 3.5rem); display: flex; flex-wrap: wrap; gap: clamp(2rem, 4vw, 4rem); align-items: flex-start; }
-.tocColumn { position: sticky; top: calc(var(--header-height) + 1.5rem); flex: 0 0 13rem; max-height: calc(100dvh - var(--header-height) - 3rem); overflow-y: auto; overflow-x: clip; }
-.reactionsRow { flex: 1 1 100%; }
+.articleGrid { position: relative; width: min(100%, 82rem); margin-inline: auto; padding-top: clamp(2rem, 4vw, 3.5rem); display: grid; grid-template-columns: minmax(0, 1fr) min(100%, 44rem) minmax(0, 1fr); column-gap: clamp(1.5rem, 3vw, 3rem); align-items: start; }
+.tocColumn { grid-column: 1; justify-self: end; width: min(16rem, 100%); position: sticky; top: calc(var(--header-height) + 1.5rem); max-height: calc(100dvh - var(--header-height) - 3rem); overflow-y: auto; overflow-x: clip; }
+.reactionsRow { grid-column: 2; }
 /* Long-form typography is shared via the global `.prose` class (globals.css). */
-.body { flex: 1 1 0; min-width: min(100%, 28rem); display: flex; justify-content: center; }
-.body > * { width: min(100%, 44rem); }
+.body { grid-column: 2; min-width: 0; width: 100%; display: block; margin-inline: auto; }
+.body > * { width: 100%; }
 .body :global([data-scroll-reveal="true"]) {
   opacity: 0;
   transform: translateY(1rem);
@@ -34,8 +34,10 @@
 .related a:hover svg { transform: translateX(0.3rem); }
 .comments { width: min(100%, 70rem); margin-inline: auto; }
 
-@media (max-width: 960px) {
+@media (max-width: 1280px) {
+  .articleGrid { grid-template-columns: minmax(0, 1fr); }
   .tocColumn { display: none; }
+  .body, .reactionsRow { grid-column: 1; }
 }
 
 @media (max-width: 767px) {

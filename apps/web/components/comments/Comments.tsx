@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { AccountPanel } from "@/components/account/AccountPanel";
 import { type Account, useAccount } from "@/components/account/AccountProvider";
 import { useToasts } from "@/components/ToastProvider";
+import { AutosizeTextarea } from "@/components/AutosizeTextarea";
 import styles from "./Comments.module.css";
 
 type CommentRow = { id: string; parent_id: string | null; author: string; body: string; created_at: string };
@@ -39,7 +40,7 @@ function Composer({ user, placeholder, onPost }: { user: User | null; placeholde
   const near = body.length > 1800;
   return <div className={styles.composer}>
     <span className={styles.avatar}>{user?.username[0].toUpperCase() ?? "?"}</span>
-    <div className={styles.composerMain}><textarea aria-label={placeholder} disabled={!user} maxLength={2000} placeholder={user ? placeholder : "Log in to join the conversation"} rows={1} value={body} onChange={(event) => { setBody(event.target.value); event.target.style.height = "auto"; event.target.style.height = `${event.target.scrollHeight}px`; }} onKeyDown={(event) => { if (event.key === "Enter" && (event.metaKey || event.ctrlKey)) post(); }} />{user ? <div className={styles.composerActions}><span className={near ? styles.limitWarning : undefined}>{body.length > 0 ? `${body.length}/2000` : ""}</span><button className={styles.primaryAction} type="button" disabled={!body.trim() || posting} onClick={post}>{posting ? "Posting…" : "Post"}</button></div> : null}</div>
+    <div className={styles.composerMain}><AutosizeTextarea aria-label={placeholder} disabled={!user} maxLength={2000} placeholder={user ? placeholder : "Log in to join the conversation"} rows={1} value={body} onChange={(event) => setBody(event.target.value)} onKeyDown={(event) => { if (event.key === "Enter" && (event.metaKey || event.ctrlKey)) post(); }} />{user ? <div className={styles.composerActions}><span className={near ? styles.limitWarning : undefined}>{body.length > 0 ? `${body.length}/2000` : ""}</span><button className={styles.primaryAction} type="button" disabled={!body.trim() || posting} onClick={post}>{posting ? "Posting…" : "Post"}</button></div> : null}</div>
   </div>;
 }
 

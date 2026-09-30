@@ -182,7 +182,7 @@
 }
 
 .dataTable th {
-  color: var(--foreground);
+  color: var(--accent);
   font-size: 0.7rem;
   letter-spacing: 0.13em;
   text-transform: uppercase;

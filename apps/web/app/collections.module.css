@@ -32,10 +32,12 @@
 .list .cardLink { grid-template-columns: 9rem minmax(7rem, .4fr) minmax(12rem, 1fr) minmax(16rem, 1.4fr) auto; grid-template-rows: 1fr; align-items: center; gap: clamp(.8rem, 2vw, 1.5rem); min-height: 7.5rem; padding: .75rem 0; }
 .list .cover { align-self: stretch; height: 100%; }
 .list .cover img { height: 100%; aspect-ratio: auto; }
+.list .folderCover { align-self: stretch; height: 100%; aspect-ratio: auto; min-height: 5rem; }
 .list .category { justify-self: end; }
 .card { min-width: 0; }
 .cardLink { display: grid; grid-template-rows: auto auto auto 1fr auto; gap: 0.4rem; color: var(--foreground); }
 .cover { display: block; aspect-ratio: 16 / 10; border: 1px solid var(--soft-line); border-radius: 0.85rem; overflow: hidden; }
+.folderCover { display: block; aspect-ratio: 16 / 10; }
 .cover img { display: block; width: 100%; height: 100%; object-fit: cover; filter: saturate(.82) contrast(1.02); transition: transform 280ms var(--ease-out), filter 280ms ease; }
 .cardLink:hover .cover img, .cardLink:focus-visible .cover img { filter: saturate(1) contrast(1.02); transform: scale(1.035); }
 .date, .status, .category, .year { color: var(--muted); font-size: 0.72rem; letter-spacing: 0.1em; text-transform: uppercase; }

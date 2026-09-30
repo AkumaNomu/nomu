@@ -3,6 +3,7 @@
 import { FormEvent, useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import styles from "./admin.module.css";
+import { AutosizeTextarea } from "@/components/AutosizeTextarea";
 
 type Track = {
   id: string;
@@ -549,7 +550,7 @@ export default function AdminPage() {
             <input placeholder="tag-one, tag-two" type="text" value={newPostForm.tags} onChange={(event) => setNewPostForm((current) => ({ ...current, tags: event.target.value }))} />
             <input placeholder="/covers/example.png" required type="text" value={newPostForm.cover} onChange={(event) => setNewPostForm((current) => ({ ...current, cover: event.target.value }))} />
           </div>
-          <textarea placeholder="Draft body" rows={6} value={newPostForm.body} onChange={(event) => setNewPostForm((current) => ({ ...current, body: event.target.value }))} />
+          <AutosizeTextarea placeholder="Draft body" rows={6} value={newPostForm.body} onChange={(event) => setNewPostForm((current) => ({ ...current, body: event.target.value }))} />
           <div className={styles.actions}>
             <button disabled={busyKey === "post:create"} type="submit">{busyKey === "post:create" ? "Creating…" : "Create draft post"}</button>
           </div>
@@ -582,7 +583,7 @@ export default function AdminPage() {
                 </label>
                 <label>
                   Description
-                  <textarea
+                  <AutosizeTextarea
                     rows={3}
                     value={entry.metadata.description}
                     onChange={(event) => updatePost(entry.slug, (current) => ({
@@ -665,7 +666,7 @@ export default function AdminPage() {
                 </div>
                 <label>
                   Body
-                  <textarea
+                  <AutosizeTextarea
                     className={styles.codeArea}
                     rows={14}
                     value={entry.body}
@@ -722,7 +723,7 @@ export default function AdminPage() {
             <input placeholder="Repository URL (optional)" type="url" value={newProjectForm.repository} onChange={(event) => setNewProjectForm((current) => ({ ...current, repository: event.target.value }))} />
           </div>
           <input placeholder="Website URL (optional)" type="url" value={newProjectForm.website} onChange={(event) => setNewProjectForm((current) => ({ ...current, website: event.target.value }))} />
-          <textarea placeholder="Project body" rows={5} value={newProjectForm.body} onChange={(event) => setNewProjectForm((current) => ({ ...current, body: event.target.value }))} />
+          <AutosizeTextarea placeholder="Project body" rows={5} value={newProjectForm.body} onChange={(event) => setNewProjectForm((current) => ({ ...current, body: event.target.value }))} />
           <div className={styles.actions}>
             <button disabled={busyKey === "project:create"} type="submit">{busyKey === "project:create" ? "Creating…" : "Create project file"}</button>
           </div>
@@ -755,7 +756,7 @@ export default function AdminPage() {
                 </label>
                 <label>
                   Description
-                  <textarea
+                  <AutosizeTextarea
                     rows={3}
                     value={entry.metadata.description}
                     onChange={(event) => updateProject(entry.slug, (current) => ({
@@ -867,7 +868,7 @@ export default function AdminPage() {
                 </div>
                 <label>
                   Body
-                  <textarea
+                  <AutosizeTextarea
                     className={styles.codeArea}
                     rows={10}
                     value={entry.body}
@@ -956,8 +957,8 @@ export default function AdminPage() {
           <input placeholder="File path" required type="text" value={trackForm.file_path} onChange={(event) => setTrackForm((current) => ({ ...current, file_path: event.target.value }))} />
           <input placeholder="Artwork path" type="text" value={trackForm.artwork_path} onChange={(event) => setTrackForm((current) => ({ ...current, artwork_path: event.target.value }))} />
           <input placeholder="Duration (ms)" type="number" value={trackForm.duration_ms} onChange={(event) => setTrackForm((current) => ({ ...current, duration_ms: event.target.value }))} />
-          <textarea placeholder="Lyrics (markdown; chord tags like [Am] inline)" rows={6} value={trackForm.lyrics_md} onChange={(event) => setTrackForm((current) => ({ ...current, lyrics_md: event.target.value }))} />
-          <textarea placeholder="Notes (your own thoughts on the track, markdown)" rows={4} value={trackForm.notes_md} onChange={(event) => setTrackForm((current) => ({ ...current, notes_md: event.target.value }))} />
+          <AutosizeTextarea placeholder="Lyrics (markdown; chord tags like [Am] inline)" rows={6} value={trackForm.lyrics_md} onChange={(event) => setTrackForm((current) => ({ ...current, lyrics_md: event.target.value }))} />
+          <AutosizeTextarea placeholder="Notes (your own thoughts on the track, markdown)" rows={4} value={trackForm.notes_md} onChange={(event) => setTrackForm((current) => ({ ...current, notes_md: event.target.value }))} />
           <div className={styles.actions}>
             <button disabled={busyKey === (editingTrackId ? `track:${editingTrackId}` : "track:new")} type="submit">
               {busyKey === (editingTrackId ? `track:${editingTrackId}` : "track:new")
