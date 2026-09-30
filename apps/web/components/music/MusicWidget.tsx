@@ -21,14 +21,16 @@ export type MusicWidgetProps = {
   playing: boolean;
   time: number;
   volume: number;
+  locked: boolean;
   next: () => void;
   playPause: () => void;
   previous: () => void;
   seek: (value: number) => void;
   setVolume: (value: number) => void;
+  toggleMute: () => void;
 };
 
-export function MusicWidget({ currentTrack, playing, volume, next, playPause, previous, setVolume }: MusicWidgetProps) {
+export function MusicWidget({ currentTrack, playing, volume, locked, next, playPause, previous, setVolume, toggleMute }: MusicWidgetProps) {
   const reducedMotion = useReducedMotion();
   const [state, setState] = useState<PlayerState>("icon");
   const hideTimer = useRef<number | null>(null);
@@ -78,6 +80,7 @@ export function MusicWidget({ currentTrack, playing, volume, next, playPause, pr
               onClick={() => { sound.play("open"); clearHideTimer(); setState("expanded"); }}
             >
               <Image src={currentTrack.artwork} width={44} height={44} alt="" />
+              <span className={`${styles.miniEq} ${playing ? styles.miniEqPlaying : ""}`} aria-hidden="true"><i /><i /><i /></span>
             </button>
           </div>
         </motion.aside>
@@ -139,22 +142,24 @@ export function MusicWidget({ currentTrack, playing, volume, next, playPause, pr
             </div>
 
             <div className={styles.exControls}>
-              <button className={styles.exSkip} type="button" onClick={previous} aria-label="Previous track" title="Previous track">
+              <button className={styles.exSkip} type="button" onClick={previous} aria-label="Previous track" title={locked ? "Track switching is locked for this post" : "Previous track"} disabled={locked}>
                 <SkipIcon style={{ transform: "scaleX(-1)" }} />
               </button>
               <button className={styles.exPlay} type="button" onClick={playPause} aria-label={playing ? "Pause" : "Play"} title={playing ? "Pause" : "Play"} aria-pressed={playing}>
                 {playing ? <PauseIcon /> : <PlayIcon />}
               </button>
-              <button className={styles.exSkip} type="button" onClick={next} aria-label="Next track" title="Next track">
+              <button className={styles.exSkip} type="button" onClick={next} aria-label="Next track" title={locked ? "Track switching is locked for this post" : "Next track"} disabled={locked}>
                 <SkipIcon />
               </button>
             </div>
 
-            <label className={styles.exVolume}>
-              {volume === 0 ? <VolumeX aria-hidden="true" /> : <Volume2 aria-hidden="true" />}
-              <span className={styles.srOnly}>Volume</span>
+            <div className={styles.exVolume}>
+              <button type="button" className={styles.exMute} onClick={toggleMute} aria-label={volume === 0 ? "Unmute" : "Mute"} title={volume === 0 ? "Unmute" : "Mute"}>
+                {volume === 0 ? <VolumeX aria-hidden="true" /> : <Volume2 aria-hidden="true" />}
+              </button>
               <input
                 type="range"
+                aria-label="Volume"
                 min="0"
                 max="1"
                 step="0.05"
@@ -162,7 +167,7 @@ export function MusicWidget({ currentTrack, playing, volume, next, playPause, pr
                 style={{ "--progress": `${volume * 100}%` } as CSSProperties}
                 onChange={(event) => setVolume(Number(event.target.value))}
               />
-            </label>
+            </div>
 
             <button className={styles.exCollapse} type="button" onClick={() => { sound.play("close"); setState("icon"); }} aria-label="Collapse music player" title="Collapse music player">
               <ChevronDown aria-hidden="true" />

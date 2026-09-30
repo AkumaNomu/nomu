@@ -48,6 +48,13 @@ export const generatedTracks: Track[] = [
     "src": "/audio/Radiohead%20-%20no%20surprises.mp3"
   },
   {
+    "title": "Ruler of Everything",
+    "artist": "Unknown Artist",
+    "album": "Ruler of Everything",
+    "artwork": "/album-art/soft-loop.svg",
+    "src": "/audio/Ruler%20of%20Everything.mp3"
+  },
+  {
     "title": "Tonight You Belong to Me",
     "artist": "Unknown Artist",
     "album": "Tonight You Belong to Me",

@@ -21,6 +21,7 @@ import NomusV3 from "@/content/blog/archived/nomus-v3.mdx";
 import SoTheyWantToBanPornMyTwoCents from "@/content/blog/so-they-want-to-ban-porn-my-two-cents.mdx";
 import TryingToMakePlaylistsFlowBetter from "@/content/blog/archived/trying-to-make-playlists-flow-better.mdx";
 import WhyAreStudyAgenciesSuchAScam from "@/content/blog/why-are-study-agencies-such-a-scam.mdx";
+import WereOnlyHuman from "@/content/blog/were-only-human.mdx";
 
 export type MdxContent = ComponentType<Record<string, never>>;
 
@@ -34,6 +35,7 @@ export const blogRegistry = {
   "katex-support": KatexSupport,
   "nomus-first-post": NomusFirstPost,
   "markdown-test-post": MarkdownTestPost,
+  "were-only-human": WereOnlyHuman,
 } satisfies Record<string, MdxContent>;
 
 export const projectRegistry = {
