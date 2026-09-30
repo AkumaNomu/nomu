@@ -1,0 +1,23 @@
+---
+title: MemReRust
+slug: memrerust
+description: Linux-native memory-management CLI — reporting, cache cleanup, monitoring, and JSON output for scripting.
+year: 2025
+status: building
+role: Independent
+technologies: [Rust, Linux, CLI, Systems]
+icon: /project-icons/memrerust.svg
+featured: false
+---
+
+## Why I made it
+
+MemReRust is a memory-management CLI built the Linux way: it uses real sync and drop_caches semantics instead of copying Windows-specific memory operations, with dry-run modes, configurable pressure thresholds, and JSON output so it composes with scripts and monitoring.
+
+## How it is built
+
+Rust with a subcommand CLI structure — reporting, cache cleanup, and a monitor mode — designed for system integration rather than one-off runs.
+
+## Current progress
+
+Core reporting and cleanup flows work. Next is threshold configuration polish and release packaging.

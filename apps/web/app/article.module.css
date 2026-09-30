@@ -14,11 +14,12 @@
 .category { color: #d9e8d5; }
 .headerInner h1 { max-width: 70rem; margin: 0; font-size: clamp(2.1rem, 4.5vw, 3.75rem); font-weight: 620; letter-spacing: -0.05em; line-height: 1.02; text-wrap: balance; }
 .dek { max-width: 60rem; margin: 0.9rem 0 0; color: rgba(255,255,255,.78); font-size: clamp(1rem, 1.4vw, 1.18rem); line-height: 1.55; }
-.articleGrid { position: relative; width: min(100%, 70rem); margin-inline: auto; padding-top: clamp(2rem, 4vw, 3.5rem); display: flex; flex-wrap: wrap; gap: clamp(2rem, 4vw, 3.5rem); align-items: flex-start; }
+.articleGrid { position: relative; width: min(100%, 76rem); margin-inline: auto; padding-top: clamp(2rem, 4vw, 3.5rem); display: flex; flex-wrap: wrap; gap: clamp(2rem, 4vw, 4rem); align-items: flex-start; }
 .tocColumn { position: sticky; top: calc(var(--header-height) + 1.5rem); flex: 0 0 13rem; max-height: calc(100dvh - var(--header-height) - 3rem); overflow-y: auto; overflow-x: clip; }
 .reactionsRow { flex: 1 1 100%; }
 /* Long-form typography is shared via the global `.prose` class (globals.css). */
-.body { flex: 1 1 0; min-width: min(100%, 28rem); }
+.body { flex: 1 1 0; min-width: min(100%, 28rem); display: flex; justify-content: center; }
+.body > * { width: min(100%, 44rem); }
 .body :global([data-scroll-reveal="true"]) {
   opacity: 0;
   transform: translateY(1rem);

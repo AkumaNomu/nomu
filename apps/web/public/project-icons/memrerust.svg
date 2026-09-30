@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="112" height="112" viewBox="0 0 112 112" role="img" aria-label="MemReRust project icon">
+  <rect width="112" height="112" rx="24" fill="#26241f"/>
+  <g fill="none" stroke="#e2b85c" stroke-width="5">
+    <rect x="28" y="28" width="56" height="56" rx="8"/>
+    <path d="M28 44h-8M28 56h-8M28 68h-8M84 44h8M84 56h8M84 68h8M44 28v-8M56 28v-8M68 28v-8M44 84v8M56 84v8M68 84v8" stroke-linecap="round"/>
+  </g>
+  <rect x="46" y="46" width="20" height="20" rx="4" fill="#e2b85c"/>
+</svg>

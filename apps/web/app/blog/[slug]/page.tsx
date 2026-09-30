@@ -3,13 +3,18 @@ import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { notFound } from "next/navigation";
-import { Comments, COMMENTS_ENABLED } from "@/components/comments";
+import { headers } from "next/headers";
+import { Comments } from "@/components/comments";
+import { COMMENTS_ENABLED, REACTIONS_ENABLED } from "@/lib/features";
+import { verifyUnlockCookie } from "@/lib/postLock";
+import { getAllBlog, getBlogBySlug, getBlogSource, getBlogSlugs } from "@/lib/content";
+import { PasswordGate } from "@/components/blog/PasswordGate";
+import { PostSoundtrack } from "@/components/blog/PostSoundtrack";
 import { ArticleReveal } from "@/components/ArticleReveal";
 import { AnimatedGroup, AnimatedItem } from "@/components/motion/AnimatedGroup";
 import { SectionRule } from "@/components/editorial";
 import { TableOfContents } from "@/components/mdx/TableOfContents";
-import { PostReactions, REACTIONS_ENABLED } from "@/components/PostReactions";
-import { getAllBlog, getBlogBySlug, getBlogSlugs } from "@/lib/content";
+import { PostReactions } from "@/components/PostReactions";
 import { parseHeadings } from "@/lib/mdx/headings";
 import styles from "@/app/article.module.css";
 
@@ -62,7 +67,9 @@ export default async function ArticlePage({ params }: Props) {
   if (!article) notFound();
 
   const Content = article.Content;
-  const headings = parseHeadings(article.body);
+  const locked = article.metadata.protected === true;
+  const unlocked = !locked || verifyUnlockCookie(slug, (await headers()).get("cookie"));
+  const headings = unlocked ? parseHeadings(getBlogSource(slug).body) : [];
   const related = getAllBlog()
     .filter((entry) => entry.metadata.slug !== slug && (
       entry.metadata.category === article.metadata.category ||
@@ -83,6 +90,9 @@ export default async function ArticlePage({ params }: Props) {
   return (
     <article className={styles.article} data-article-page>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }} />
+      {(!locked || unlocked) && article.metadata.soundtrack?.length ? (
+        <PostSoundtrack slugs={article.metadata.soundtrack} />
+      ) : null}
       <header className={styles.coverHero}>
         <div className={styles.coverFrame}>
           <Image className={styles.coverImage} src={article.metadata.cover} alt="" fill priority sizes="100vw" />
@@ -108,13 +118,19 @@ export default async function ArticlePage({ params }: Props) {
       </header>
 
       <div className={`${styles.articleGrid} site-shell`}>
-        {headings.length ? (
-          <div className={styles.tocColumn}>
-            <TableOfContents nodes={headings} />
-          </div>
-        ) : null}
-        <div className={`${styles.body} prose`}><ArticleReveal><Content /></ArticleReveal></div>
-        {REACTIONS_ENABLED ? <div className={styles.reactionsRow}><PostReactions slug={slug} /></div> : null}
+        {locked && !unlocked ? (
+          <PasswordGate slug={slug} hint={article.metadata.passwordHint} />
+        ) : (
+          <>
+            {headings.length ? (
+              <div className={styles.tocColumn}>
+                <TableOfContents nodes={headings} />
+              </div>
+            ) : null}
+            <div className={`${styles.body} prose`}><ArticleReveal><Content /></ArticleReveal></div>
+            {REACTIONS_ENABLED ? <div className={styles.reactionsRow}><PostReactions slug={slug} /></div> : null}
+          </>
+        )}
       </div>
 
       {related.length ? (

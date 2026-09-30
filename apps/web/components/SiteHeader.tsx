@@ -1,6 +1,6 @@
 "use client";
 
-import type { CSSProperties } from "react";
+import type { CSSProperties, MouseEvent } from "react";
 import type { Route } from "next";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -180,11 +180,22 @@ function ThemeToggle() {
     return () => window.removeEventListener("site:appearance-change", onChange);
   }, []);
 
-  const toggle = () => {
+  const toggle = (event: MouseEvent) => {
     sound.play("tap");
     const next = { ...readPreferences(), theme: (theme === "dark" ? "light" : "dark") as Preferences["theme"] };
-    setTheme(next.theme);
-    writePreferences(next);
+    const apply = () => { setTheme(next.theme); writePreferences(next); };
+    const doc = document as Document & { startViewTransition?: (update: () => void) => { ready: Promise<void> } };
+    if (!doc.startViewTransition || window.matchMedia("(prefers-reduced-motion: reduce)").matches) { apply(); return; }
+    try {
+      const transition = doc.startViewTransition(apply);
+      transition.ready.then(() => {
+        const radius = Math.hypot(Math.max(event.clientX, window.innerWidth - event.clientX), Math.max(event.clientY, window.innerHeight - event.clientY));
+        document.documentElement.animate(
+          { clipPath: [`circle(0px at ${event.clientX}px ${event.clientY}px)`, `circle(${radius}px at ${event.clientX}px ${event.clientY}px)`] },
+          { duration: 480, easing: "cubic-bezier(0.22, 1, 0.36, 1)", pseudoElement: "::view-transition-new(root)" },
+        );
+      }).catch(() => { /* transition skipped — theme already applied */ });
+    } catch { apply(); }
   };
 
   return (

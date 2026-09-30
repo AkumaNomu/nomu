@@ -7,6 +7,7 @@ import { CodeBlock } from "./CodeBlock";
 import { ZoomableImage } from "./Lightbox";
 import { MdxTable } from "./MdxTable";
 import { Mermaid } from "./Mermaid";
+import { MusicCue } from "./MusicCue";
 import styles from "./MdxComponents.module.css";
 
 type ChildrenProps = { children: ReactNode };
@@ -176,6 +177,7 @@ export const mdxComponents = {
   img: ZoomableImage,
   table: MdxTable,
   Mermaid,
+  MusicCue,
   Callout,
   PullQuote,
   Figure,

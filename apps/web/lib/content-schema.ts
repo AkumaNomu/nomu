@@ -16,7 +16,15 @@ export const blogSchema = z.object({
   draft: z.boolean().optional(),
   readingTime: z.string().optional(),
   cover: z.string().startsWith("/covers/"),
-}).strict();
+  protected: z.boolean().optional(),
+  passwordHash: z.string().regex(/^[0-9a-f]{64}$/i, "Use a SHA-256 hex digest (see CONTENT_GUIDE.md)").optional(),
+  passwordHint: z.string().optional(),
+  soundtrack: z.array(z.string().min(1)).optional(),
+}).strict().superRefine((data, ctx) => {
+  if (data.protected && !data.passwordHash) {
+    ctx.addIssue({ code: "custom", path: ["passwordHash"], message: "Protected posts require a passwordHash" });
+  }
+});
 
 export const projectSchema = z.object({
   title: z.string().min(1),

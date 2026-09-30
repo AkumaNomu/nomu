@@ -8,10 +8,6 @@ import styles from "./PostReactions.module.css";
 
 type Totals = { likes: number; dislikes: number; userReaction: 1 | -1 | null };
 
-// Master switch for the like/dislike UI. Off for now — the reactions API and
-// stored counts stay untouched, the buttons just don't render.
-export const REACTIONS_ENABLED = false;
-
 export function PostReactions({ slug }: { slug: string }) {
   const { user } = useAccount();
   const { showToast } = useToasts();

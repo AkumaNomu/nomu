@@ -95,8 +95,26 @@ function loadBlog(slug: keyof typeof blogRegistry): BlogEntry {
   const { data, body, archived } = readSource("blog", slug);
   const parsed = blogSchema.parse(data);
   if (parsed.slug !== slug) throw new Error(`Blog slug mismatch: ${slug}`);
-  const metadata = { ...parsed, readingTime: readingTime(body).text, archived };
-  return { ...metadata, metadata, body, searchableText: makeSearchText(metadata, body), Content: blogRegistry[slug] };
+  // Locked posts never ship their body or password hash to the client:
+  // listings/search get metadata only, and the page renders a password gate.
+  // The real body is served per-request by /api/posts/[slug]/unlock.
+  const { passwordHash, ...publicFrontmatter } = parsed;
+  void passwordHash;
+  const locked = publicFrontmatter.protected === true;
+  const metadata = { ...publicFrontmatter, readingTime: readingTime(body).text, archived };
+  return {
+    ...metadata,
+    metadata,
+    body: locked ? "" : body,
+    searchableText: locked ? makeSearchText(publicFrontmatter, "") : makeSearchText(metadata, body),
+    Content: blogRegistry[slug],
+  };
+}
+
+// Raw file access for server-only consumers (e.g. the unlock route).
+// Never import this into client components.
+export function getBlogSource(slug: string) {
+  return readSource("blog", slug);
 }
 
 function loadProject(slug: keyof typeof projectRegistry): ProjectEntry {

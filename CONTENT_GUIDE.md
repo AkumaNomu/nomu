@@ -68,6 +68,7 @@ MDX files can use these components without imports:
 - `DataTable` for accessible tabular data.
 - `BarChart` and `LineChart` for compact data visualizations.
 - `MetricGrid` for key values and short supporting notes.
+- `MusicCue` for in-post song switches (`slug`, optional `label`).
 
 ### Data table
 
@@ -138,3 +139,51 @@ Use an empty alt string only when the same information already appears nearby.
 
 Copy `apps/web/content/templates/article-with-data.mdx` when you need a complete
 data-rich article starting point.
+
+## Post soundtracks
+
+A post can declare music that starts when the post opens, and drop markers
+that switch songs as the reader scrolls. Track slugs come from
+`apps/web/lib/tracks.generated.ts` (file tracks) or the music library in
+`/admin` (DB rows share the same slug space as `/music`).
+
+```yaml
+soundtrack:
+  - quiet-system-unknown-artist
+  - soft-loop-unknown-artist
+```
+
+```mdx
+<MusicCue slug="quiet-system-unknown-artist" label="Reading music" />
+```
+
+The opening soundtrack is a throwaway queue: it plays through the listed
+tracks, and leaving the post leaves the music playing. Each cue fires once
+when it crosses the middle of the viewport; the pill stays clickable for
+manual replay. If the browser blocks autoplay, the player just stays paused.
+
+## Password-protected posts
+
+A post with `protected: true` shows its title, description, and cover everywhere
+(listings, search, feed, sitemap) but renders a password gate instead of its
+body. The body and password hash never ship to the browser — listings only
+carry metadata. Unlocking verifies the password server-side and sets a
+short-lived httpOnly cookie, after which the page renders the full article
+through the normal MDX pipeline (same components, TOC, and styling).
+
+```yaml
+protected: true
+passwordHash: "<sha256 hex of the password>"
+passwordHint: "Where we first met"   # optional, shown on the gate
+```
+
+Generate the hash (never commit the plain password):
+
+```bash
+node -e "console.log(require('crypto').createHash('sha256').update('your-password','utf8').digest('hex'))"
+```
+
+Notes: unlock attempts are throttled (10/minute per post), cookies last one
+hour, and search indexes metadata only. Set `UNLOCK_SECRET` in production so
+cookies survive restarts and deploys. This keeps honest readers out — it is not
+NSA-grade: anyone with repo access can read the source file.

@@ -3,6 +3,8 @@ import AboutPage from "@/content/pages/about.mdx";
 import MaiProject from "@/content/projects/mai.mdx";
 import NomuSiteProject from "@/content/projects/nomu-site.mdx";
 import ParkerProject from "@/content/projects/parker.mdx";
+import TinaProject from "@/content/projects/tina.mdx";
+import MemReRustProject from "@/content/projects/memrerust.mdx";
 import TradePilotProject from "@/content/projects/trade-pilot.mdx";
 import Fmhy from "@/content/resources/fmhy.mdx";
 import PiracyGuide from "@/content/resources/piracy-guide.mdx";
@@ -18,7 +20,7 @@ import NomusV2 from "@/content/blog/archived/nomus-v2.mdx";
 import NomusV3 from "@/content/blog/archived/nomus-v3.mdx";
 import SoTheyWantToBanPornMyTwoCents from "@/content/blog/so-they-want-to-ban-porn-my-two-cents.mdx";
 import TryingToMakePlaylistsFlowBetter from "@/content/blog/archived/trying-to-make-playlists-flow-better.mdx";
-import WhyAreStudyAgenciesSuchAScam from "@/content/blog/archived/why-are-study-agencies-such-a-scam.mdx";
+import WhyAreStudyAgenciesSuchAScam from "@/content/blog/why-are-study-agencies-such-a-scam.mdx";
 
 export type MdxContent = ComponentType<Record<string, never>>;
 
@@ -38,6 +40,8 @@ export const projectRegistry = {
   mai: MaiProject,
   "nomu-site": NomuSiteProject,
   parker: ParkerProject,
+  tina: TinaProject,
+  memrerust: MemReRustProject,
   "trade-pilot": TradePilotProject,
 } satisfies Record<string, MdxContent>;
 

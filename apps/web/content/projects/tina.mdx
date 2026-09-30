@@ -1,0 +1,23 @@
+---
+title: Tina
+slug: tina
+description: Voice-controlled browser navigation — hands-free control across X, Reddit, and YouTube with fully local speech recognition.
+year: 2025
+status: building
+role: Independent
+technologies: [JavaScript, WebExtensions, Whisper, Transformers.js, ONNX]
+icon: /project-icons/tina.svg
+featured: true
+---
+
+## Why I made it
+
+Tina is a Chrome and Firefox extension for hands-free browser navigation. The interesting constraint is privacy: speech recognition runs entirely locally in the browser through Transformers.js and ONNX/WASM builds of Whisper, so voice data never leaves the machine.
+
+## How it is built
+
+Isolated site adapters for X, Reddit, and YouTube sit behind a shared controller, using viewport geometry and element visibility to pick interaction targets. Chained voice commands compose navigation and interaction into single utterances.
+
+## Current progress
+
+Site adapters and the local inference pipeline work end to end. Ongoing work is command coverage, target selection accuracy on dense pages, and packaging for both extension stores.

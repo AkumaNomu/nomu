@@ -1,1 +1,1 @@
-export { Comments, COMMENTS_ENABLED, type CommentsProps } from "./Comments";
+export { Comments, type CommentsProps } from "./Comments";
